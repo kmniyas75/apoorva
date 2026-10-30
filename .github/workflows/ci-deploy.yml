@@ -1,0 +1,97 @@
+name: CI & Vercel Deployment
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  ci:
+    name: Build & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: Run ESLint check (advisory)
+        continue-on-error: true
+        run: npm run lint
+
+      - name: Build Next.js application
+        run: npm run build
+
+  deploy:
+    name: Deploy to Vercel
+    needs: ci
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Check Vercel Secrets
+        id: check_secrets
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "configured=false" >> $GITHUB_OUTPUT
+            echo "### ℹ️ Vercel CLI Secrets Not Configured Yet" >> $GITHUB_STEP_SUMMARY
+            echo "To enable automated CLI deployments from GitHub Actions, add the following repository secrets in **Settings → Secrets and variables → Actions**:" >> $GITHUB_STEP_SUMMARY
+            echo "- \`VERCEL_TOKEN\`" >> $GITHUB_STEP_SUMMARY
+            echo "- \`VERCEL_ORG_ID\`" >> $GITHUB_STEP_SUMMARY
+            echo "- \`VERCEL_PROJECT_ID\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "configured=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout repository
+        if: steps.check_secrets.outputs.configured == 'true'
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        if: steps.check_secrets.outputs.configured == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Vercel CLI
+        if: steps.check_secrets.outputs.configured == 'true'
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information (Production)
+        if: steps.check_secrets.outputs.configured == 'true' && github.ref == 'refs/heads/main'
+        run: vercel pull --yes --environment=production
+
+      - name: Pull Vercel Environment Information (Preview)
+        if: steps.check_secrets.outputs.configured == 'true' && github.ref != 'refs/heads/main'
+        run: vercel pull --yes --environment=preview
+
+      - name: Build Project Artifacts (Production)
+        if: steps.check_secrets.outputs.configured == 'true' && github.ref == 'refs/heads/main'
+        run: vercel build --prod
+
+      - name: Build Project Artifacts (Preview)
+        if: steps.check_secrets.outputs.configured == 'true' && github.ref != 'refs/heads/main'
+        run: vercel build
+
+      - name: Deploy Project Artifacts to Vercel (Production)
+        if: steps.check_secrets.outputs.configured == 'true' && github.ref == 'refs/heads/main'
+        run: vercel deploy --prebuilt --prod --yes
+
+      - name: Deploy Project Artifacts to Vercel (Preview)
+        if: steps.check_secrets.outputs.configured == 'true' && github.ref != 'refs/heads/main'
+        run: vercel deploy --prebuilt --yes
