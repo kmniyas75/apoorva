@@ -68,7 +68,7 @@ export default function ProductQuickView({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-5xl bg-[#f7f3ec] text-[#141414] rounded-3xl shadow-2xl overflow-hidden border border-black/10 flex flex-col md:flex-row max-h-[92vh]">
+      <div className="relative w-full max-w-5xl bg-white text-[#141414] rounded-3xl shadow-2xl overflow-hidden border border-black/10 flex flex-col md:flex-row max-h-[92vh]">
         {/* Close Button */}
         <button
           type="button"
@@ -80,7 +80,7 @@ export default function ProductQuickView({
         </button>
 
         {/* Left Side: Product Video & Photo Gallery */}
-        <div className="relative md:w-5/12 bg-[#ede6da] p-5 sm:p-6 flex flex-col items-center justify-between border-b md:border-b-0 md:border-r border-black/10">
+        <div className="relative md:w-5/12 bg-neutral-50 p-5 sm:p-6 flex flex-col items-center justify-between border-b md:border-b-0 md:border-r border-black/10">
           <div className="w-full flex items-center justify-between text-[10px] font-mono text-black/60">
             <span>BEACHWEAR SET {product.number} // KERALA</span>
             <span className="font-bold text-amber-950 bg-amber-300/60 px-2 py-0.5 rounded-full">
@@ -100,7 +100,7 @@ export default function ProductQuickView({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="relative w-full h-full bg-[#f7f3ec]">
+              <div className="relative w-full h-full bg-white">
                 <Image
                   src={displayedImage}
                   alt={product.name}

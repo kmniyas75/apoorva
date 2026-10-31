@@ -201,11 +201,11 @@ export default function HeroShowcase({
       <div
         style={{
           background:
-            "radial-gradient(circle at 50% 42%, #fbf7ef 0%, #efe8da 52%, #e2d8c5 100%)",
+            "radial-gradient(circle at 50% 42%, #ffffff 0%, #fafafa 58%, #f4f4f5 100%)",
           boxShadow:
-            "0 24px 60px -15px rgba(28, 19, 10, 0.14), inset 0 1px 0 0 rgba(255, 255, 255, 0.85)"
+            "0 24px 60px -15px rgba(0, 0, 0, 0.08), inset 0 1px 0 0 rgba(255, 255, 255, 1)"
         }}
-        className="relative w-full max-w-6xl mx-auto rounded-[2rem] border border-amber-950/15 overflow-hidden mb-8 p-4 sm:p-6 lg:p-7"
+        className="relative w-full max-w-6xl mx-auto rounded-[2rem] border border-black/10 overflow-hidden mb-8 p-4 sm:p-6 lg:p-7"
       >
         {/* Subtle Architectural Grid & Warm Sunbeams Overlay */}
         <div
@@ -570,7 +570,7 @@ export default function HeroShowcase({
             return (
               <div
                 key={prod.id}
-                className="bg-[#f7f3ec] border border-black/15 rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-all flex flex-col justify-between"
+                className="bg-white border border-black/15 rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-all flex flex-col justify-between"
               >
                 {/* Live Motion Video Header for Each Product */}
                 <div
@@ -630,7 +630,7 @@ export default function HeroShowcase({
                             height: "56px",
                             flexShrink: 0
                           }}
-                          className="rounded-xl bg-[#ede6da] border border-black/10 overflow-hidden cursor-pointer flex items-center justify-center"
+                          className="rounded-xl bg-neutral-50 border border-black/10 overflow-hidden cursor-pointer flex items-center justify-center"
                         >
                           <Image
                             src={prod.image}

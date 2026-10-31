@@ -89,7 +89,7 @@ export default function RootLayout({
       <head>
         <SeoStructuredData />
       </head>
-      <body className="min-h-full flex flex-col bg-[#e8e4dc] text-[#141414] overflow-x-hidden selection:bg-black selection:text-white">
+      <body className="min-h-full flex flex-col bg-white text-[#141414] overflow-x-hidden selection:bg-black selection:text-white">
         {children}
         <Script
           src="https://checkout.razorpay.com/v1/checkout.js"

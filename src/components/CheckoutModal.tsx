@@ -496,9 +496,9 @@ export default function CheckoutModal({
       aria-labelledby="checkout-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-md animate-fadeIn"
     >
-      <div className="relative w-full max-w-2xl max-h-[94vh] bg-[#f7f3ec] text-[#141414] rounded-3xl shadow-2xl border border-black/15 flex flex-col overflow-hidden">
+      <div className="relative w-full max-w-2xl max-h-[94vh] bg-white text-[#141414] rounded-3xl shadow-2xl border border-black/15 flex flex-col overflow-hidden">
         {/* Modal Header */}
-        <div className="px-5 py-3.5 bg-[#ede6da] border-b border-black/10 flex items-center justify-between">
+        <div className="px-5 py-3.5 bg-neutral-50 border-b border-black/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ApoorvaLogo size="sm" showTagline={false} />
             <div className="border-l border-black/15 pl-3">
@@ -609,7 +609,7 @@ export default function CheckoutModal({
               {/* Selected Product Snapshot */}
               <div className="p-3 bg-white/85 rounded-2xl border border-black/10 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-12 h-12 bg-[#ede6da] rounded-xl overflow-hidden flex-shrink-0 border border-black/10 flex items-center justify-center">
+                  <div className="w-12 h-12 bg-neutral-50 rounded-xl overflow-hidden flex-shrink-0 border border-black/10 flex items-center justify-center">
                     <Image
                       src={
                         activeItems[0]?.product.image ||
@@ -937,7 +937,7 @@ export default function CheckoutModal({
                 </button>
               </div>
 
-              <div className="bg-[#ede6da] p-4 rounded-2xl border border-black/10 text-xs space-y-2">
+              <div className="bg-neutral-50 p-4 rounded-2xl border border-black/10 text-xs space-y-2">
                 <div className="flex justify-between items-center pb-2 border-b border-black/10">
                   <span className="text-black/60">Order ID:</span>
                   <div className="flex items-center gap-2">
@@ -1006,7 +1006,7 @@ export default function CheckoutModal({
                   <button
                     type="button"
                     onClick={() => onOpenInvoice(confirmedOrder)}
-                    className="flex-1 py-3 bg-[#ede6da] hover:bg-[#e4dcce] text-black font-bold uppercase tracking-wider text-xs rounded-full border border-black/15 transition-all flex items-center justify-center gap-1.5"
+                    className="flex-1 py-3 bg-neutral-50 hover:bg-neutral-100 text-black font-bold uppercase tracking-wider text-xs rounded-full border border-black/15 transition-all flex items-center justify-center gap-1.5"
                   >
                     <Printer className="w-3.5 h-3.5 text-black" />
                     <span>Print Invoice</span>
@@ -1019,7 +1019,7 @@ export default function CheckoutModal({
                       onClose();
                       onOpenTracking(confirmedOrder.orderId);
                     }}
-                    className="flex-1 py-3 bg-[#ede6da] hover:bg-[#e4dcce] text-black font-bold uppercase tracking-wider text-xs rounded-full border border-black/15 transition-all flex items-center justify-center gap-1.5"
+                    className="flex-1 py-3 bg-neutral-50 hover:bg-neutral-100 text-black font-bold uppercase tracking-wider text-xs rounded-full border border-black/15 transition-all flex items-center justify-center gap-1.5"
                   >
                     <Truck className="w-3.5 h-3.5 text-amber-900" />
                     <span>Track Package</span>

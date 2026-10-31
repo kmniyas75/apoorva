@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #e8e4dc;
+  color-scheme: light;
+  --background: #ffffff;
   --foreground: #141414;
   --orbit-radius: 135px;
 }
@@ -25,10 +26,10 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: #e8e4dc;
+  background-color: #ffffff;
   color: #141414;
   font-family: var(--font-space-grotesk), var(--font-geist-sans), sans-serif;
-  background-image: radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 0);
+  background-image: radial-gradient(rgba(0, 0, 0, 0.025) 1px, transparent 0);
   background-size: 24px 24px;
 }
 

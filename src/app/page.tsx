@@ -175,7 +175,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col justify-between bg-[#e8e4dc] text-[#141414] relative selection:bg-amber-900 selection:text-white">
+    <main className="min-h-screen flex flex-col justify-between bg-white text-[#141414] relative selection:bg-amber-900 selection:text-white">
       {/* APOORVA Beachwear Header with Custom Logo & Fast 1-Click Buy */}
       <Header
         cartCount={cartItems.reduce((acc, i) => acc + i.quantity, 0)}

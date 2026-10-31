@@ -36,7 +36,7 @@ export default function Header({
   };
 
   return (
-    <header className="relative z-30 w-full px-4 sm:px-6 md:px-12 py-4 flex items-center justify-between text-[#111111] border-b border-black/[0.06] bg-[#e8e4dc]/90 backdrop-blur-md">
+    <header className="relative z-30 w-full px-4 sm:px-6 md:px-12 py-4 flex items-center justify-between text-[#111111] border-b border-black/[0.08] bg-white/95 backdrop-blur-md">
       {/* APOORVA Brand Crest & Wordmark Left */}
       <a
         href="#"

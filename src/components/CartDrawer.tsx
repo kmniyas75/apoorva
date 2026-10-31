@@ -102,9 +102,9 @@ export default function CartDrawer({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/50 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-md h-full bg-[#f7f3ec] text-[#141414] shadow-2xl flex flex-col border-l border-black/10 overflow-hidden">
+      <div className="relative w-full max-w-md h-full bg-white text-[#141414] shadow-2xl flex flex-col border-l border-black/10 overflow-hidden">
         {/* Header */}
-        <div className="p-6 border-b border-black/10 bg-[#ede6da] flex items-center justify-between">
+        <div className="p-6 border-b border-black/10 bg-neutral-50 flex items-center justify-between">
           <div className="flex items-baseline gap-2">
             <h3 className="font-mono font-bold text-sm uppercase tracking-widest">
               YOUR SHOPPING BAG
@@ -123,7 +123,7 @@ export default function CartDrawer({
         </div>
 
         {/* Free Shipping Milestone Indicator */}
-        <div className="px-6 py-3 bg-[#e3dcd0] border-b border-black/5 text-[11px] font-mono">
+        <div className="px-6 py-3 bg-neutral-100 border-b border-black/5 text-[11px] font-mono">
           {subtotal >= freeShippingThreshold ? (
             <p className="text-emerald-800 font-semibold flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5" />
@@ -203,7 +203,7 @@ export default function CartDrawer({
                 key={`${item.product.id}-${item.size}`}
                 className="flex gap-4 p-3 bg-white/70 border border-black/5 rounded-2xl relative group"
               >
-                <div className="relative w-20 h-20 bg-[#ede6da] rounded-xl flex-shrink-0 p-1">
+                <div className="relative w-20 h-20 bg-neutral-50 rounded-xl flex-shrink-0 p-1">
                   <Image
                     src={item.product.image}
                     alt={item.product.name}
@@ -228,7 +228,7 @@ export default function CartDrawer({
                     </span>
 
                     {/* Quantity controls */}
-                    <div className="flex items-center gap-2 bg-[#f0e9dc] rounded-full px-2 py-0.5 border border-black/10">
+                    <div className="flex items-center gap-2 bg-neutral-100 rounded-full px-2 py-0.5 border border-black/10">
                       <button
                         onClick={() =>
                           onUpdateQuantity(item.product.id, item.size, -1)
@@ -266,7 +266,7 @@ export default function CartDrawer({
 
         {/* Footer with totals & checkout */}
         {checkoutStep === "cart" && items.length > 0 && (
-          <div className="p-6 bg-[#ede6da] border-t border-black/10 font-mono space-y-3.5">
+          <div className="p-6 bg-neutral-50 border-t border-black/10 font-mono space-y-3.5">
             {/* PIN Code Delivery Date & Serviceability Check */}
             <div className="p-3 bg-white/80 rounded-2xl border border-black/10 text-xs space-y-2">
               <div className="flex items-center justify-between text-[11px] font-bold text-black">

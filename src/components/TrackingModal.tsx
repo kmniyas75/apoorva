@@ -89,10 +89,10 @@ export default function TrackingModal({
       aria-labelledby="tracking-modal-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-fadeIn"
     >
-      <div className="relative w-full max-w-3xl max-h-[92vh] bg-[#f7f3ec] text-[#141414] rounded-3xl shadow-2xl border border-black/15 flex flex-col overflow-hidden">
+      <div className="relative w-full max-w-3xl max-h-[92vh] bg-white text-[#141414] rounded-3xl shadow-2xl border border-black/15 flex flex-col overflow-hidden">
 
         {/* Header */}
-        <div className="px-6 py-4 bg-[#ede6da] border-b border-black/10 flex items-center justify-between">
+        <div className="px-6 py-4 bg-neutral-50 border-b border-black/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-2xl bg-black text-[#faf8f5] flex items-center justify-center font-mono">
               <Truck className="w-5 h-5 text-amber-200" />
@@ -131,7 +131,7 @@ export default function TrackingModal({
         </div>
 
         {/* Search Bar & Quick Presets */}
-        <div className="px-6 py-3 bg-[#f0e9dc] border-b border-black/10 font-mono text-xs">
+        <div className="px-6 py-3 bg-neutral-100 border-b border-black/10 font-mono text-xs">
           <form onSubmit={handleSearchSubmit} className="flex gap-2">
             <div className="relative flex-1">
               <Search className="w-4 h-4 text-black/40 absolute left-3 top-2.5" />
@@ -261,7 +261,7 @@ export default function TrackingModal({
                           ? "bg-black text-white ring-4 ring-amber-400/30 shadow-md"
                           : m.isCompleted
                             ? "bg-black text-white"
-                            : "bg-[#e5decb] text-black/40 border border-black/15"
+                            : "bg-neutral-100 text-black/40 border border-black/15"
                           }`}
                       >
                         {m.isCompleted ? (
@@ -301,7 +301,7 @@ export default function TrackingModal({
 
               {/* Package Details & Official Link */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="p-4 bg-[#ede6da] rounded-2xl border border-black/10 space-y-1.5">
+                <div className="p-4 bg-neutral-50 rounded-2xl border border-black/10 space-y-1.5">
                   <div className="font-bold uppercase text-[11px] text-black mb-1">
                     Package Specifications
                   </div>
@@ -319,7 +319,7 @@ export default function TrackingModal({
                   </div>
                 </div>
 
-                <div className="p-4 bg-[#ede6da] rounded-2xl border border-black/10 flex flex-col justify-between space-y-2">
+                <div className="p-4 bg-neutral-50 rounded-2xl border border-black/10 flex flex-col justify-between space-y-2">
                   <div>
                     <div className="font-bold uppercase text-[11px] text-black mb-1">
                       Direct Courier Portal
@@ -386,7 +386,7 @@ export default function TrackingModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 bg-[#ede6da] border-t border-black/10 flex items-center justify-between text-[11px] font-mono text-black/60">
+        <div className="px-6 py-3 bg-neutral-50 border-t border-black/10 flex items-center justify-between text-[11px] font-mono text-black/60">
           <span>APOORVA Atelier Aluva Logistics Desk</span>
           <button
             onClick={onClose}

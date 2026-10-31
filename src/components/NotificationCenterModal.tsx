@@ -121,10 +121,10 @@ export default function NotificationCenterModal({
       aria-labelledby="notification-center-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-fadeIn"
     >
-      <div className="relative w-full max-w-4xl h-[90vh] bg-[#f7f3ec] text-[#141414] rounded-3xl shadow-2xl border border-black/15 flex flex-col overflow-hidden">
+      <div className="relative w-full max-w-4xl h-[90vh] bg-white text-[#141414] rounded-3xl shadow-2xl border border-black/15 flex flex-col overflow-hidden">
         
         {/* Header */}
-        <div className="px-6 py-4 bg-[#ede6da] border-b border-black/10 flex items-center justify-between">
+        <div className="px-6 py-4 bg-neutral-50 border-b border-black/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-2xl bg-black text-[#faf8f5] flex items-center justify-center font-mono">
               <Mail className="w-5 h-5 text-amber-200" />
@@ -163,7 +163,7 @@ export default function NotificationCenterModal({
         </div>
 
         {/* Navigation Tabs */}
-        <div className="px-6 py-2.5 bg-[#f0e9dc] border-b border-black/10 flex items-center justify-between font-mono text-xs">
+        <div className="px-6 py-2.5 bg-neutral-100 border-b border-black/10 flex items-center justify-between font-mono text-xs">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setActiveTab("logs")}
@@ -259,7 +259,7 @@ export default function NotificationCenterModal({
                     value={testRecipient}
                     onChange={(e) => setTestRecipient(e.target.value)}
                     placeholder="recipient@example.com"
-                    className="bg-[#ede6da] border border-black/15 rounded-xl px-3 py-1.5 text-xs text-black font-mono focus:outline-none focus:border-black"
+                    className="bg-neutral-50 border border-black/15 rounded-xl px-3 py-1.5 text-xs text-black font-mono focus:outline-none focus:border-black"
                   />
                 </div>
               </div>
@@ -270,7 +270,7 @@ export default function NotificationCenterModal({
                   type="button"
                   disabled={isSendingTest}
                   onClick={() => handleTriggerTestEmail("order_confirmation")}
-                  className="p-3 bg-[#ede6da] hover:bg-[#e4dcce] rounded-xl border border-black/10 text-left transition-all hover:border-black active:scale-95 disabled:opacity-50"
+                  className="p-3 bg-neutral-50 hover:bg-neutral-100 rounded-xl border border-black/10 text-left transition-all hover:border-black active:scale-95 disabled:opacity-50"
                 >
                   <div className="font-bold text-[11px] text-black flex items-center gap-1.5 mb-1">
                     <FileText className="w-3.5 h-3.5 text-emerald-800" />
@@ -285,7 +285,7 @@ export default function NotificationCenterModal({
                   type="button"
                   disabled={isSendingTest}
                   onClick={() => handleTriggerTestEmail("admin_alert")}
-                  className="p-3 bg-[#ede6da] hover:bg-[#e4dcce] rounded-xl border border-black/10 text-left transition-all hover:border-black active:scale-95 disabled:opacity-50"
+                  className="p-3 bg-neutral-50 hover:bg-neutral-100 rounded-xl border border-black/10 text-left transition-all hover:border-black active:scale-95 disabled:opacity-50"
                 >
                   <div className="font-bold text-[11px] text-black flex items-center gap-1.5 mb-1">
                     <Shield className="w-3.5 h-3.5 text-purple-700" />
@@ -300,7 +300,7 @@ export default function NotificationCenterModal({
                   type="button"
                   disabled={isSendingTest}
                   onClick={() => handleTriggerTestEmail("shipping_dispatch")}
-                  className="p-3 bg-[#ede6da] hover:bg-[#e4dcce] rounded-xl border border-black/10 text-left transition-all hover:border-black active:scale-95 disabled:opacity-50"
+                  className="p-3 bg-neutral-50 hover:bg-neutral-100 rounded-xl border border-black/10 text-left transition-all hover:border-black active:scale-95 disabled:opacity-50"
                 >
                   <div className="font-bold text-[11px] text-black flex items-center gap-1.5 mb-1">
                     <Truck className="w-3.5 h-3.5 text-blue-700" />
@@ -315,7 +315,7 @@ export default function NotificationCenterModal({
                   type="button"
                   disabled={isSendingTest}
                   onClick={() => handleTriggerTestEmail("payment_failed")}
-                  className="p-3 bg-[#ede6da] hover:bg-[#e4dcce] rounded-xl border border-black/10 text-left transition-all hover:border-black active:scale-95 disabled:opacity-50"
+                  className="p-3 bg-neutral-50 hover:bg-neutral-100 rounded-xl border border-black/10 text-left transition-all hover:border-black active:scale-95 disabled:opacity-50"
                 >
                   <div className="font-bold text-[11px] text-black flex items-center gap-1.5 mb-1">
                     <AlertTriangle className="w-3.5 h-3.5 text-red-700" />
@@ -486,7 +486,7 @@ export default function NotificationCenterModal({
                 <p className="text-[11px] text-black/70">
                   Allows UPI (GPay, PhonePe, Paytm, QR), Cards, and NetBanking with HMAC-SHA256 signature verification.
                 </p>
-                <div className="p-2.5 bg-[#ede6da] rounded-xl text-[10px] text-black/80 space-y-1">
+                <div className="p-2.5 bg-neutral-50 rounded-xl text-[10px] text-black/80 space-y-1">
                   <div><strong>Key ID:</strong> RAZORPAY_KEY_ID</div>
                   <div><strong>Key Secret:</strong> RAZORPAY_KEY_SECRET</div>
                   <div><strong>Public Key:</strong> NEXT_PUBLIC_RAZORPAY_KEY_ID</div>
@@ -510,7 +510,7 @@ export default function NotificationCenterModal({
                 <p className="text-[11px] text-black/70">
                   Sends responsive, artisanal HTML invoices, admin alerts, courier tracking, and payment recovery notices.
                 </p>
-                <div className="p-2.5 bg-[#ede6da] rounded-xl text-[10px] text-black/80 space-y-1">
+                <div className="p-2.5 bg-neutral-50 rounded-xl text-[10px] text-black/80 space-y-1">
                   <div><strong>Sender:</strong> {configInfo.fromEmail}</div>
                   <div><strong>Admin Desk:</strong> {configInfo.adminEmail}</div>
                   <div><strong>API Key:</strong> RESEND_API_KEY</div>
@@ -519,7 +519,7 @@ export default function NotificationCenterModal({
             </div>
 
             {/* Setup Guide */}
-            <div className="p-4 bg-[#ede6da] rounded-2xl border border-black/10 space-y-2">
+            <div className="p-4 bg-neutral-50 rounded-2xl border border-black/10 space-y-2">
               <div className="font-bold uppercase text-black">
                 How to connect live production API keys:
               </div>

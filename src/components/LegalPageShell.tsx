@@ -34,9 +34,9 @@ export default function LegalPageShell({
   children
 }: LegalPageShellProps) {
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#e8e4dc] text-[#141414]">
+    <div className="min-h-screen flex flex-col justify-between bg-white text-[#141414]">
       {/* Top Header */}
-      <header className="w-full px-4 sm:px-8 md:px-14 py-4 border-b border-black/10 bg-[#e8e4dc]/95 backdrop-blur-md flex flex-wrap items-center justify-between gap-4">
+      <header className="w-full px-4 sm:px-8 md:px-14 py-4 border-b border-black/10 bg-white/95 backdrop-blur-md flex flex-wrap items-center justify-between gap-4">
         <Link href="/" className="hover:opacity-85 transition-opacity">
           <ApoorvaLogo size="md" showTagline={true} />
         </Link>
@@ -59,7 +59,7 @@ export default function LegalPageShell({
       </header>
 
       {/* Sub-navigation Pill Strip for All Policy Pages */}
-      <div className="w-full bg-[#dfd9ce] border-b border-black/10 px-4 sm:px-8 md:px-14 py-2.5">
+      <div className="w-full bg-neutral-50 border-b border-black/10 px-4 sm:px-8 md:px-14 py-2.5">
         <nav
           aria-label="Store Legal and Information Pages"
           className="max-w-5xl mx-auto flex items-center gap-2 overflow-x-auto py-0.5"
@@ -73,7 +73,7 @@ export default function LegalPageShell({
                 className={`px-3.5 py-1.5 rounded-full font-mono text-xs uppercase tracking-wider whitespace-nowrap transition-all ${
                   isActive
                     ? "bg-[#141414] text-white font-bold shadow-xs"
-                    : "bg-white/70 hover:bg-white text-black/80"
+                    : "bg-white hover:bg-neutral-100 text-black/80 border border-black/10"
                 }`}
               >
                 {item.label}
@@ -85,7 +85,7 @@ export default function LegalPageShell({
 
       {/* Main Content Container */}
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-8 py-8 sm:py-12">
-        <div className="bg-[#f7f3ec] border border-black/15 rounded-3xl p-6 sm:p-10 shadow-md space-y-6">
+        <div className="bg-white border border-black/15 rounded-3xl p-6 sm:p-10 shadow-md space-y-6">
           <div className="border-b border-black/10 pb-5 space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-amber-900 font-bold">
@@ -108,7 +108,7 @@ export default function LegalPageShell({
           </div>
 
           {/* Registered Atelier Address Card */}
-          <div className="mt-8 pt-6 border-t border-black/10 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono bg-[#ede6da] p-5 rounded-2xl border border-black/10">
+          <div className="mt-8 pt-6 border-t border-black/10 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono bg-neutral-50 p-5 rounded-2xl border border-black/10">
             <div className="space-y-1">
               <div className="font-black text-black uppercase flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-amber-900" />
@@ -155,7 +155,7 @@ export default function LegalPageShell({
       </main>
 
       {/* Shared Footer */}
-      <footer className="w-full border-t border-black/10 bg-[#dfd9ce] px-4 sm:px-8 md:px-14 py-6">
+      <footer className="w-full border-t border-black/10 bg-neutral-50 px-4 sm:px-8 md:px-14 py-6">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[11px] text-black/70">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-800" />

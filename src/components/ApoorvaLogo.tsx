@@ -26,7 +26,7 @@ export default function ApoorvaLogo({
     <div className={`inline-flex items-center gap-3 select-none ${className}`}>
       {/* Bespoke APOORVA Coconut & Coastal Wave Crest Emblem */}
       <div
-        className={`relative ${iconDimensions} rounded-full bg-[#f5efe4] border border-black/15 shadow-sm flex items-center justify-center flex-shrink-0 overflow-hidden`}
+        className={`relative ${iconDimensions} rounded-full bg-white border border-black/15 shadow-sm flex items-center justify-center flex-shrink-0 overflow-hidden`}
       >
         <svg
           viewBox="0 0 120 120"

@@ -86,7 +86,7 @@ function TrackContent() {
       </div>
 
       {/* Header Card */}
-      <div className="bg-[#ede6da] p-6 sm:p-8 rounded-3xl border border-black/10 shadow-sm mb-6">
+      <div className="bg-neutral-50 p-6 sm:p-8 rounded-3xl border border-black/10 shadow-sm mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <span className="text-[11px] uppercase tracking-widest text-amber-900 font-bold">
@@ -242,7 +242,7 @@ function TrackContent() {
                         ? "bg-black text-white ring-4 ring-amber-400/30 shadow-md"
                         : m.isCompleted
                         ? "bg-black text-white"
-                        : "bg-[#e5decb] text-black/40 border border-black/15"
+                        : "bg-neutral-100 text-black/40 border border-black/15"
                     }`}
                   >
                     {m.isCompleted ? (
@@ -281,7 +281,7 @@ function TrackContent() {
 
           {/* Details & WhatsApp alerts */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-[#ede6da] p-5 rounded-2xl border border-black/10 space-y-2">
+            <div className="bg-neutral-50 p-5 rounded-2xl border border-black/10 space-y-2">
               <div className="font-bold uppercase text-xs text-black">Packaging Guarantee</div>
               <p className="text-[11px] text-black/70 leading-relaxed">
                 Every APOORVA piece is inspected for shell wall thickness, oiled with organic coconut oil, and sealed inside an archival cedar gift box.
@@ -329,7 +329,7 @@ function TrackContent() {
 
 export default function TrackPage() {
   return (
-    <main className="min-h-screen bg-[#e8e4dc] text-[#141414]">
+    <main className="min-h-screen bg-white text-[#141414]">
       {/* Top Bar */}
       <header className="px-6 md:px-12 py-5 border-b border-black/10 flex items-center justify-between">
         <Link href="/" className="text-xl md:text-2xl font-black uppercase font-mono tracking-wider text-[#141414]">

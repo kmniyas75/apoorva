@@ -1033,7 +1033,7 @@ export default function AdminPanel({
     <div
       className={
         isFullPage
-          ? "min-h-screen w-full bg-[#e8e4dc] text-[#141414] flex flex-col"
+          ? "min-h-screen w-full bg-white text-[#141414] flex flex-col"
           : "fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto"
       }
     >
@@ -1050,7 +1050,7 @@ export default function AdminPanel({
         className={
           isFullPage
             ? "w-full max-w-7xl mx-auto flex-1 flex flex-col my-4 px-3 sm:px-6"
-            : "relative w-full max-w-6xl max-h-[94vh] bg-[#f4f0e8] border border-black/20 rounded-3xl shadow-2xl flex flex-col overflow-hidden"
+            : "relative w-full max-w-6xl max-h-[94vh] bg-white border border-black/20 rounded-3xl shadow-2xl flex flex-col overflow-hidden"
         }
       >
         {/* =================================================================
@@ -1154,7 +1154,7 @@ export default function AdminPanel({
         {/* =================================================================
             KPI SUMMARY STRIP & 5 NAVIGATION TABS
            ================================================================= */}
-        <div className="bg-[#ebe5d9] border-b border-black/10 px-5 py-3 flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+        <div className="bg-neutral-100 border-b border-black/10 px-5 py-3 flex flex-col xl:flex-row xl:items-center justify-between gap-3">
           {/* Navigation Tabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 xl:pb-0">
             <button
@@ -1246,7 +1246,7 @@ export default function AdminPanel({
         {/* =================================================================
             MAIN ADMIN WORKSPACE BODY
            ================================================================= */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-[#f4f0e8] rounded-b-3xl">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-white rounded-b-3xl">
           {loading ? (
             <div className="py-20 text-center font-mono text-sm text-black/60 flex flex-col items-center gap-3">
               <RefreshCw className="w-6 h-6 animate-spin text-amber-800" />
@@ -1269,7 +1269,7 @@ export default function AdminPanel({
                           onClick={() => setSelectedProdIdx(idx)}
                           className={`px-4 py-2.5 rounded-xl font-mono text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all ${selectedProdIdx === idx
                             ? "bg-[#141414] text-white shadow-sm"
-                            : "bg-[#f4f0e8] hover:bg-black/10 text-black"
+                            : "bg-white hover:bg-black/10 text-black"
                             }`}
                         >
                           <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">
@@ -1313,7 +1313,7 @@ export default function AdminPanel({
 
                     {/* 360° Rotation Speed Control */}
                     <div className="flex flex-wrap items-center gap-3">
-                      <div className="flex items-center gap-2 bg-[#f7f4ee] px-3 py-1.5 rounded-xl border border-black/10">
+                      <div className="flex items-center gap-2 bg-neutral-50 px-3 py-1.5 rounded-xl border border-black/10">
                         <RotateCw className="w-3.5 h-3.5 text-amber-800 animate-spin" />
                         <label
                           htmlFor="orbit-speed-select"
@@ -1400,7 +1400,7 @@ export default function AdminPanel({
                               }))
                             }
                             placeholder="e.g. COCONUT & HANDLOOM LINEN SARONG SET"
-                            className="w-full px-3 py-2.5 rounded-xl bg-[#f7f4ee] border border-black/20 font-mono text-xs font-bold"
+                            className="w-full px-3 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-xs font-bold"
                           />
                         </div>
 
@@ -1422,7 +1422,7 @@ export default function AdminPanel({
                               }))
                             }
                             placeholder="e.g. LINEN SARONG SET"
-                            className="w-full px-3 py-2.5 rounded-xl bg-[#f7f4ee] border border-black/20 font-mono text-xs font-bold"
+                            className="w-full px-3 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-xs font-bold"
                           />
                         </div>
 
@@ -1446,7 +1446,7 @@ export default function AdminPanel({
                             placeholder={`APV-BCH-${String(
                               products.length + 1
                             ).padStart(2, "0")}`}
-                            className="w-full px-3 py-2.5 rounded-xl bg-[#f7f4ee] border border-black/20 font-mono text-xs"
+                            className="w-full px-3 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-xs"
                           />
                         </div>
 
@@ -1470,7 +1470,7 @@ export default function AdminPanel({
                                 price: Number(e.target.value) || 0
                               }))
                             }
-                            className="w-full px-3 py-2.5 rounded-xl bg-[#f7f4ee] border border-black/20 font-mono text-sm font-black"
+                            className="w-full px-3 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-sm font-black"
                           />
                         </div>
 
@@ -1493,7 +1493,7 @@ export default function AdminPanel({
                                 originalPrice: Number(e.target.value) || 0
                               }))
                             }
-                            className="w-full px-3 py-2.5 rounded-xl bg-[#f7f4ee] border border-black/20 font-mono text-sm"
+                            className="w-full px-3 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-sm"
                           />
                         </div>
 
@@ -1514,14 +1514,14 @@ export default function AdminPanel({
                                 material: e.target.value
                               }))
                             }
-                            className="w-full px-3 py-2.5 rounded-xl bg-[#f7f4ee] border border-black/20 font-mono text-xs"
+                            className="w-full px-3 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-xs"
                           />
                         </div>
                       </div>
 
                       {/* 360° Cutout Image + Motion Video Selection for New Product */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-                        <div className="p-3.5 rounded-xl bg-[#f7f4ee] border border-black/15 space-y-2">
+                        <div className="p-3.5 rounded-xl bg-neutral-50 border border-black/15 space-y-2">
                           <label
                             htmlFor="new-prod-img"
                             className="block text-[10px] font-mono uppercase font-bold text-black/70"
@@ -1575,7 +1575,7 @@ export default function AdminPanel({
                           </div>
                         </div>
 
-                        <div className="p-3.5 rounded-xl bg-[#f7f4ee] border border-black/15 space-y-2">
+                        <div className="p-3.5 rounded-xl bg-neutral-50 border border-black/15 space-y-2">
                           <label
                             htmlFor="new-prod-vid"
                             className="block text-[10px] font-mono uppercase font-bold text-black/70"
@@ -1647,7 +1647,7 @@ export default function AdminPanel({
                               description: e.target.value
                             }))
                           }
-                          className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs"
+                          className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
                         />
                       </div>
 
@@ -1675,7 +1675,7 @@ export default function AdminPanel({
                   )}
 
                   {/* Side-by-Side 360° Orbit Pair Overview Strip */}
-                  <div className="bg-[#ebe5d9] p-4 rounded-2xl border border-black/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="bg-neutral-100 p-4 rounded-2xl border border-black/10 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                       {products.map((prod, idx) => (
                         <div
@@ -1733,7 +1733,7 @@ export default function AdminPanel({
                           </span>
                         </div>
 
-                        <div className="h-52 rounded-2xl bg-[#ebe5d9] border border-black/10 flex items-center justify-center p-4 relative overflow-hidden">
+                        <div className="h-52 rounded-2xl bg-neutral-100 border border-black/10 flex items-center justify-center p-4 relative overflow-hidden">
                           <Image
                             src={activeProduct.image}
                             alt={activeProduct.name}
@@ -1766,7 +1766,7 @@ export default function AdminPanel({
                                 e.target.value
                               )
                             }
-                            className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
                           />
                         </div>
 
@@ -1857,7 +1857,7 @@ export default function AdminPanel({
                                 e.target.value
                               )
                             }
-                            className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
                           />
                         </div>
 
@@ -1879,7 +1879,7 @@ export default function AdminPanel({
                                 e.target.value
                               )
                             }
-                            className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
                           />
                         </div>
 
@@ -1974,7 +1974,7 @@ export default function AdminPanel({
                                   Math.max(0, Number(e.target.value) || 0)
                                 )
                               }
-                              className="w-full px-3 py-2.5 rounded-xl bg-[#f7f4ee] border border-black/20 font-mono text-base font-black text-black"
+                              className="w-full px-3 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-base font-black text-black"
                             />
                             <div className="flex items-center gap-1 mt-1.5">
                               <button
@@ -2027,7 +2027,7 @@ export default function AdminPanel({
                                   Math.max(0, Number(e.target.value) || 0)
                                 )
                               }
-                              className="w-full px-3 py-2.5 rounded-xl bg-[#f7f4ee] border border-black/20 font-mono text-base font-bold text-black/70"
+                              className="w-full px-3 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-base font-bold text-black/70"
                             />
                           </div>
 
@@ -2054,7 +2054,7 @@ export default function AdminPanel({
                                   )
                                 }))
                               }
-                              className="w-full px-3 py-2.5 rounded-xl bg-[#f7f4ee] border border-black/20 font-mono text-base font-black text-amber-900"
+                              className="w-full px-3 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-base font-black text-amber-900"
                             />
                             <span className="block text-[10px] font-mono text-black/60 mt-1">
                               Bundle Total: ₹
@@ -2089,7 +2089,7 @@ export default function AdminPanel({
                                   e.target.value
                                 )
                               }
-                              className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs font-bold"
+                              className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold"
                             />
                           </div>
 
@@ -2111,7 +2111,7 @@ export default function AdminPanel({
                                   e.target.value
                                 )
                               }
-                              className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs font-bold"
+                              className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold"
                             />
                           </div>
 
@@ -2133,7 +2133,7 @@ export default function AdminPanel({
                                   e.target.value
                                 )
                               }
-                              className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs"
+                              className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
                             />
                           </div>
 
@@ -2155,7 +2155,7 @@ export default function AdminPanel({
                                   e.target.value
                                 )
                               }
-                              className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs"
+                              className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
                             />
                           </div>
                         </div>
@@ -2178,7 +2178,7 @@ export default function AdminPanel({
                                 e.target.value
                               )
                             }
-                            className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
                           />
                         </div>
                       </div>
@@ -2192,7 +2192,7 @@ export default function AdminPanel({
                           {activeProduct.sizes.map((s, sIdx) => (
                             <div
                               key={s.size}
-                              className="p-3 rounded-xl bg-[#f7f4ee] border border-black/10"
+                              className="p-3 rounded-xl bg-neutral-50 border border-black/10"
                             >
                               <label
                                 htmlFor={`stock-${selectedProdIdx}-${sIdx}`}
@@ -2256,7 +2256,7 @@ export default function AdminPanel({
                           {activeProduct.gallery.map((imgUrl, gIdx) => (
                             <div
                               key={`${imgUrl}-${gIdx}`}
-                              className="relative group w-20 h-20 rounded-xl bg-[#ebe5d9] border border-black/15 overflow-hidden flex-shrink-0 flex items-center justify-center"
+                              className="relative group w-20 h-20 rounded-xl bg-neutral-100 border border-black/15 overflow-hidden flex-shrink-0 flex items-center justify-center"
                             >
                               <Image
                                 src={imgUrl}
@@ -2311,7 +2311,7 @@ export default function AdminPanel({
                           placeholder="Search Order ID, Customer, Phone, City, AWB..."
                           value={orderSearch}
                           onChange={(e) => setOrderSearch(e.target.value)}
-                          className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs"
+                          className="w-full pl-9 pr-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
                         />
                       </div>
 
@@ -2319,7 +2319,7 @@ export default function AdminPanel({
                         aria-label="Filter orders by source channel"
                         value={orderChannelFilter}
                         onChange={(e) => setOrderChannelFilter(e.target.value)}
-                        className="px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs font-bold uppercase"
+                        className="px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold uppercase"
                       >
                         <option value="all">All Channels ({orders.length})</option>
                         <option value="website">Website Checkout</option>
@@ -2332,7 +2332,7 @@ export default function AdminPanel({
                         aria-label="Filter orders by status"
                         value={orderStatusFilter}
                         onChange={(e) => setOrderStatusFilter(e.target.value)}
-                        className="px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs font-bold uppercase"
+                        className="px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold uppercase"
                       >
                         <option value="all">All Statuses</option>
                         <option value="paid">Paid</option>
@@ -2394,7 +2394,7 @@ export default function AdminPanel({
                               }))
                             }
                             placeholder="e.g. Kavya Menon"
-                            className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
                           />
                         </div>
                         <div>
@@ -2416,7 +2416,7 @@ export default function AdminPanel({
                               }))
                             }
                             placeholder="+91 98470 00000"
-                            className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
                           />
                         </div>
                         <div>
@@ -2439,7 +2439,7 @@ export default function AdminPanel({
                                   | "concierge"
                               }))
                             }
-                            className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs font-bold uppercase"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold uppercase"
                           >
                             <option value="whatsapp">WhatsApp Order</option>
                             <option value="instagram">Instagram DM Order</option>
@@ -2463,7 +2463,7 @@ export default function AdminPanel({
                                 productId: e.target.value
                               }))
                             }
-                            className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs font-bold"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold"
                           >
                             {products.map((p) => (
                               <option key={p.id} value={p.id}>
@@ -2490,7 +2490,7 @@ export default function AdminPanel({
                               }))
                             }
                             placeholder="Street / Villa / Resort"
-                            className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
                           />
                         </div>
                         <div>
@@ -2509,7 +2509,7 @@ export default function AdminPanel({
                                 paymentMethod: e.target.value
                               }))
                             }
-                            className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs font-bold uppercase"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold uppercase"
                           >
                             <option value="razorpay">Razorpay Prepaid</option>
                             <option value="upi">Razorpay UPI (Paid)</option>
@@ -2556,7 +2556,7 @@ export default function AdminPanel({
                             {/* Top Row: Order ID, Source Channel, Status Badge, Payment Mode, Total */}
                             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/10 pb-3">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-mono text-sm font-black text-black bg-[#ebe5d9] px-3 py-1 rounded-lg">
+                                <span className="font-mono text-sm font-black text-black bg-neutral-100 px-3 py-1 rounded-lg">
                                   {order.orderId}
                                 </span>
 
@@ -2654,7 +2654,7 @@ export default function AdminPanel({
 
                             {/* Middle Row: Customer Info + Ordered Items */}
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                              <div className="md:col-span-5 font-mono text-xs space-y-1 bg-[#f9f6f0] p-3.5 rounded-xl border border-black/8">
+                              <div className="md:col-span-5 font-mono text-xs space-y-1 bg-neutral-50 p-3.5 rounded-xl border border-black/8">
                                 <div className="font-black text-black uppercase flex items-center justify-between">
                                   <span>{order.customer.fullName}</span>
                                   {order.socialHandle && (
@@ -2683,7 +2683,7 @@ export default function AdminPanel({
                                 {order.items.map((item, iIdx) => (
                                   <div
                                     key={`${order.orderId}-item-${iIdx}`}
-                                    className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-[#f9f6f0] border border-black/8"
+                                    className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-neutral-50 border border-black/8"
                                   >
                                     <div className="flex items-center gap-2.5 min-w-0">
                                       <div className="w-10 h-10 rounded-lg bg-white border border-black/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
@@ -2743,7 +2743,7 @@ export default function AdminPanel({
                                     }
                                     className={`px-2.5 py-1 rounded-lg font-mono text-[10px] font-bold uppercase transition-all ${order.status === st
                                       ? "bg-[#141414] text-white"
-                                      : "bg-[#f4f0e8] hover:bg-black/10 text-black/75"
+                                      : "bg-white hover:bg-black/10 text-black/75"
                                       }`}
                                   >
                                     {st.replace(/_/g, " ")}
@@ -2752,7 +2752,7 @@ export default function AdminPanel({
                               </div>
 
                               <div className="flex flex-wrap items-center gap-2">
-                                <div className="flex items-center gap-1.5 bg-[#f4f0e8] px-2.5 py-1 rounded-xl border border-black/10">
+                                <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-black/10">
                                   <Truck className="w-3.5 h-3.5 text-amber-900" />
                                   <input
                                     type="text"
@@ -2772,7 +2772,7 @@ export default function AdminPanel({
                                   />
                                 </div>
 
-                                <div className="flex items-center gap-1.5 bg-[#f4f0e8] px-2.5 py-1 rounded-xl border border-black/10">
+                                <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-black/10">
                                   <span className="text-[10px] font-mono text-black/50">
                                     AWB:
                                   </span>
@@ -2959,7 +2959,7 @@ export default function AdminPanel({
                                 whatsappBusinessNumber: e.target.value
                               }))
                             }
-                            className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs font-bold"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold"
                           />
                         </div>
 
@@ -2980,7 +2980,7 @@ export default function AdminPanel({
                                 whatsappPhoneId: e.target.value
                               }))
                             }
-                            className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
                           />
                         </div>
                       </div>
@@ -3002,7 +3002,7 @@ export default function AdminPanel({
                               whatsappWelcomeTemplate: e.target.value
                             }))
                           }
-                          className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs"
+                          className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
                         />
                       </div>
                     </div>
@@ -3062,7 +3062,7 @@ export default function AdminPanel({
                                 instagramHandle: e.target.value
                               }))
                             }
-                            className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs font-bold"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold"
                           />
                         </div>
 
@@ -3088,7 +3088,7 @@ export default function AdminPanel({
                                   .filter(Boolean)
                               }))
                             }
-                            className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
                           />
                         </div>
                       </div>
@@ -3110,7 +3110,7 @@ export default function AdminPanel({
                               instagramDmReplyTemplate: e.target.value
                             }))
                           }
-                          className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs"
+                          className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
                         />
                       </div>
                     </div>
@@ -3149,7 +3149,7 @@ export default function AdminPanel({
                                 e.target.value as "whatsapp" | "instagram"
                               )
                             }
-                            className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs font-bold uppercase"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold uppercase"
                           >
                             <option value="whatsapp">WhatsApp Bot</option>
                             <option value="instagram">Instagram DM</option>
@@ -3171,7 +3171,7 @@ export default function AdminPanel({
                                 e.target.value as "set1" | "set2" | "both"
                               )
                             }
-                            className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs font-bold"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold"
                           >
                             <option value="set1">Set 01 (Coir Fringe)</option>
                             <option value="set2">Set 02 (Jute Wrap)</option>
@@ -3191,7 +3191,7 @@ export default function AdminPanel({
                             type="text"
                             value={simName}
                             onChange={(e) => setSimName(e.target.value)}
-                            className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
                           />
                         </div>
 
@@ -3207,7 +3207,7 @@ export default function AdminPanel({
                             type="text"
                             value={simHandle}
                             onChange={(e) => setSimHandle(e.target.value)}
-                            className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
                           />
                         </div>
 
@@ -3223,7 +3223,7 @@ export default function AdminPanel({
                             type="text"
                             value={simCity}
                             onChange={(e) => setSimCity(e.target.value)}
-                            className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
                           />
                         </div>
 
@@ -3242,7 +3242,7 @@ export default function AdminPanel({
                                 e.target.value as "razorpay" | "upi" | "card"
                               )
                             }
-                            className="w-full px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs font-bold uppercase"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold uppercase"
                           >
                             <option value="razorpay">Razorpay Payment Link</option>
                             <option value="upi">Razorpay UPI Paid</option>
@@ -3285,7 +3285,7 @@ export default function AdminPanel({
                         {socialEvents.map((evt) => (
                           <div
                             key={evt.id}
-                            className="p-3.5 rounded-xl bg-[#f9f6f0] border border-black/10 font-mono text-xs space-y-1.5"
+                            className="p-3.5 rounded-xl bg-neutral-50 border border-black/10 font-mono text-xs space-y-1.5"
                           >
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2">
@@ -3410,7 +3410,7 @@ export default function AdminPanel({
                           placeholder="Paste external image or .mp4 URL..."
                           value={customMediaUrl}
                           onChange={(e) => setCustomMediaUrl(e.target.value)}
-                          className="px-3 py-2 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs w-56"
+                          className="px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs w-56"
                         />
                         <button
                           type="submit"
@@ -3598,7 +3598,7 @@ export default function AdminPanel({
                       {beachMoments.map((moment, mIdx) => (
                         <div
                           key={moment.id}
-                          className="p-3 rounded-2xl bg-[#f7f4ee] border border-black/10 space-y-2.5"
+                          className="p-3 rounded-2xl bg-neutral-50 border border-black/10 space-y-2.5"
                         >
                           <div className="h-36 rounded-xl overflow-hidden bg-black relative">
                             <Image
@@ -3752,7 +3752,7 @@ export default function AdminPanel({
                               capsuleTitle: e.target.value
                             }))
                           }
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs font-bold"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold"
                         />
                       </div>
 
@@ -3773,7 +3773,7 @@ export default function AdminPanel({
                               supportEmail: e.target.value
                             }))
                           }
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
                         />
                       </div>
 
@@ -3794,7 +3794,7 @@ export default function AdminPanel({
                               supportPhone: e.target.value
                             }))
                           }
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
                         />
                       </div>
 
@@ -3850,7 +3850,7 @@ export default function AdminPanel({
                           value={newAdminPassword}
                           onChange={(e) => setNewAdminPassword(e.target.value)}
                           placeholder="Enter new password (min 4 chars)..."
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-[#f7f4ee] border border-black/15 font-mono text-xs"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
                         />
                       </div>
 
@@ -3885,7 +3885,7 @@ export default function AdminPanel({
          ===================================================================== */}
       {mediaPickerTarget && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-3xl bg-[#f4f0e8] rounded-3xl border border-black/20 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+          <div className="w-full max-w-3xl bg-white rounded-3xl border border-black/20 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
             <div className="px-5 py-3.5 bg-[#141414] text-white flex items-center justify-between">
               <span className="font-mono text-xs font-bold uppercase tracking-wider">
                 {mediaPickerTarget.label}

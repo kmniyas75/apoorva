@@ -40,10 +40,10 @@ export default function PrintableInvoiceModal({
       aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md animate-fadeIn"
     >
-      <div className="relative w-full max-w-4xl max-h-[94vh] bg-[#fdfbf7] text-[#141414] rounded-3xl shadow-2xl border border-black/15 flex flex-col overflow-hidden">
+      <div className="relative w-full max-w-4xl max-h-[94vh] bg-white text-[#141414] rounded-3xl shadow-2xl border border-black/15 flex flex-col overflow-hidden">
 
         {/* Modal Top Bar */}
-        <div className="px-6 py-4 bg-[#ede6da] border-b border-black/10 flex items-center justify-between no-print">
+        <div className="px-6 py-4 bg-neutral-50 border-b border-black/10 flex items-center justify-between no-print">
           <div className="flex items-center gap-3 font-mono">
             <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold">
               INV
@@ -81,7 +81,7 @@ export default function PrintableInvoiceModal({
           {/* =========================================================================
               PART 1: 4x6" THERMAL COURIER SHIPPING LABEL (AWB BARCODE)
              ========================================================================= */}
-          <div className="border-2 border-dashed border-black/30 p-6 rounded-2xl bg-[#faf8f5] max-w-2xl mx-auto shadow-sm">
+          <div className="border-2 border-dashed border-black/30 p-6 rounded-2xl bg-neutral-50 max-w-2xl mx-auto shadow-sm">
             <div className="flex items-start justify-between border-b-2 border-black pb-3">
               <div>
                 <div className="font-black text-lg tracking-wider">BLUE DART EXPRESS</div>
@@ -160,7 +160,7 @@ export default function PrintableInvoiceModal({
               </div>
 
               <div className="text-right">
-                <span className="inline-block px-3 py-1 bg-[#ede6da] font-bold text-xs uppercase tracking-wider rounded">
+                <span className="inline-block px-3 py-1 bg-neutral-50 font-bold text-xs uppercase tracking-wider rounded">
                   TAX INVOICE
                 </span>
                 <div className="text-xs font-bold text-black mt-2">
@@ -173,7 +173,7 @@ export default function PrintableInvoiceModal({
             </div>
 
             {/* Billed To / Shipped To Details */}
-            <div className="grid grid-cols-2 gap-6 bg-[#faf7f2] p-4 rounded-xl text-[11px]">
+            <div className="grid grid-cols-2 gap-6 bg-neutral-50 p-4 rounded-xl text-[11px]">
               <div>
                 <div className="font-bold uppercase text-[10px] text-black/50 mb-1">BILLED & SHIPPED TO:</div>
                 <div className="font-bold text-sm text-black">{customer.fullName}</div>
