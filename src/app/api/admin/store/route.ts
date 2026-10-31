@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
 import {
   getStoreDatabase,
   saveStoreDatabase,
@@ -15,6 +17,7 @@ import {
   generateTrackingData,
   saveTrackingRecord
 } from "@/lib/shipping/trackingService";
+import { deleteFromOciObjectStorage } from "@/lib/storage/ociStorage";
 
 export async function GET() {
   try {
@@ -248,6 +251,85 @@ export async function POST(req: Request) {
         success: true,
         asset: newAsset,
         mediaLibrary
+      });
+    }
+
+    if (action === "delete_media") {
+      const { assetId, url, diskPath } = body as {
+        assetId?: string;
+        url: string;
+        diskPath?: string;
+      };
+
+      if (!url) {
+        return NextResponse.json(
+          { error: "Media URL is required to delete" },
+          { status: 400 }
+        );
+      }
+
+      // Protect built-in factory default assets in /images/ and /videos/
+      if (url.startsWith("/images/") || url.startsWith("/videos/")) {
+        return NextResponse.json(
+          {
+            error:
+              "Built-in default storefront assets in /public/images and /public/videos are protected. Uploaded files in /public/uploads, OCI bucket files, and custom URLs can be deleted."
+          },
+          { status: 400 }
+        );
+      }
+
+      let deletedFromDiskOrCloud = false;
+
+      // 1. Delete physical file from /public/uploads if local upload
+      if (url.startsWith("/uploads/")) {
+        const uploadsDir = path.resolve(process.cwd(), "public", "uploads");
+        const safeFileName = path.basename(url);
+        const candidatePath = path.resolve(uploadsDir, safeFileName);
+        if (
+          candidatePath.startsWith(uploadsDir) &&
+          fs.existsSync(candidatePath)
+        ) {
+          fs.unlinkSync(candidatePath);
+          deletedFromDiskOrCloud = true;
+        }
+      }
+
+      // 2. Delete from OCI Object Storage if stored in OCI bucket
+      if (
+        url.includes(".oraclecloud.com/") ||
+        (diskPath && diskPath.startsWith("uploads/"))
+      ) {
+        try {
+          const removedOci = await deleteFromOciObjectStorage(diskPath || url);
+          if (removedOci) deletedFromDiskOrCloud = true;
+        } catch (ociErr) {
+          console.warn("[AdminStore] OCI delete warning:", ociErr);
+        }
+      }
+
+      // 3. Remove from db.customMedia
+      db.customMedia = (db.customMedia || []).filter(
+        (m) => m.url !== url && m.id !== assetId
+      );
+
+      // 4. Clean up references in product galleries so there are no broken links
+      db.products = db.products.map((prod) => ({
+        ...prod,
+        gallery: (prod.gallery || []).filter((gUrl) => gUrl !== url)
+      }));
+
+      saveStoreDatabase(db);
+      const mediaLibrary = scanPublicMediaLibrary(db.customMedia);
+
+      return NextResponse.json({
+        success: true,
+        deletedFromDiskOrCloud,
+        message: deletedFromDiskOrCloud
+          ? "Media file permanently deleted from storage and removed from library."
+          : "Media removed from library.",
+        mediaLibrary,
+        products: db.products
       });
     }
 

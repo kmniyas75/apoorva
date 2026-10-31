@@ -993,6 +993,38 @@ export default function AdminPanel({
     }
   };
 
+  const handleDeleteMediaAsset = async (asset: MediaAsset) => {
+    try {
+      const res = await fetch("/api/admin/store", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "delete_media",
+          assetId: asset.id,
+          url: asset.url,
+          diskPath: asset.diskPath
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showToastMessage("error", data.error || "Could not delete media file.");
+        return;
+      }
+      if (Array.isArray(data.mediaLibrary)) {
+        setMediaLibrary(data.mediaLibrary);
+      }
+      if (Array.isArray(data.products)) {
+        setProducts(data.products);
+      }
+      showToastMessage(
+        "success",
+        data.message || `Deleted ${asset.name} from storage.`
+      );
+    } catch {
+      showToastMessage("error", "Failed to delete media file.");
+    }
+  };
+
   // KPI calculations
   const totalRevenue = orders
     .filter((o) => o.status !== "failed" && o.status !== "cancelled")
@@ -3448,6 +3480,17 @@ export default function AdminPanel({
                               <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/75 text-white font-mono text-[9px] uppercase font-bold">
                                 {asset.type}
                               </span>
+                              {!asset.url.startsWith("/images/") &&
+                                !asset.url.startsWith("/videos/") && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteMediaAsset(asset)}
+                                    title="Permanently delete media file from storage"
+                                    className="absolute top-2 right-2 p-1.5 rounded-full bg-red-600/90 hover:bg-red-600 text-white shadow-sm transition-colors"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                )}
                               {asset.sizeKB ? (
                                 <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/75 text-amber-300 font-mono text-[9px]">
                                   {asset.sizeKB} KB
@@ -3684,63 +3727,94 @@ export default function AdminPanel({
                     </div>
                   )}
 
-                  {/* SUB-TAB 3: Server Storage Paths */}
+                  {/* SUB-TAB 3: Server Storage Paths & OCI Cloud Storage */}
                   {mediaSubTab === "paths" && (
-                    <div className="bg-[#141414] text-white p-5 rounded-2xl space-y-3">
-                      <div className="flex items-center gap-2">
-                        <FolderOpen className="w-4 h-4 text-amber-300" />
-                        <h2 className="font-mono text-xs sm:text-sm font-black uppercase tracking-wider">
-                          WHERE YOUR MEDIA &amp; STORE DATA ARE STORED ON DISK
-                        </h2>
+                    <div className="space-y-4">
+                      <div className="bg-[#141414] text-white p-5 rounded-2xl space-y-3">
+                        <div className="flex items-center gap-2">
+                          <FolderOpen className="w-4 h-4 text-amber-300" />
+                          <h2 className="font-mono text-xs sm:text-sm font-black uppercase tracking-wider">
+                            WHERE YOUR MEDIA &amp; STORE DATA ARE STORED ON DISK
+                          </h2>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 font-mono text-xs">
+                          <div className="p-3 rounded-xl bg-white/10 border border-white/15">
+                            <span className="text-[10px] text-amber-300 font-bold uppercase block">
+                              1. Built-In 360° Cutouts &amp; Beach Photos:
+                            </span>
+                            <code className="text-white break-all text-[11px]">
+                              {storagePaths.builtInImagesDir}
+                            </code>
+                            <span className="block text-[10px] text-white/60 mt-0.5">
+                              Served publicly at: <code>/images/...</code>
+                            </span>
+                          </div>
+
+                          <div className="p-3 rounded-xl bg-white/10 border border-white/15">
+                            <span className="text-[10px] text-amber-300 font-bold uppercase block">
+                              2. Built-In Product Motion Videos (.mp4):
+                            </span>
+                            <code className="text-white break-all text-[11px]">
+                              {storagePaths.builtInVideosDir}
+                            </code>
+                            <span className="block text-[10px] text-white/60 mt-0.5">
+                              Served publicly at: <code>/videos/...</code>
+                            </span>
+                          </div>
+
+                          <div className="p-3 rounded-xl bg-white/10 border border-white/15">
+                            <span className="text-[10px] text-emerald-300 font-bold uppercase block">
+                              3. New Images &amp; Videos Uploaded via Admin Panel:
+                            </span>
+                            <code className="text-white break-all text-[11px]">
+                              {storagePaths.adminUploadsDir}
+                            </code>
+                            <span className="block text-[10px] text-white/60 mt-0.5">
+                              Served publicly at: <code>/uploads/...</code> (or OCI Bucket when enabled)
+                            </span>
+                          </div>
+
+                          <div className="p-3 rounded-xl bg-white/10 border border-white/15">
+                            <span className="text-[10px] text-emerald-300 font-bold uppercase block">
+                              4. Persistent Store Database (Pricing, Orders, Bots):
+                            </span>
+                            <code className="text-white break-all text-[11px]">
+                              {storagePaths.databaseJsonFile}
+                            </code>
+                            <span className="block text-[10px] text-white/60 mt-0.5">
+                              Auto-saved JSON file updated on every change
+                            </span>
+                          </div>
+                        </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 font-mono text-xs">
-                        <div className="p-3 rounded-xl bg-white/10 border border-white/15">
-                          <span className="text-[10px] text-amber-300 font-bold uppercase block">
-                            1. Built-In 360° Cutouts &amp; Beach Photos:
-                          </span>
-                          <code className="text-white break-all text-[11px]">
-                            {storagePaths.builtInImagesDir}
-                          </code>
-                          <span className="block text-[10px] text-white/60 mt-0.5">
-                            Served publicly at: <code>/images/...</code>
-                          </span>
-                        </div>
-
-                        <div className="p-3 rounded-xl bg-white/10 border border-white/15">
-                          <span className="text-[10px] text-amber-300 font-bold uppercase block">
-                            2. Built-In Product Motion Videos (.mp4):
-                          </span>
-                          <code className="text-white break-all text-[11px]">
-                            {storagePaths.builtInVideosDir}
-                          </code>
-                          <span className="block text-[10px] text-white/60 mt-0.5">
-                            Served publicly at: <code>/videos/...</code>
+                      {/* Oracle Cloud (OCI) Always Free Object Storage Integration Box */}
+                      <div className="bg-white p-5 rounded-2xl border border-black/12 shadow-xs space-y-3 font-mono">
+                        <div className="flex items-center justify-between gap-2 border-b border-black/10 pb-2.5">
+                          <div>
+                            <span className="text-[10px] uppercase tracking-widest text-amber-800 font-bold block">
+                              CLOUD STORAGE READY • ZERO EXTERNAL SDK NEEDED
+                            </span>
+                            <h3 className="text-xs sm:text-sm font-black uppercase text-black">
+                              Oracle Cloud (OCI) Always Free Object Storage (20 GB Free)
+                            </h3>
+                          </div>
+                          <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-950 text-[10px] font-black uppercase">
+                            Built-In S3 v4 Signer
                           </span>
                         </div>
 
-                        <div className="p-3 rounded-xl bg-white/10 border border-white/15">
-                          <span className="text-[10px] text-emerald-300 font-bold uppercase block">
-                            3. New Images &amp; Videos Uploaded via Admin Panel:
-                          </span>
-                          <code className="text-white break-all text-[11px]">
-                            {storagePaths.adminUploadsDir}
-                          </code>
-                          <span className="block text-[10px] text-white/60 mt-0.5">
-                            Served publicly at: <code>/uploads/...</code>
-                          </span>
-                        </div>
+                        <p className="text-xs text-black/70 leading-relaxed">
+                          Add these 5 environment variables in Vercel (or <code>.env.local</code>) to automatically store and delete uploaded media in your <strong>OCI Always Free Bucket</strong> instead of local disk:
+                        </p>
 
-                        <div className="p-3 rounded-xl bg-white/10 border border-white/15">
-                          <span className="text-[10px] text-emerald-300 font-bold uppercase block">
-                            4. Persistent Store Database (Pricing, Orders, Bots):
-                          </span>
-                          <code className="text-white break-all text-[11px]">
-                            {storagePaths.databaseJsonFile}
-                          </code>
-                          <span className="block text-[10px] text-white/60 mt-0.5">
-                            Auto-saved JSON file updated on every change
-                          </span>
+                        <div className="p-3.5 rounded-xl bg-neutral-50 border border-black/10 text-[11px] space-y-1 text-black/85 overflow-x-auto">
+                          <div><code>OCI_NAMESPACE=your_tenancy_namespace</code></div>
+                          <div><code>OCI_REGION=ap-hyderabad-1</code> <span className="text-black/45"># or ap-mumbai-1</span></div>
+                          <div><code>OCI_BUCKET_NAME=apoorva-media</code></div>
+                          <div><code>OCI_ACCESS_KEY_ID=your_customer_secret_key_id</code></div>
+                          <div><code>OCI_SECRET_ACCESS_KEY=your_customer_secret_key_value</code></div>
                         </div>
                       </div>
                     </div>
