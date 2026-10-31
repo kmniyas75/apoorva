@@ -1,24 +1,27 @@
 import Razorpay from "razorpay";
 import crypto from "crypto";
 
-export function getRazorpayClient(): Razorpay | null {
-  const key_id = process.env.RAZORPAY_KEY_ID;
-  const key_secret = process.env.RAZORPAY_KEY_SECRET;
+export function isRazorpayConfigured(): boolean {
+  const key_id = process.env.RAZORPAY_KEY_ID?.trim();
+  const key_secret = process.env.RAZORPAY_KEY_SECRET?.trim();
+  return Boolean(
+    key_id &&
+      key_secret &&
+      key_id.startsWith("rzp_") &&
+      !key_id.includes("placeholder") &&
+      key_id !== "rzp_live_TkuWNy5Lg1y5mw"
+  );
+}
 
-  if (!key_id || !key_secret || key_id.includes("placeholder")) {
+export function getRazorpayClient(): Razorpay | null {
+  if (!isRazorpayConfigured()) {
     return null;
   }
 
   return new Razorpay({
-    key_id,
-    key_secret
+    key_id: process.env.RAZORPAY_KEY_ID!.trim(),
+    key_secret: process.env.RAZORPAY_KEY_SECRET!.trim()
   });
-}
-
-export function isRazorpayConfigured(): boolean {
-  const key_id = process.env.RAZORPAY_KEY_ID;
-  const key_secret = process.env.RAZORPAY_KEY_SECRET;
-  return Boolean(key_id && key_secret && !key_id.includes("placeholder"));
 }
 
 export async function createRazorpayOrder(params: {

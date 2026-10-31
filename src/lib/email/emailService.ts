@@ -13,8 +13,13 @@ if (!globalLogs.__APOORVA_EMAIL_LOGS__) {
 const notificationLogs = globalLogs.__APOORVA_EMAIL_LOGS__;
 
 function getResendClient(): Resend | null {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey || apiKey === "re_test_placeholder" || apiKey.trim() === "") {
+  const apiKey = process.env.RESEND_API_KEY?.trim();
+  if (
+    !apiKey ||
+    !apiKey.startsWith("re_") ||
+    apiKey.includes("placeholder") ||
+    apiKey.startsWith("re_E1hQg3Ja")
+  ) {
     return null;
   }
   return new Resend(apiKey);
@@ -25,7 +30,11 @@ function getSenderEmail(): string {
 }
 
 function getAdminEmail(): string {
-  return process.env.ADMIN_NOTIFICATION_EMAIL || "concierge@apoorva.luxury";
+  return (
+    process.env.ADMIN_ORDER_NOTIFY_EMAIL ||
+    process.env.ADMIN_NOTIFICATION_EMAIL ||
+    "concierge@apoorva.luxury"
+  );
 }
 
 function recordLog(log: EmailNotificationLog) {

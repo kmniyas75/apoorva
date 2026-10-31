@@ -10,10 +10,11 @@ const DEFAULT_MONGO_PASS = Buffer.from(
 const DEFAULT_MONGO_HOST = "cluster0.s3sa1pu.mongodb.net";
 
 export function getMongoUri(): string {
-  return (
-    process.env.MONGODB_URI ||
-    `mongodb+srv://${DEFAULT_MONGO_USER}:${DEFAULT_MONGO_PASS}@${DEFAULT_MONGO_HOST}/?appName=Cluster0`
-  );
+  const envUri = process.env.MONGODB_URI?.trim();
+  if (envUri && !envUri.includes("zv7rcvi")) {
+    return envUri;
+  }
+  return `mongodb+srv://${DEFAULT_MONGO_USER}:${DEFAULT_MONGO_PASS}@${DEFAULT_MONGO_HOST}/apoorva?retryWrites=true&w=majority&appName=Cluster0`;
 }
 
 export function getMongoDbName(): string {
