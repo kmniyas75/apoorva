@@ -74,8 +74,17 @@ export default function AdminPanel({
   // New password state inside Settings tab
   const [newAdminPassword, setNewAdminPassword] = useState("");
 
-  // Workspace tabs & status
+  // Workspace tabs & sub-category tabs
   const [activeTab, setActiveTab] = useState<AdminTab>("products");
+  const [productSubTab, setProductSubTab] = useState<
+    "pricing" | "media" | "stock"
+  >("pricing");
+  const [socialSubTab, setSocialSubTab] = useState<"bots" | "simulator">(
+    "bots"
+  );
+  const [mediaSubTab, setMediaSubTab] = useState<
+    "library" | "lookbook" | "paths"
+  >("library");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -1054,83 +1063,74 @@ export default function AdminPanel({
         }
       >
         {/* =================================================================
-            TOP ADMIN HEADER BAR
+            CLEAN TOP ADMIN HEADER BAR
            ================================================================= */}
-        <header className="px-3.5 sm:px-5 py-3.5 sm:py-4 bg-[#141414] text-[#faf8f5] flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-between gap-3 rounded-t-2xl sm:rounded-t-3xl">
+        <header className="px-3.5 sm:px-6 py-3 sm:py-3.5 bg-[#141414] text-[#faf8f5] flex items-center justify-between gap-2 rounded-t-2xl sm:rounded-t-3xl">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <ApoorvaLogo size="sm" variant="light" showTagline={false} />
-            <div className="h-5 w-[1px] bg-white/20 hidden sm:block" />
-            <div className="min-w-0 flex-1">
-              <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.15em] sm:tracking-[0.2em] text-amber-300 font-bold flex items-center gap-1.5">
-                <Lock className="w-3 h-3 shrink-0" />
-                <span className="truncate">PROTECTED ADMIN PORTAL (/admin)</span>
-              </span>
-              <h1 className="text-[11px] sm:text-sm font-mono font-bold uppercase tracking-wider text-white leading-tight mt-0.5">
-                360° MEDIA • PRICING • ORDERS • WHATSAPP &amp; IG AUTOMATION
-              </h1>
+            <div className="h-5 w-[1px] bg-white/15 hidden sm:block" />
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-amber-300 font-bold flex items-center gap-1">
+                  <Lock className="w-3 h-3 shrink-0" />
+                  <span>ADMIN STUDIO</span>
+                </span>
+                <span className="hidden md:inline-block px-2 py-0.5 rounded-full bg-white/10 text-[10px] font-mono text-emerald-300 font-bold">
+                  REV: ₹{totalRevenue.toLocaleString("en-IN")}
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Right Action Buttons */}
-          <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:flex-wrap">
-            <button
-              type="button"
-              onClick={() => triggerUploadForField()}
-              disabled={uploading}
-              className="px-3 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors"
-            >
-              <Upload className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-              <span className="truncate">{uploading ? "UPLOADING..." : "UPLOAD MEDIA"}</span>
-            </button>
-
+          {/* Primary Actions: Save Changes + Storefront + Lock */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               type="button"
               onClick={handleSaveAll}
               disabled={saving}
               style={{ backgroundColor: "#f59e0b", color: "#000000" }}
-              className="px-3 sm:px-4 py-2 rounded-full font-mono text-[10px] sm:text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md hover:opacity-95 active:scale-95 transition-all"
+              className="px-3.5 sm:px-4 py-2 rounded-full font-mono text-[11px] sm:text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md hover:opacity-95 active:scale-95 transition-all"
             >
               <Save className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">{saving ? "SAVING..." : "SAVE & PUBLISH"}</span>
+              <span>{saving ? "Saving..." : "Save Changes"}</span>
             </button>
 
             <a
               href="/"
-              className="px-3 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
+              className="px-2.5 sm:px-3.5 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5"
+              title="Open Live Storefront"
             >
               <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-              <span>STOREFRONT</span>
+              <span className="hidden sm:inline">Store</span>
             </a>
 
-            <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="p-2 sm:px-3 sm:py-2 rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-200 font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1"
+              title="Lock & Logout of Admin Portal"
+            >
+              <LogOut className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden sm:inline">Lock</span>
+            </button>
+
+            {!isFullPage && onClose && (
               <button
                 type="button"
-                onClick={handleLogout}
-                className="flex-1 sm:flex-initial px-3 py-2 rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-200 font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
-                title="Lock & Logout of Admin Portal"
+                onClick={onClose}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                title="Close Admin Panel"
               >
-                <LogOut className="w-3.5 h-3.5 shrink-0" />
-                <span>LOCK</span>
+                <X className="w-4 h-4" />
               </button>
-
-              {!isFullPage && onClose && (
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
-                  title="Close Admin Panel"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
+            )}
           </div>
         </header>
 
         {/* Status Toast Banner */}
         {toast && (
           <div
-            className={`px-3.5 sm:px-5 py-2.5 font-mono text-xs font-bold flex items-center justify-between gap-2 ${toast.type === "success"
+            className={`px-3.5 sm:px-6 py-2.5 font-mono text-xs font-bold flex items-center justify-between gap-2 ${toast.type === "success"
               ? "bg-emerald-800 text-white"
               : "bg-red-800 text-white"
               }`}
@@ -1154,110 +1154,79 @@ export default function AdminPanel({
         )}
 
         {/* =================================================================
-            KPI SUMMARY STRIP & 5 NAVIGATION TABS
+            MAIN 5-CATEGORY NAVIGATION BAR (SINGLE ROW ON MOBILE & DESKTOP)
            ================================================================= */}
-        <div className="bg-neutral-100 border-b border-black/10 px-3 sm:px-5 py-3 flex flex-col xl:flex-row xl:items-center justify-between gap-2.5 sm:gap-3">
-          {/* 5 Main Navigation Tabs — All visible in 2-col grid on mobile, flex row on sm+ */}
-          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1.5 sm:gap-2 w-full xl:w-auto">
+        <nav
+          aria-label="Admin Categories"
+          className="bg-neutral-100 border-b border-black/10 px-2 sm:px-6 py-2"
+        >
+          <div className="grid grid-cols-5 gap-1 sm:gap-2">
             <button
               type="button"
               onClick={() => setActiveTab("products")}
-              className={`px-2.5 sm:px-3.5 py-2.5 sm:py-2 rounded-xl sm:rounded-full font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1.5 transition-all border min-w-0 ${activeTab === "products"
-                ? "bg-[#141414] text-white border-[#141414] shadow-xs"
-                : "bg-white hover:bg-neutral-50 text-black/85 border-black/10"
+              className={`py-2 px-1 sm:px-3.5 rounded-xl font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 transition-all ${activeTab === "products"
+                ? "bg-[#141414] text-white shadow-xs"
+                : "bg-white/80 hover:bg-white text-black/75 border border-black/8"
                 }`}
             >
-              <RotateCw className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate sm:hidden">1. 360° &amp; Pricing</span>
-              <span className="hidden sm:inline">1. 360° Media &amp; Pricing</span>
+              <RotateCw className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" />
+              <span className="truncate">Catalog</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("orders")}
-              className={`px-2.5 sm:px-3.5 py-2.5 sm:py-2 rounded-xl sm:rounded-full font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1.5 transition-all border min-w-0 ${activeTab === "orders"
-                ? "bg-[#141414] text-white border-[#141414] shadow-xs"
-                : "bg-white hover:bg-neutral-50 text-black/85 border-black/10"
+              className={`py-2 px-1 sm:px-3.5 rounded-xl font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 transition-all relative ${activeTab === "orders"
+                ? "bg-[#141414] text-white shadow-xs"
+                : "bg-white/80 hover:bg-white text-black/75 border border-black/8"
                 }`}
             >
-              <Package className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">2. Orders ({orders.length})</span>
-              {pendingOrdersCount > 0 && (
-                <span className="ml-0.5 px-1.5 py-0.2 bg-amber-400 text-black rounded-full text-[10px] font-black shrink-0">
-                  {pendingOrdersCount}
-                </span>
-              )}
+              <Package className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" />
+              <span className="truncate">Orders ({orders.length})</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("social")}
-              className={`px-2.5 sm:px-3.5 py-2.5 sm:py-2 rounded-xl sm:rounded-full font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1.5 transition-all border min-w-0 ${activeTab === "social"
-                ? "bg-[#141414] text-white border-[#141414] shadow-xs"
-                : "bg-white hover:bg-neutral-50 text-black/85 border-black/10"
+              className={`py-2 px-1 sm:px-3.5 rounded-xl font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 transition-all ${activeTab === "social"
+                ? "bg-[#141414] text-white shadow-xs"
+                : "bg-white/80 hover:bg-white text-black/75 border border-black/8"
                 }`}
             >
-              <Bot className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span className="truncate sm:hidden">
-                3. WA &amp; IG Bot ({whatsappOrdersCount + instagramOrdersCount})
-              </span>
-              <span className="hidden sm:inline">
-                3. WhatsApp &amp; Instagram Bot (
-                {whatsappOrdersCount + instagramOrdersCount})
-              </span>
+              <Bot className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-emerald-600 shrink-0" />
+              <span className="truncate">WA / IG</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("media")}
-              className={`px-2.5 sm:px-3.5 py-2.5 sm:py-2 rounded-xl sm:rounded-full font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1.5 transition-all border min-w-0 ${activeTab === "media"
-                ? "bg-[#141414] text-white border-[#141414] shadow-xs"
-                : "bg-white hover:bg-neutral-50 text-black/85 border-black/10"
+              className={`py-2 px-1 sm:px-3.5 rounded-xl font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 transition-all ${activeTab === "media"
+                ? "bg-[#141414] text-white shadow-xs"
+                : "bg-white/80 hover:bg-white text-black/75 border border-black/8"
                 }`}
             >
-              <HardDrive className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate sm:hidden">
-                4. Media ({mediaLibrary.length})
-              </span>
-              <span className="hidden sm:inline">
-                4. Media Storage ({mediaLibrary.length})
-              </span>
+              <HardDrive className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" />
+              <span className="truncate">Media</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("settings")}
-              className={`col-span-2 sm:col-span-1 px-2.5 sm:px-3.5 py-2.5 sm:py-2 rounded-xl sm:rounded-full font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1.5 transition-all border min-w-0 ${activeTab === "settings"
-                ? "bg-[#141414] text-white border-[#141414] shadow-xs"
-                : "bg-white hover:bg-neutral-50 text-black/85 border-black/10"
+              className={`py-2 px-1 sm:px-3.5 rounded-xl font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 transition-all ${activeTab === "settings"
+                ? "bg-[#141414] text-white shadow-xs"
+                : "bg-white/80 hover:bg-white text-black/75 border border-black/8"
                 }`}
             >
-              <Settings className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">5. Security &amp; Settings</span>
+              <Settings className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" />
+              <span className="truncate">Settings</span>
             </button>
           </div>
-
-          {/* Quick KPI Badges */}
-          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 text-[10px] sm:text-[11px] font-mono">
-            <div className="px-2.5 sm:px-3 py-1.5 sm:py-1 rounded-xl bg-white border border-black/10 text-center sm:text-left truncate">
-              <span className="text-black/50 mr-1">REVENUE:</span>
-              <span className="font-black text-emerald-900">
-                ₹{totalRevenue.toLocaleString("en-IN")}
-              </span>
-            </div>
-            <div className="px-2.5 sm:px-3 py-1.5 sm:py-1 rounded-xl bg-white border border-black/10 text-center sm:text-left truncate">
-              <span className="text-black/50 mr-1">WA/IG ORDERS:</span>
-              <span className="font-black text-black">
-                {whatsappOrdersCount} WA • {instagramOrdersCount} IG
-              </span>
-            </div>
-          </div>
-        </div>
+        </nav>
 
         {/* =================================================================
             MAIN ADMIN WORKSPACE BODY
            ================================================================= */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-5 sm:space-y-6 bg-white rounded-b-2xl sm:rounded-b-3xl">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-5 bg-white rounded-b-2xl sm:rounded-b-3xl">
           {loading ? (
             <div className="py-20 text-center font-mono text-sm text-black/60 flex flex-col items-center gap-3">
               <RefreshCw className="w-6 h-6 animate-spin text-amber-800" />
@@ -1266,133 +1235,124 @@ export default function AdminPanel({
           ) : (
             <>
               {/* =============================================================
-                  TAB 1: 360° MEDIA, VIDEOS & PRICING EDITOR
+                  CATEGORY 1: CATALOG, PRICING & 360° STAGE
                  ============================================================= */}
               {activeTab === "products" && activeProduct && (
-                <div className="space-y-5 sm:space-y-6">
-                  {/* Top Bar: 360° Orbit Stage Controls + Product Switcher + Add New Product */}
-                  <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-black/10 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 sm:gap-4">
-                    <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2">
-                      <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-2">
-                        {products.map((p, idx) => (
-                          <button
-                            key={p.id}
-                            type="button"
-                            onClick={() => setSelectedProdIdx(idx)}
-                            className={`px-3.5 sm:px-4 py-2.5 rounded-xl font-mono text-xs font-black uppercase tracking-wider flex items-center justify-between sm:justify-start gap-2 transition-all border ${selectedProdIdx === idx
-                              ? "bg-[#141414] text-white border-[#141414] shadow-sm"
-                              : "bg-neutral-100 hover:bg-neutral-200/70 text-black border-black/15"
-                              }`}
-                          >
-                            <div className="flex items-center gap-2 min-w-0">
-                              <span
-                                className={`px-1.5 py-0.5 rounded text-[10px] shrink-0 ${selectedProdIdx === idx
-                                  ? "bg-amber-400 text-black font-black"
-                                  : "bg-amber-500/20 text-amber-900 font-black"
-                                  }`}
-                              >
-                                SET {p.number}
-                              </span>
-                              <span className="truncate">{p.shortName}</span>
-                            </div>
-                            <span className="font-normal opacity-80 shrink-0">
-                              (₹{p.price.toLocaleString("en-IN")})
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-
-                      <div className="grid grid-cols-2 sm:flex items-center gap-2">
-                        {/* Add New Product Button */}
-                        <button
-                          type="button"
-                          onClick={() => setShowAddProductForm(!showAddProductForm)}
-                          style={{ backgroundColor: "#f59e0b", color: "#000000" }}
-                          className="px-3 sm:px-4 py-2.5 rounded-xl font-mono text-[11px] sm:text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm hover:opacity-95 transition-all"
-                        >
-                          <Plus className="w-4 h-4 shrink-0" />
-                          <span className="truncate">
-                            {showAddProductForm
-                              ? "Close Add Form"
-                              : "Add New Product"}
-                          </span>
-                        </button>
-
-                        {/* Delete Product Button (when more than 1 product exists) */}
-                        {products.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteProduct(selectedProdIdx)}
-                            className="px-3 py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 font-mono text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1"
-                            title={`Remove Set ${activeProduct.number} from catalog`}
-                          >
-                            <Trash2 className="w-3.5 h-3.5 shrink-0" />
-                            <span className="truncate">Delete Set {activeProduct.number}</span>
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* 360° Rotation Speed Control */}
-                    <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3">
-                      <div className="flex items-center justify-between sm:justify-start gap-2 bg-neutral-50 px-3 py-2 sm:py-1.5 rounded-xl border border-black/10">
-                        <div className="flex items-center gap-1.5">
-                          <RotateCw className="w-3.5 h-3.5 text-amber-800 animate-spin shrink-0" />
-                          <label
-                            htmlFor="orbit-speed-select"
-                            className="text-[10px] font-mono font-bold uppercase text-black/70 whitespace-nowrap"
-                          >
-                            360° Orbit Speed:
-                          </label>
-                        </div>
-                        <select
-                          id="orbit-speed-select"
-                          value={settings.orbitSpeedMultiplier || 1}
-                          onChange={(e) =>
-                            setSettings((p) => ({
-                              ...p,
-                              orbitSpeedMultiplier: Number(e.target.value) || 1
-                            }))
-                          }
-                          className="bg-white px-2.5 py-1 rounded-lg border border-black/15 font-mono text-xs font-black"
-                        >
-                          <option value={0.5}>0.5x (Slow Luxury)</option>
-                          <option value={1}>1.0x (Standard Smooth)</option>
-                          <option value={1.5}>1.5x (Fast Showcase)</option>
-                          <option value={2}>2.0x (Dynamic Spin)</option>
-                        </select>
+                <div className="space-y-4 sm:space-y-5">
+                  {/* STEP 1: UNIFIED PRODUCT SET SELECTOR (Replaces duplicate Set & Orbit Slot bars) */}
+                  <div className="bg-neutral-50 p-3.5 sm:p-4 rounded-2xl border border-black/10 space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50 block">
+                          STEP 1 // CHOOSE PRODUCT SET
+                        </span>
+                        <h2 className="font-mono text-xs sm:text-sm font-black uppercase tracking-wider text-black">
+                          Active 360° Showcase Catalog ({products.length} Sets)
+                        </h2>
                       </div>
 
                       <button
                         type="button"
-                        onClick={handleSaveAll}
-                        disabled={saving}
-                        className="px-4 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
+                        onClick={() => setShowAddProductForm(!showAddProductForm)}
+                        className="px-3 py-1.5 rounded-xl bg-[#141414] hover:bg-black text-white font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shrink-0"
                       >
-                        <Save className="w-3.5 h-3.5 shrink-0" />
+                        <Plus className="w-3.5 h-3.5 text-amber-300 shrink-0" />
                         <span>
-                          {saving ? "Saving..." : "Publish 360° & Pricing"}
+                          {showAddProductForm ? "Close Form" : "New Set"}
                         </span>
                       </button>
+                    </div>
+
+                    {/* Visual Product Cards Grid */}
+                    <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5">
+                      {products.map((prod, idx) => {
+                        const isSelected = selectedProdIdx === idx;
+                        return (
+                          <button
+                            key={prod.id}
+                            type="button"
+                            onClick={() => setSelectedProdIdx(idx)}
+                            className={`flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3.5 p-3 rounded-xl text-left transition-all min-w-0 overflow-hidden border ${isSelected
+                              ? "bg-[#141414] text-white border-[#141414] shadow-md"
+                              : "bg-white hover:bg-neutral-100/80 text-black border-black/12"
+                              }`}
+                          >
+                            <div className="flex items-center justify-between w-full sm:w-auto gap-2">
+                              <div className="w-11 h-12 rounded-lg bg-white/95 border border-black/10 flex items-center justify-center shrink-0 p-1">
+                                <Image
+                                  src={prod.image}
+                                  alt={prod.name}
+                                  width={40}
+                                  height={44}
+                                  unoptimized
+                                  style={{
+                                    width: "40px",
+                                    height: "44px",
+                                    objectFit: "contain"
+                                  }}
+                                />
+                              </div>
+                              <span
+                                className={`sm:hidden px-2 py-0.5 rounded-full font-mono text-[9px] font-black uppercase ${isSelected
+                                  ? "bg-amber-400 text-black"
+                                  : "bg-neutral-100 text-black/70"
+                                  }`}
+                              >
+                                SET {prod.number}
+                              </span>
+                            </div>
+
+                            <div className="font-mono min-w-0 w-full flex-1">
+                              <div className="hidden sm:flex items-center gap-1.5 mb-0.5">
+                                <span
+                                  className={`px-1.5 py-0.2 rounded text-[9px] font-black uppercase ${isSelected
+                                    ? "bg-amber-400 text-black"
+                                    : "bg-amber-500/15 text-amber-900"
+                                    }`}
+                                >
+                                  SET {prod.number}
+                                </span>
+                                {isSelected && (
+                                  <span className="text-[9px] text-amber-300 font-bold uppercase">
+                                    • Editing
+                                  </span>
+                                )}
+                              </div>
+                              <div
+                                className={`text-xs sm:text-sm font-black truncate ${isSelected ? "text-white" : "text-black"
+                                  }`}
+                              >
+                                {prod.shortName}
+                              </div>
+                              <div
+                                className={`text-[11px] font-bold mt-0.5 ${isSelected ? "text-amber-300" : "text-black/65"
+                                  }`}
+                              >
+                                ₹{prod.price.toLocaleString("en-IN")}
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
                   {/* ===========================================================
-                      ADD NEW PRODUCT SECTION (CREATES SET 03, 04, ETC. IN 360° STAGE)
+                      COLLAPSIBLE ADD NEW PRODUCT DRAWER
                      =========================================================== */}
                   {showAddProductForm && (
                     <form
                       onSubmit={handleCreateNewProduct}
-                      className="bg-white p-5 sm:p-6 rounded-2xl border-2 border-amber-500 shadow-lg space-y-5"
+                      className="bg-white p-4 sm:p-6 rounded-2xl border-2 border-amber-500 shadow-lg space-y-4"
                     >
                       <div className="flex items-center justify-between border-b border-black/10 pb-3">
                         <div>
-                          <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-800 font-bold block">
-                            CATALOG EXPANSION // ALUVA, KERALA ATELIER
+                          <span className="text-[10px] font-mono uppercase tracking-widest text-amber-800 font-bold block">
+                            NEW CATALOG ITEM
                           </span>
-                          <h3 className="font-mono text-sm sm:text-base font-black uppercase tracking-wider text-black">
-                            Add New Beachwear Product (Set{" "}
-                            {String(products.length + 1).padStart(2, "0")}) to 360° Showcase
+                          <h3 className="font-mono text-sm font-black uppercase tracking-wider text-black">
+                            Create Set{" "}
+                            {String(products.length + 1).padStart(2, "0")}
                           </h3>
                         </div>
                         <button
@@ -1404,7 +1364,7 @@ export default function AdminPanel({
                         </button>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
                         <div className="sm:col-span-2">
                           <label
                             htmlFor="new-prod-name"
@@ -1424,7 +1384,7 @@ export default function AdminPanel({
                               }))
                             }
                             placeholder="e.g. COCONUT & HANDLOOM LINEN SARONG SET"
-                            className="w-full px-3 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-xs font-bold"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/20 font-mono text-xs font-bold"
                           />
                         </div>
 
@@ -1433,7 +1393,7 @@ export default function AdminPanel({
                             htmlFor="new-prod-short"
                             className="block text-[10px] font-mono uppercase font-bold text-black/70 mb-1"
                           >
-                            360° Orbit Pill Label
+                            Short Label
                           </label>
                           <input
                             id="new-prod-short"
@@ -1446,7 +1406,7 @@ export default function AdminPanel({
                               }))
                             }
                             placeholder="e.g. LINEN SARONG SET"
-                            className="w-full px-3 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-xs font-bold"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/20 font-mono text-xs font-bold"
                           />
                         </div>
 
@@ -1470,7 +1430,7 @@ export default function AdminPanel({
                             placeholder={`APV-BCH-${String(
                               products.length + 1
                             ).padStart(2, "0")}`}
-                            className="w-full px-3 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-xs"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/20 font-mono text-xs"
                           />
                         </div>
 
@@ -1494,7 +1454,7 @@ export default function AdminPanel({
                                 price: Number(e.target.value) || 0
                               }))
                             }
-                            className="w-full px-3 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-sm font-black"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/20 font-mono text-sm font-black"
                           />
                         </div>
 
@@ -1517,7 +1477,7 @@ export default function AdminPanel({
                                 originalPrice: Number(e.target.value) || 0
                               }))
                             }
-                            className="w-full px-3 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-sm"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/20 font-mono text-sm"
                           />
                         </div>
 
@@ -1526,7 +1486,7 @@ export default function AdminPanel({
                             htmlFor="new-prod-material"
                             className="block text-[10px] font-mono uppercase font-bold text-black/70 mb-1"
                           >
-                            Material &amp; Craftsmanship Line
+                            Material &amp; Craftsmanship
                           </label>
                           <input
                             id="new-prod-material"
@@ -1538,19 +1498,18 @@ export default function AdminPanel({
                                 material: e.target.value
                               }))
                             }
-                            className="w-full px-3 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-xs"
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/20 font-mono text-xs"
                           />
                         </div>
                       </div>
 
-                      {/* 360° Cutout Image + Motion Video Selection for New Product */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-                        <div className="p-3.5 rounded-xl bg-neutral-50 border border-black/15 space-y-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                        <div className="p-3 rounded-xl bg-neutral-50 border border-black/15 space-y-2">
                           <label
                             htmlFor="new-prod-img"
                             className="block text-[10px] font-mono uppercase font-bold text-black/70"
                           >
-                            360° Orbit Cutout Image (PNG / JPG)
+                            360° Cutout Image
                           </label>
                           <div className="flex flex-wrap items-center gap-2">
                             <input
@@ -1563,13 +1522,13 @@ export default function AdminPanel({
                                   image: e.target.value
                                 }))
                               }
-                              className="w-full sm:flex-1 min-w-[160px] px-3 py-2 rounded-lg bg-white border border-black/15 font-mono text-xs"
+                              className="w-full sm:flex-1 min-w-[140px] px-3 py-1.5 rounded-lg bg-white border border-black/15 font-mono text-xs"
                             />
                             <button
                               type="button"
                               onClick={() =>
                                 setMediaPickerTarget({
-                                  label: "Select 360° Cutout Image for New Product",
+                                  label: "Select 360° Cutout Image",
                                   filterType: "image",
                                   onSelect: (url) =>
                                     setNewProductDraft((p) => ({
@@ -1578,9 +1537,9 @@ export default function AdminPanel({
                                     }))
                                 })
                               }
-                              className="flex-1 sm:flex-initial px-3 py-2 rounded-lg bg-black text-white font-mono text-[10px] font-bold uppercase whitespace-nowrap text-center"
+                              className="px-3 py-1.5 rounded-lg bg-black text-white font-mono text-[10px] font-bold uppercase"
                             >
-                              Pick Image
+                              Library
                             </button>
                             <button
                               type="button"
@@ -1592,19 +1551,19 @@ export default function AdminPanel({
                                   }))
                                 )
                               }
-                              className="flex-1 sm:flex-initial px-3 py-2 rounded-lg bg-amber-500 text-black font-mono text-[10px] font-black uppercase whitespace-nowrap text-center"
+                              className="px-3 py-1.5 rounded-lg bg-amber-500 text-black font-mono text-[10px] font-black uppercase"
                             >
                               Upload
                             </button>
                           </div>
                         </div>
 
-                        <div className="p-3.5 rounded-xl bg-neutral-50 border border-black/15 space-y-2">
+                        <div className="p-3 rounded-xl bg-neutral-50 border border-black/15 space-y-2">
                           <label
                             htmlFor="new-prod-vid"
                             className="block text-[10px] font-mono uppercase font-bold text-black/70"
                           >
-                            Product Motion Video (.MP4)
+                            Motion Video (.MP4)
                           </label>
                           <div className="flex flex-wrap items-center gap-2">
                             <input
@@ -1617,13 +1576,13 @@ export default function AdminPanel({
                                   video: e.target.value
                                 }))
                               }
-                              className="w-full sm:flex-1 min-w-[160px] px-3 py-2 rounded-lg bg-white border border-black/15 font-mono text-xs"
+                              className="w-full sm:flex-1 min-w-[140px] px-3 py-1.5 rounded-lg bg-white border border-black/15 font-mono text-xs"
                             />
                             <button
                               type="button"
                               onClick={() =>
                                 setMediaPickerTarget({
-                                  label: "Select Motion Video for New Product",
+                                  label: "Select Motion Video",
                                   filterType: "video",
                                   onSelect: (url) =>
                                     setNewProductDraft((p) => ({
@@ -1632,9 +1591,9 @@ export default function AdminPanel({
                                     }))
                                 })
                               }
-                              className="flex-1 sm:flex-initial px-3 py-2 rounded-lg bg-black text-white font-mono text-[10px] font-bold uppercase whitespace-nowrap text-center"
+                              className="px-3 py-1.5 rounded-lg bg-black text-white font-mono text-[10px] font-bold uppercase"
                             >
-                              Pick Video
+                              Library
                             </button>
                             <button
                               type="button"
@@ -1646,687 +1605,652 @@ export default function AdminPanel({
                                   }))
                                 )
                               }
-                              className="flex-1 sm:flex-initial px-3 py-2 rounded-lg bg-amber-500 text-black font-mono text-[10px] font-black uppercase whitespace-nowrap text-center"
+                              className="px-3 py-1.5 rounded-lg bg-amber-500 text-black font-mono text-[10px] font-black uppercase"
                             >
-                              Upload MP4
+                              Upload
                             </button>
                           </div>
                         </div>
                       </div>
 
-                      <div>
-                        <label
-                          htmlFor="new-prod-desc"
-                          className="block text-[10px] font-mono uppercase font-bold text-black/70 mb-1"
-                        >
-                          Product Description
-                        </label>
-                        <textarea
-                          id="new-prod-desc"
-                          rows={2}
-                          value={newProductDraft.description}
-                          onChange={(e) =>
-                            setNewProductDraft((p) => ({
-                              ...p,
-                              description: e.target.value
-                            }))
-                          }
-                          className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
-                        />
-                      </div>
-
-                      <div className="flex flex-wrap items-center justify-end gap-2.5 sm:gap-3 pt-2 border-t border-black/10">
+                      <div className="flex items-center justify-end gap-2 pt-2 border-t border-black/10">
                         <button
                           type="button"
                           onClick={() => setShowAddProductForm(false)}
-                          className="px-4 py-2.5 rounded-xl bg-black/5 hover:bg-black/10 font-mono text-xs font-bold uppercase"
+                          className="px-4 py-2 rounded-xl bg-black/5 hover:bg-black/10 font-mono text-xs font-bold uppercase"
                         >
                           Cancel
                         </button>
                         <button
                           type="submit"
                           disabled={saving}
-                          className="px-4 sm:px-6 py-2.5 rounded-xl bg-[#141414] hover:bg-black text-white font-mono text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-md"
+                          className="px-5 py-2 rounded-xl bg-[#141414] text-white font-mono text-xs font-black uppercase tracking-wider flex items-center gap-1.5"
                         >
-                          <Plus className="w-4 h-4 text-amber-300 shrink-0" />
-                          <span>
-                            Create &amp; Publish Set{" "}
-                            {String(products.length + 1).padStart(2, "0")} to 360° Showcase
-                          </span>
+                          <Plus className="w-4 h-4 text-amber-300" />
+                          <span>Create Set</span>
                         </button>
                       </div>
                     </form>
                   )}
 
-                  {/* Side-by-Side 360° Orbit Pair Overview Strip */}
-                  <div className="bg-neutral-100 p-3 sm:p-4 rounded-2xl border border-black/10 flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
-                    <div className="grid grid-cols-2 gap-2 sm:gap-3.5 w-full lg:w-auto flex-1">
-                      {products.map((prod, idx) => (
-                        <button
-                          key={prod.id}
-                          type="button"
-                          onClick={() => setSelectedProdIdx(idx)}
-                          className={`flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl cursor-pointer border text-left transition-all min-w-0 overflow-hidden ${selectedProdIdx === idx
-                            ? "bg-white border-2 border-black shadow-xs"
-                            : "bg-white/70 border-black/15 hover:bg-white"
-                            }`}
-                        >
-                          <div className="flex items-center gap-2 w-full sm:w-auto min-w-0">
-                            <Image
-                              src={prod.image}
-                              alt={prod.name}
-                              width={40}
-                              height={44}
-                              unoptimized
-                              className="shrink-0"
-                              style={{
-                                width: "40px",
-                                height: "44px",
-                                objectFit: "contain"
-                              }}
-                            />
-                            <span
-                              className={`sm:hidden px-1.5 py-0.5 rounded font-mono text-[9px] font-black uppercase truncate ${selectedProdIdx === idx
-                                ? "bg-[#141414] text-amber-300"
-                                : "bg-amber-500/15 text-amber-900"
-                                }`}
-                            >
-                              SLOT {prod.number}
+                  {/* STEP 2: 3-CATEGORY SUB-NAVIGATION FOR EDITING SELECTED PRODUCT */}
+                  <div className="space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-black/50">
+                        STEP 2 // EDITING SET {activeProduct.number}:{" "}
+                        <strong className="text-black">
+                          {activeProduct.shortName}
+                        </strong>
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-1.5 bg-neutral-100 p-1.5 rounded-2xl border border-black/10">
+                      <button
+                        type="button"
+                        onClick={() => setProductSubTab("pricing")}
+                        className={`py-2.5 px-2 rounded-xl font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all ${productSubTab === "pricing"
+                          ? "bg-white text-black shadow-xs border border-black/10"
+                          : "text-black/60 hover:text-black"
+                          }`}
+                      >
+                        <IndianRupee className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                        <span className="truncate">Pricing &amp; Info</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setProductSubTab("media")}
+                        className={`py-2.5 px-2 rounded-xl font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all ${productSubTab === "media"
+                          ? "bg-white text-black shadow-xs border border-black/10"
+                          : "text-black/60 hover:text-black"
+                          }`}
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                        <span className="truncate">360° &amp; Video</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setProductSubTab("stock")}
+                        className={`py-2.5 px-2 rounded-xl font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all ${productSubTab === "stock"
+                          ? "bg-white text-black shadow-xs border border-black/10"
+                          : "text-black/60 hover:text-black"
+                          }`}
+                      >
+                        <Layers className="w-3.5 h-3.5 text-black/70 shrink-0" />
+                        <span className="truncate">Sizes &amp; Stock</span>
+                      </button>
+                    </div>
+
+                    {/* -------------------------------------------------------
+                        SUB-TAB A: PRICING & PRODUCT DETAILS
+                       ------------------------------------------------------- */}
+                    {productSubTab === "pricing" && (
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
+                        {/* Pricing Card */}
+                        <div className="lg:col-span-5 bg-white p-4 sm:p-5 rounded-2xl border border-black/12 shadow-xs space-y-4">
+                          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/10 pb-2.5">
+                            <span className="text-xs font-mono font-black uppercase tracking-wider text-black flex items-center gap-1.5">
+                              <IndianRupee className="w-4 h-4 text-emerald-800 shrink-0" />
+                              <span>Set {activeProduct.number} Pricing</span>
                             </span>
+                            {activeProduct.originalPrice &&
+                              activeProduct.originalPrice >
+                                activeProduct.price && (
+                                <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-mono text-[10px] font-bold">
+                                  Saves ₹
+                                  {(
+                                    activeProduct.originalPrice -
+                                    activeProduct.price
+                                  ).toLocaleString("en-IN")}
+                                </span>
+                              )}
                           </div>
-                          <div className="font-mono min-w-0 w-full flex-1">
-                            <div className="hidden sm:block text-[10px] font-black text-amber-900 uppercase truncate">
-                              360° ORBIT SLOT {prod.number}
-                            </div>
-                            <div className="text-[11px] sm:text-xs font-bold text-black truncate">
-                              {prod.shortName}
-                            </div>
-                            <div className="text-[9px] sm:text-[10px] text-black/60 truncate">
-                              {prod.image}
-                            </div>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                    <div className="text-[11px] font-mono text-black/70 lg:max-w-xs leading-relaxed">
-                      Both cutouts above continuously circle 360° on the hero stage. Tap either slot tab to replace its 360° cutout image or `.mp4` motion video below.
-                    </div>
-                  </div>
 
-                  {/* Main Two-Column Product Editor */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
-                    {/* LEFT COLUMN (5 cols): 360° CUTOUT IMAGE & MOTION VIDEO */}
-                    <div className="lg:col-span-5 space-y-5">
-                      {/* 1. 360° Rotating Cutout Image Card */}
-                      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/10 shadow-xs space-y-3">
-                        <div className="flex flex-wrap items-center justify-between gap-1.5">
-                          <span className="text-xs font-mono font-black uppercase tracking-wider text-black flex items-center gap-1.5">
-                            <Sparkles className="w-4 h-4 text-amber-700 shrink-0" />
-                            <span>360° Orbit Cutout Image (Set {activeProduct.number})</span>
-                          </span>
-                          <span className="text-[10px] font-mono text-black/50">
-                            Stored in /public/images or /public/uploads
-                          </span>
-                        </div>
-
-                        <div className="h-52 rounded-2xl bg-neutral-100 border border-black/10 flex items-center justify-center p-4 relative overflow-hidden">
-                          <Image
-                            src={activeProduct.image}
-                            alt={activeProduct.name}
-                            width={170}
-                            height={190}
-                            unoptimized
-                            style={{
-                              width: "170px",
-                              height: "190px",
-                              objectFit: "contain"
-                            }}
-                          />
-                        </div>
-
-                        <div>
-                          <label
-                            htmlFor="prod-cutout-url"
-                            className="block text-[10px] font-mono uppercase text-black/60 mb-1"
-                          >
-                            360° Cutout Image Path or URL
-                          </label>
-                          <input
-                            id="prod-cutout-url"
-                            type="text"
-                            value={activeProduct.image}
-                            onChange={(e) =>
-                              handleUpdateProductField(
-                                selectedProdIdx,
-                                "image",
-                                e.target.value
-                              )
-                            }
-                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setMediaPickerTarget({
-                                label: `Select 360° Cutout Image for ${activeProduct.shortName}`,
-                                filterType: "image",
-                                onSelect: (url) =>
-                                  handleUpdateProductField(
-                                    selectedProdIdx,
-                                    "image",
-                                    url
-                                  )
-                              })
-                            }
-                            className="py-2 px-3 rounded-xl bg-[#141414] text-white font-mono text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
-                          >
-                            <ImageIcon className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                            <span>Pick Library</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              triggerUploadForField((url) =>
-                                handleUpdateProductField(
-                                  selectedProdIdx,
-                                  "image",
-                                  url
-                                )
-                              )
-                            }
-                            className="py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5"
-                          >
-                            <Upload className="w-3.5 h-3.5 shrink-0" />
-                            <span>Upload Cutout</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* 2. Product Motion Video Card */}
-                      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/10 shadow-xs space-y-3">
-                        <div className="flex flex-wrap items-center justify-between gap-1.5">
-                          <span className="text-xs font-mono font-black uppercase tracking-wider text-black flex items-center gap-1.5">
-                            <Film className="w-4 h-4 text-amber-700 shrink-0" />
-                            <span>Product Motion Video (Set {activeProduct.number})</span>
-                          </span>
-                          <span className="text-[10px] font-mono text-black/50">
-                            Stored in /public/videos or /public/uploads
-                          </span>
-                        </div>
-
-                        <div className="h-48 rounded-2xl bg-black overflow-hidden relative">
-                          <video
-                            key={activeProduct.video}
-                            src={activeProduct.video}
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            controls
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover"
-                            }}
-                          />
-                        </div>
-
-                        <div>
-                          <label
-                            htmlFor="prod-video-url"
-                            className="block text-[10px] font-mono uppercase text-black/60 mb-1"
-                          >
-                            Video Path or URL
-                          </label>
-                          <input
-                            id="prod-video-url"
-                            type="text"
-                            value={activeProduct.video}
-                            onChange={(e) =>
-                              handleUpdateProductField(
-                                selectedProdIdx,
-                                "video",
-                                e.target.value
-                              )
-                            }
-                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
-                          />
-                        </div>
-
-                        <div>
-                          <label
-                            htmlFor="prod-video-caption"
-                            className="block text-[10px] font-mono uppercase text-black/60 mb-1"
-                          >
-                            Video Overlay Caption
-                          </label>
-                          <input
-                            id="prod-video-caption"
-                            type="text"
-                            value={activeProduct.videoCaption}
-                            onChange={(e) =>
-                              handleUpdateProductField(
-                                selectedProdIdx,
-                                "videoCaption",
-                                e.target.value
-                              )
-                            }
-                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setMediaPickerTarget({
-                                label: `Select Motion Video for ${activeProduct.shortName}`,
-                                filterType: "video",
-                                onSelect: (url) =>
-                                  handleUpdateProductField(
-                                    selectedProdIdx,
-                                    "video",
-                                    url
-                                  )
-                              })
-                            }
-                            className="py-2 px-3 rounded-xl bg-[#141414] text-white font-mono text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
-                          >
-                            <Film className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                            <span>Pick Video</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              triggerUploadForField((url) =>
-                                handleUpdateProductField(
-                                  selectedProdIdx,
-                                  "video",
-                                  url
-                                )
-                              )
-                            }
-                            className="py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5"
-                          >
-                            <Upload className="w-3.5 h-3.5 shrink-0" />
-                            <span>Upload MP4</span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* RIGHT COLUMN (7 cols): PRICING, COPY, GALLERY & STOCK */}
-                    <div className="lg:col-span-7 space-y-5">
-                      {/* 1. Pricing & Bundle Discount Controls */}
-                      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/10 shadow-xs space-y-4">
-                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/10 pb-3">
-                          <span className="text-xs font-mono font-black uppercase tracking-wider text-black flex items-center gap-1.5">
-                            <IndianRupee className="w-4 h-4 text-emerald-800 shrink-0" />
-                            <span>Pricing &amp; Bundle Offer (Set {activeProduct.number})</span>
-                          </span>
-                          {activeProduct.originalPrice &&
-                            activeProduct.originalPrice > activeProduct.price && (
-                              <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-mono text-[10px] font-bold">
-                                Customer Saves ₹
-                                {(
-                                  activeProduct.originalPrice - activeProduct.price
-                                ).toLocaleString("en-IN")}{" "}
-                                (
-                                {Math.round(
-                                  ((activeProduct.originalPrice -
-                                    activeProduct.price) /
-                                    activeProduct.originalPrice) *
-                                  100
-                                )}
-                                % OFF)
-                              </span>
-                            )}
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                          <div>
-                            <label
-                              htmlFor="prod-price"
-                              className="block text-[10px] font-mono uppercase font-bold text-black/70 mb-1"
-                            >
-                              Selling Price (₹ INR)
-                            </label>
-                            <input
-                              id="prod-price"
-                              type="number"
-                              inputMode="numeric"
-                              min={100}
-                              step={50}
-                              value={activeProduct.price}
-                              onChange={(e) =>
-                                handleUpdateProductField(
-                                  selectedProdIdx,
-                                  "price",
-                                  Math.max(0, Number(e.target.value) || 0)
-                                )
-                              }
-                              className="w-full px-3 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-base font-black text-black"
-                            />
-                            <div className="flex items-center gap-1 mt-1.5">
-                              <button
-                                type="button"
-                                onClick={() =>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label
+                                htmlFor="prod-price"
+                                className="block text-[10px] font-mono uppercase font-bold text-black/70 mb-1"
+                              >
+                                Selling Price (₹)
+                              </label>
+                              <input
+                                id="prod-price"
+                                type="number"
+                                inputMode="numeric"
+                                min={100}
+                                step={50}
+                                value={activeProduct.price}
+                                onChange={(e) =>
                                   handleUpdateProductField(
                                     selectedProdIdx,
                                     "price",
-                                    Math.max(100, activeProduct.price - 200)
+                                    Math.max(0, Number(e.target.value) || 0)
                                   )
                                 }
-                                className="px-2 py-1 rounded bg-black/5 hover:bg-black/10 font-mono text-[10px] font-bold"
+                                className="w-full px-3 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-base font-black text-black"
+                              />
+                            </div>
+
+                            <div>
+                              <label
+                                htmlFor="prod-orig-price"
+                                className="block text-[10px] font-mono uppercase font-bold text-black/70 mb-1"
                               >
-                                -₹200
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() =>
+                                MRP / Compare (₹)
+                              </label>
+                              <input
+                                id="prod-orig-price"
+                                type="number"
+                                inputMode="numeric"
+                                min={0}
+                                step={50}
+                                value={activeProduct.originalPrice || 0}
+                                onChange={(e) =>
                                   handleUpdateProductField(
                                     selectedProdIdx,
-                                    "price",
-                                    activeProduct.price + 200
+                                    "originalPrice",
+                                    Math.max(0, Number(e.target.value) || 0)
                                   )
                                 }
-                                className="px-2 py-1 rounded bg-black/5 hover:bg-black/10 font-mono text-[10px] font-bold"
-                              >
-                                +₹200
-                              </button>
+                                className="w-full px-3 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-base font-bold text-black/70"
+                              />
                             </div>
                           </div>
 
-                          <div>
-                            <label
-                              htmlFor="prod-orig-price"
-                              className="block text-[10px] font-mono uppercase font-bold text-black/70 mb-1"
-                            >
-                              Original Price / MRP (₹)
-                            </label>
-                            <input
-                              id="prod-orig-price"
-                              type="number"
-                              inputMode="numeric"
-                              min={0}
-                              step={50}
-                              value={activeProduct.originalPrice || 0}
-                              onChange={(e) =>
-                                handleUpdateProductField(
-                                  selectedProdIdx,
-                                  "originalPrice",
-                                  Math.max(0, Number(e.target.value) || 0)
-                                )
-                              }
-                              className="w-full px-3 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-base font-bold text-black/70"
-                            />
-                          </div>
-
-                          <div>
+                          <div className="pt-2 border-t border-black/8">
                             <label
                               htmlFor="bundle-discount-pct"
                               className="block text-[10px] font-mono uppercase font-bold text-black/70 mb-1"
                             >
-                              &ldquo;Buy Both Sets&rdquo; Discount (%)
+                              &ldquo;Buy Both Sets&rdquo; Bundle Discount (%)
                             </label>
-                            <input
-                              id="bundle-discount-pct"
-                              type="number"
-                              inputMode="numeric"
-                              min={0}
-                              max={75}
-                              value={settings.bundleDiscountPercent}
-                              onChange={(e) =>
-                                setSettings((prev) => ({
-                                  ...prev,
-                                  bundleDiscountPercent: Math.min(
-                                    75,
-                                    Math.max(0, Number(e.target.value) || 0)
-                                  )
-                                }))
-                              }
-                              className="w-full px-3 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-base font-black text-amber-900"
-                            />
-                            <span className="block text-[10px] font-mono text-black/60 mt-1">
-                              Bundle Total: ₹
-                              {bundleCombinedPrice.toLocaleString("en-IN")}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 2. Product Names, Badges & Material */}
-                      <div className="bg-white p-5 rounded-2xl border border-black/10 shadow-xs space-y-3">
-                        <span className="text-xs font-mono font-black uppercase tracking-wider text-black block border-b border-black/10 pb-2">
-                          Product Title, 360° Orbit Label &amp; Specifications
-                        </span>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div>
-                            <label
-                              htmlFor="prod-name"
-                              className="block text-[10px] font-mono uppercase text-black/60 mb-1"
-                            >
-                              Full Product Name
-                            </label>
-                            <input
-                              id="prod-name"
-                              type="text"
-                              value={activeProduct.name}
-                              onChange={(e) =>
-                                handleUpdateProductField(
-                                  selectedProdIdx,
-                                  "name",
-                                  e.target.value
-                                )
-                              }
-                              className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold"
-                            />
-                          </div>
-
-                          <div>
-                            <label
-                              htmlFor="prod-short-name"
-                              className="block text-[10px] font-mono uppercase text-black/60 mb-1"
-                            >
-                              360° Orbit Pill Short Name
-                            </label>
-                            <input
-                              id="prod-short-name"
-                              type="text"
-                              value={activeProduct.shortName}
-                              onChange={(e) =>
-                                handleUpdateProductField(
-                                  selectedProdIdx,
-                                  "shortName",
-                                  e.target.value
-                                )
-                              }
-                              className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold"
-                            />
-                          </div>
-
-                          <div>
-                            <label
-                              htmlFor="prod-badge"
-                              className="block text-[10px] font-mono uppercase text-black/60 mb-1"
-                            >
-                              Highlight Badge
-                            </label>
-                            <input
-                              id="prod-badge"
-                              type="text"
-                              value={activeProduct.badge || ""}
-                              onChange={(e) =>
-                                handleUpdateProductField(
-                                  selectedProdIdx,
-                                  "badge",
-                                  e.target.value
-                                )
-                              }
-                              className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
-                            />
-                          </div>
-
-                          <div>
-                            <label
-                              htmlFor="prod-material"
-                              className="block text-[10px] font-mono uppercase text-black/60 mb-1"
-                            >
-                              Material Line
-                            </label>
-                            <input
-                              id="prod-material"
-                              type="text"
-                              value={activeProduct.material}
-                              onChange={(e) =>
-                                handleUpdateProductField(
-                                  selectedProdIdx,
-                                  "material",
-                                  e.target.value
-                                )
-                              }
-                              className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
-                            />
-                          </div>
-                        </div>
-
-                        <div>
-                          <label
-                            htmlFor="prod-desc"
-                            className="block text-[10px] font-mono uppercase text-black/60 mb-1"
-                          >
-                            Product Description
-                          </label>
-                          <textarea
-                            id="prod-desc"
-                            rows={3}
-                            value={activeProduct.description}
-                            onChange={(e) =>
-                              handleUpdateProductField(
-                                selectedProdIdx,
-                                "description",
-                                e.target.value
-                              )
-                            }
-                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
-                          />
-                        </div>
-                      </div>
-
-                      {/* 3. Size & Stock Inventory Controls */}
-                      <div className="bg-white p-5 rounded-2xl border border-black/10 shadow-xs space-y-3">
-                        <span className="text-xs font-mono font-black uppercase tracking-wider text-black block border-b border-black/10 pb-2">
-                          Size Inventory &amp; Stock Units
-                        </span>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                          {activeProduct.sizes.map((s, sIdx) => (
-                            <div
-                              key={s.size}
-                              className="p-3 rounded-xl bg-neutral-50 border border-black/10"
-                            >
-                              <label
-                                htmlFor={`stock-${selectedProdIdx}-${sIdx}`}
-                                className="block text-[10px] font-mono font-bold uppercase text-black/80 truncate mb-1.5"
-                              >
-                                {s.size}
-                              </label>
-                              <div className="flex items-center gap-2">
-                                <input
-                                  id={`stock-${selectedProdIdx}-${sIdx}`}
-                                  type="number"
-                                  inputMode="numeric"
-                                  min={0}
-                                  value={s.stock}
-                                  onChange={(e) =>
-                                    handleUpdateProductStock(
-                                      selectedProdIdx,
-                                      sIdx,
-                                      Number(e.target.value) || 0
+                            <div className="flex items-center gap-3">
+                              <input
+                                id="bundle-discount-pct"
+                                type="number"
+                                inputMode="numeric"
+                                min={0}
+                                max={75}
+                                value={settings.bundleDiscountPercent}
+                                onChange={(e) =>
+                                  setSettings((prev) => ({
+                                    ...prev,
+                                    bundleDiscountPercent: Math.min(
+                                      75,
+                                      Math.max(0, Number(e.target.value) || 0)
                                     )
-                                  }
-                                  className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-black/15 font-mono text-sm font-black"
-                                />
-                                <span className="text-[10px] font-mono text-black/50">
-                                  pcs
-                                </span>
-                              </div>
+                                  }))
+                                }
+                                className="w-28 px-3 py-2 rounded-xl bg-neutral-50 border border-black/20 font-mono text-sm font-black text-amber-900"
+                              />
+                              <span className="text-xs font-mono text-black/70">
+                                Combined Bundle:{" "}
+                                <strong className="text-black">
+                                  ₹{bundleCombinedPrice.toLocaleString("en-IN")}
+                                </strong>
+                              </span>
                             </div>
-                          ))}
+                          </div>
                         </div>
-                      </div>
 
-                      {/* 4. Product Gallery Photos Strip */}
-                      <div className="bg-white p-5 rounded-2xl border border-black/10 shadow-xs space-y-3">
-                        <div className="flex items-center justify-between border-b border-black/10 pb-2">
-                          <span className="text-xs font-mono font-black uppercase tracking-wider text-black">
-                            Quick-View Gallery Photos ({activeProduct.gallery.length})
+                        {/* Product Titles & Copy Card */}
+                        <div className="lg:col-span-7 bg-white p-4 sm:p-5 rounded-2xl border border-black/12 shadow-xs space-y-3.5">
+                          <span className="text-xs font-mono font-black uppercase tracking-wider text-black block border-b border-black/10 pb-2.5">
+                            Product Title &amp; Description
                           </span>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setMediaPickerTarget({
-                                label: `Add Photo to ${activeProduct.shortName} Gallery`,
-                                filterType: "image",
-                                onSelect: (url) =>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <label
+                                htmlFor="prod-name"
+                                className="block text-[10px] font-mono uppercase text-black/60 mb-1"
+                              >
+                                Full Product Title
+                              </label>
+                              <input
+                                id="prod-name"
+                                type="text"
+                                value={activeProduct.name}
+                                onChange={(e) =>
                                   handleUpdateProductField(
                                     selectedProdIdx,
-                                    "gallery",
-                                    [...activeProduct.gallery, url]
+                                    "name",
+                                    e.target.value
                                   )
-                              })
-                            }
-                            className="px-3 py-1 rounded-full bg-black text-white font-mono text-[10px] font-bold uppercase flex items-center gap-1"
-                          >
-                            <Plus className="w-3 h-3" />
-                            <span>Add Photo</span>
-                          </button>
-                        </div>
+                                }
+                                className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold"
+                              />
+                            </div>
 
-                        <div className="flex items-center gap-3 overflow-x-auto py-1">
-                          {activeProduct.gallery.map((imgUrl, gIdx) => (
-                            <div
-                              key={`${imgUrl}-${gIdx}`}
-                              className="relative group w-20 h-20 rounded-xl bg-neutral-100 border border-black/15 overflow-hidden flex-shrink-0 flex items-center justify-center"
+                            <div>
+                              <label
+                                htmlFor="prod-short-name"
+                                className="block text-[10px] font-mono uppercase text-black/60 mb-1"
+                              >
+                                360° Turntable Pill Name
+                              </label>
+                              <input
+                                id="prod-short-name"
+                                type="text"
+                                value={activeProduct.shortName}
+                                onChange={(e) =>
+                                  handleUpdateProductField(
+                                    selectedProdIdx,
+                                    "shortName",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold"
+                              />
+                            </div>
+
+                            <div>
+                              <label
+                                htmlFor="prod-badge"
+                                className="block text-[10px] font-mono uppercase text-black/60 mb-1"
+                              >
+                                Highlight Badge
+                              </label>
+                              <input
+                                id="prod-badge"
+                                type="text"
+                                value={activeProduct.badge || ""}
+                                onChange={(e) =>
+                                  handleUpdateProductField(
+                                    selectedProdIdx,
+                                    "badge",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
+                              />
+                            </div>
+
+                            <div>
+                              <label
+                                htmlFor="prod-material"
+                                className="block text-[10px] font-mono uppercase text-black/60 mb-1"
+                              >
+                                Material &amp; Craftsmanship
+                              </label>
+                              <input
+                                id="prod-material"
+                                type="text"
+                                value={activeProduct.material}
+                                onChange={(e) =>
+                                  handleUpdateProductField(
+                                    selectedProdIdx,
+                                    "material",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label
+                              htmlFor="prod-desc"
+                              className="block text-[10px] font-mono uppercase text-black/60 mb-1"
                             >
+                              Product Description
+                            </label>
+                            <textarea
+                              id="prod-desc"
+                              rows={3}
+                              value={activeProduct.description}
+                              onChange={(e) =>
+                                handleUpdateProductField(
+                                  selectedProdIdx,
+                                  "description",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* -------------------------------------------------------
+                        SUB-TAB B: 360° CUTOUT, VIDEO & GALLERY
+                       ------------------------------------------------------- */}
+                    {productSubTab === "media" && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+                          {/* 1. 360° Rotating Cutout Image Card */}
+                          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/12 shadow-xs space-y-3">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-xs font-mono font-black uppercase tracking-wider text-black flex items-center gap-1.5">
+                                <Sparkles className="w-4 h-4 text-amber-700 shrink-0" />
+                                <span>360° Cutout Image (Set {activeProduct.number})</span>
+                              </span>
+                            </div>
+
+                            <div className="h-48 rounded-2xl bg-neutral-100 border border-black/10 flex items-center justify-center p-4 relative overflow-hidden">
                               <Image
-                                src={imgUrl}
-                                alt={`Gallery ${gIdx + 1}`}
-                                width={76}
-                                height={76}
+                                src={activeProduct.image}
+                                alt={activeProduct.name}
+                                width={160}
+                                height={175}
                                 unoptimized
                                 style={{
-                                  width: "76px",
-                                  height: "76px",
-                                  objectFit: "cover"
+                                  width: "160px",
+                                  height: "175px",
+                                  objectFit: "contain"
                                 }}
                               />
+                            </div>
+
+                            <input
+                              id="prod-cutout-url"
+                              type="text"
+                              aria-label="360° Cutout Image Path"
+                              value={activeProduct.image}
+                              onChange={(e) =>
+                                handleUpdateProductField(
+                                  selectedProdIdx,
+                                  "image",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
+                            />
+
+                            <div className="grid grid-cols-2 gap-2">
                               <button
                                 type="button"
                                 onClick={() =>
-                                  handleUpdateProductField(
-                                    selectedProdIdx,
-                                    "gallery",
-                                    activeProduct.gallery.filter(
-                                      (_, i) => i !== gIdx
+                                  setMediaPickerTarget({
+                                    label: `Select 360° Cutout for ${activeProduct.shortName}`,
+                                    filterType: "image",
+                                    onSelect: (url) =>
+                                      handleUpdateProductField(
+                                        selectedProdIdx,
+                                        "image",
+                                        url
+                                      )
+                                  })
+                                }
+                                className="py-2 px-3 rounded-xl bg-[#141414] text-white font-mono text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
+                              >
+                                <ImageIcon className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                                <span>Choose Saved</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  triggerUploadForField((url) =>
+                                    handleUpdateProductField(
+                                      selectedProdIdx,
+                                      "image",
+                                      url
                                     )
                                   )
                                 }
-                                className="absolute top-1 right-1 p-1 rounded-full bg-red-600 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                                title="Remove photo from gallery"
+                                className="py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5"
                               >
-                                <X className="w-3 h-3" />
+                                <Upload className="w-3.5 h-3.5 shrink-0" />
+                                <span>Upload New</span>
                               </button>
                             </div>
-                          ))}
+                          </div>
+
+                          {/* 2. Product Motion Video Card */}
+                          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/12 shadow-xs space-y-3">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-xs font-mono font-black uppercase tracking-wider text-black flex items-center gap-1.5">
+                                <Film className="w-4 h-4 text-amber-700 shrink-0" />
+                                <span>Motion Video (Set {activeProduct.number})</span>
+                              </span>
+                            </div>
+
+                            <div className="h-48 rounded-2xl bg-black overflow-hidden relative">
+                              <video
+                                key={activeProduct.video}
+                                src={activeProduct.video}
+                                autoPlay
+                                loop
+                                muted
+                                playsInline
+                                controls
+                                style={{
+                                  width: "100%",
+                                  height: "100%",
+                                  objectFit: "cover"
+                                }}
+                              />
+                            </div>
+
+                            <input
+                              id="prod-video-url"
+                              type="text"
+                              aria-label="Motion Video Path"
+                              value={activeProduct.video}
+                              onChange={(e) =>
+                                handleUpdateProductField(
+                                  selectedProdIdx,
+                                  "video",
+                                  e.target.value
+                                )
+                              }
+                              className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
+                            />
+
+                            <div className="grid grid-cols-2 gap-2">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setMediaPickerTarget({
+                                    label: `Select Video for ${activeProduct.shortName}`,
+                                    filterType: "video",
+                                    onSelect: (url) =>
+                                      handleUpdateProductField(
+                                        selectedProdIdx,
+                                        "video",
+                                        url
+                                      )
+                                  })
+                                }
+                                className="py-2 px-3 rounded-xl bg-[#141414] text-white font-mono text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
+                              >
+                                <Film className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                                <span>Choose Saved</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  triggerUploadForField((url) =>
+                                    handleUpdateProductField(
+                                      selectedProdIdx,
+                                      "video",
+                                      url
+                                    )
+                                  )
+                                }
+                                className="py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5"
+                              >
+                                <Upload className="w-3.5 h-3.5 shrink-0" />
+                                <span>Upload MP4</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Gallery & 360° Speed Row */}
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                          <div className="md:col-span-8 bg-white p-4 rounded-2xl border border-black/12 shadow-xs space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-mono font-black uppercase tracking-wider text-black">
+                                Gallery Photos ({activeProduct.gallery.length})
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setMediaPickerTarget({
+                                    label: `Add Photo to ${activeProduct.shortName} Gallery`,
+                                    filterType: "image",
+                                    onSelect: (url) =>
+                                      handleUpdateProductField(
+                                        selectedProdIdx,
+                                        "gallery",
+                                        [...activeProduct.gallery, url]
+                                      )
+                                  })
+                                }
+                                className="px-3 py-1 rounded-full bg-black text-white font-mono text-[10px] font-bold uppercase flex items-center gap-1"
+                              >
+                                <Plus className="w-3 h-3" />
+                                <span>Add Photo</span>
+                              </button>
+                            </div>
+
+                            <div className="flex items-center gap-2.5 overflow-x-auto py-1">
+                              {activeProduct.gallery.map((imgUrl, gIdx) => (
+                                <div
+                                  key={`${imgUrl}-${gIdx}`}
+                                  className="relative group w-16 h-16 rounded-xl bg-neutral-100 border border-black/15 overflow-hidden flex-shrink-0 flex items-center justify-center"
+                                >
+                                  <Image
+                                    src={imgUrl}
+                                    alt={`Gallery ${gIdx + 1}`}
+                                    width={64}
+                                    height={64}
+                                    unoptimized
+                                    style={{
+                                      width: "64px",
+                                      height: "64px",
+                                      objectFit: "cover"
+                                    }}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleUpdateProductField(
+                                        selectedProdIdx,
+                                        "gallery",
+                                        activeProduct.gallery.filter(
+                                          (_, i) => i !== gIdx
+                                        )
+                                      )
+                                    }
+                                    className="absolute top-1 right-1 p-1 rounded-full bg-red-600 text-white"
+                                    title="Remove photo"
+                                  >
+                                    <X className="w-2.5 h-2.5" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="md:col-span-4 bg-white p-4 rounded-2xl border border-black/12 shadow-xs flex flex-col justify-between gap-3">
+                            <div>
+                              <span className="text-xs font-mono font-black uppercase tracking-wider text-black block">
+                                360° Turntable Speed
+                              </span>
+                              <p className="text-[11px] font-mono text-black/60 mt-0.5">
+                                Controls rotation speed on the storefront hero stage.
+                              </p>
+                            </div>
+                            <select
+                              id="orbit-speed-select"
+                              aria-label="360° Orbit Speed"
+                              value={settings.orbitSpeedMultiplier || 1}
+                              onChange={(e) =>
+                                setSettings((p) => ({
+                                  ...p,
+                                  orbitSpeedMultiplier:
+                                    Number(e.target.value) || 1
+                                }))
+                              }
+                              className="w-full bg-neutral-50 px-3 py-2.5 rounded-xl border border-black/15 font-mono text-xs font-black"
+                            >
+                              <option value={0.5}>0.5x (Slow Luxury)</option>
+                              <option value={1}>1.0x (Standard Smooth)</option>
+                              <option value={1.5}>1.5x (Fast Showcase)</option>
+                              <option value={2}>2.0x (Dynamic Spin)</option>
+                            </select>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    )}
+
+                    {/* -------------------------------------------------------
+                        SUB-TAB C: SIZES, STOCK & DANGER ZONE
+                       ------------------------------------------------------- */}
+                    {productSubTab === "stock" && (
+                      <div className="space-y-4">
+                        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/12 shadow-xs space-y-3.5">
+                          <span className="text-xs font-mono font-black uppercase tracking-wider text-black block border-b border-black/10 pb-2.5">
+                            Size Inventory &amp; Available Units (Set{" "}
+                            {activeProduct.number})
+                          </span>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            {activeProduct.sizes.map((s, sIdx) => (
+                              <div
+                                key={s.size}
+                                className="p-3.5 rounded-xl bg-neutral-50 border border-black/10"
+                              >
+                                <label
+                                  htmlFor={`stock-${selectedProdIdx}-${sIdx}`}
+                                  className="block text-[10px] font-mono font-bold uppercase text-black/80 truncate mb-1.5"
+                                >
+                                  {s.size}
+                                </label>
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    id={`stock-${selectedProdIdx}-${sIdx}`}
+                                    type="number"
+                                    inputMode="numeric"
+                                    min={0}
+                                    value={s.stock}
+                                    onChange={(e) =>
+                                      handleUpdateProductStock(
+                                        selectedProdIdx,
+                                        sIdx,
+                                        Number(e.target.value) || 0
+                                      )
+                                    }
+                                    className="w-full px-3 py-2 rounded-lg bg-white border border-black/15 font-mono text-sm font-black"
+                                  />
+                                  <span className="text-[10px] font-mono text-black/50">
+                                    pcs
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {products.length > 1 && (
+                          <div className="p-4 rounded-2xl bg-red-50/60 border border-red-200 flex flex-wrap items-center justify-between gap-3">
+                            <div className="font-mono">
+                              <span className="text-xs font-bold text-red-900 block">
+                                Remove Set {activeProduct.number} ({activeProduct.shortName})
+                              </span>
+                              <span className="text-[11px] text-red-800/75">
+                                Deletes this set from the 360° storefront catalog.
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteProduct(selectedProdIdx)}
+                              className="px-3.5 py-2 rounded-xl bg-red-100 hover:bg-red-200 text-red-900 font-mono text-xs font-bold uppercase flex items-center gap-1.5"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Delete Set {activeProduct.number}</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -2755,38 +2679,41 @@ export default function AdminPanel({
                               </div>
                             </div>
 
-                            {/* Bottom Row: Fulfillment Pipeline, Courier AWB & Dispatch Email */}
-                            <div className="pt-2 border-t border-black/8 flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3">
-                              <div className="flex items-center gap-1 flex-wrap">
-                                <span className="text-[10px] font-mono uppercase text-black/50 mr-1">
-                                  Stage:
+                            {/* Bottom Row: Fulfillment Stage Dropdown, Courier AWB & Dispatch Email */}
+                            <div className="pt-2.5 border-t border-black/8 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-between gap-2.5">
+                              <div className="flex items-center gap-2 bg-neutral-50 px-3 py-1.5 rounded-xl border border-black/10">
+                                <span className="text-[10px] font-mono uppercase text-black/55 font-bold shrink-0">
+                                  Order Stage:
                                 </span>
-                                {(
-                                  [
-                                    "paid",
-                                    "processing",
-                                    "handcrafted",
-                                    "dispatched",
-                                    "out_for_delivery",
-                                    "delivered",
-                                    "cancelled"
-                                  ] as const
-                                ).map((st) => (
-                                  <button
-                                    key={st}
-                                    type="button"
-                                    disabled={isBusy}
-                                    onClick={() =>
-                                      handleUpdateOrderStatus(order, st, false)
-                                    }
-                                    className={`px-2.5 py-1 rounded-lg font-mono text-[10px] font-bold uppercase transition-all border ${order.status === st
-                                      ? "bg-[#141414] text-white border-[#141414]"
-                                      : "bg-neutral-50 hover:bg-black/10 text-black/75 border-black/10"
-                                      }`}
-                                  >
-                                    {st.replace(/_/g, " ")}
-                                  </button>
-                                ))}
+                                <select
+                                  aria-label="Order Status Stage"
+                                  disabled={isBusy}
+                                  value={order.status}
+                                  onChange={(e) =>
+                                    handleUpdateOrderStatus(
+                                      order,
+                                      e.target.value as OrderRecord["status"],
+                                      false
+                                    )
+                                  }
+                                  className="bg-transparent font-mono text-xs font-black uppercase text-black focus:outline-none cursor-pointer flex-1"
+                                >
+                                  {(
+                                    [
+                                      "paid",
+                                      "processing",
+                                      "handcrafted",
+                                      "dispatched",
+                                      "out_for_delivery",
+                                      "delivered",
+                                      "cancelled"
+                                    ] as const
+                                  ).map((st) => (
+                                    <option key={st} value={st}>
+                                      {st.replace(/_/g, " ").toUpperCase()}
+                                    </option>
+                                  ))}
+                                </select>
                               </div>
 
                               <div className="flex flex-wrap items-center gap-2">
@@ -2865,892 +2792,959 @@ export default function AdminPanel({
                   TAB 3: WHATSAPP & INSTAGRAM DM ORDER AUTOMATION HUB
                  ============================================================= */}
               {activeTab === "social" && (
-                <div className="space-y-6">
-                  {/* Top Webhook & Meta Cloud API Integration Banner */}
-                  <div className="bg-[#141414] text-white p-4 sm:p-5 rounded-2xl space-y-3">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                      <div>
-                        <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-300 font-bold block">
-                          META CLOUD API • MANYCHAT • INTERAKT • WATI READY
-                        </span>
-                        <h2 className="text-sm sm:text-base font-mono font-black uppercase tracking-wider mt-0.5">
-                          WHATSAPP &amp; INSTAGRAM DM AUTOMATED ORDER COMPLETION
-                        </h2>
-                      </div>
+                <div className="space-y-5">
+                  {/* Sub-Navigation for WA / IG Automation */}
+                  <div className="bg-white p-2 rounded-2xl border border-black/10 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+                    <div className="grid grid-cols-2 gap-1.5 flex-1">
                       <button
                         type="button"
-                        onClick={handleSaveAll}
-                        disabled={saving}
-                        style={{ backgroundColor: "#f59e0b", color: "#000000" }}
-                        className="px-4 py-2 rounded-full font-mono text-xs font-black uppercase tracking-wider flex items-center gap-1.5 self-start md:self-auto"
+                        onClick={() => setSocialSubTab("bots")}
+                        className={`py-2.5 px-3 rounded-xl font-mono text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                          socialSubTab === "bots"
+                            ? "bg-[#141414] text-white shadow-xs"
+                            : "bg-neutral-50 text-black/65 hover:text-black hover:bg-black/5"
+                        }`}
                       >
-                        <Save className="w-3.5 h-3.5 shrink-0" />
-                        <span>Save Automation Rules</span>
+                        <Bot className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+                        <span>1. Bot Auto-Replies</span>
                       </button>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-                      <div className="p-3 rounded-xl bg-white/10 border border-white/15 font-mono text-xs flex items-center justify-between gap-2 min-w-0">
-                        <div className="min-w-0 flex-1">
-                          <span className="text-[10px] text-white/60 block uppercase">
-                            Live Webhook Endpoint URL (POST &amp; GET):
-                          </span>
-                          <code className="text-amber-300 font-bold block truncate">
-                            /api/webhooks/social-order
-                          </code>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            navigator.clipboard?.writeText(
-                              `${window.location.origin}/api/webhooks/social-order`
-                            );
-                            showToastMessage("success", "Copied Webhook URL!");
-                          }}
-                          className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white flex-shrink-0"
-                          title="Copy Webhook URL"
-                        >
-                          <Copy className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-
-                      <div className="p-3 rounded-xl bg-white/10 border border-white/15 font-mono text-xs flex items-center justify-between gap-2 min-w-0">
-                        <div className="min-w-0 flex-1">
-                          <span className="text-[10px] text-white/60 block uppercase">
-                            Meta Webhook Verify Token (hub.verify_token):
-                          </span>
-                          <code className="text-emerald-300 font-bold block truncate">
-                            {socialAutomation.webhookVerifyToken}
-                          </code>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            navigator.clipboard?.writeText(
-                              socialAutomation.webhookVerifyToken
-                            );
-                            showToastMessage("success", "Copied Verify Token!");
-                          }}
-                          className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white flex-shrink-0"
-                          title="Copy Verify Token"
-                        >
-                          <Copy className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Two-Column Bot Configuration: WhatsApp vs Instagram */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* WhatsApp Business Auto-Order Bot Card */}
-                    <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/10 shadow-xs space-y-4">
-                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/10 pb-3">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className="w-8 h-8 rounded-xl bg-emerald-700 text-white flex items-center justify-center shrink-0">
-                            <MessageCircle className="w-4 h-4" />
-                          </div>
-                          <div className="min-w-0">
-                            <h3 className="font-mono text-xs font-black uppercase tracking-wider text-black">
-                              WhatsApp Business Order Bot
-                            </h3>
-                            <span className="text-[10px] font-mono text-black/50 block">
-                              Auto-replies with catalog &amp; books UPI/COD orders
-                            </span>
-                          </div>
-                        </div>
-
-                        <label className="inline-flex items-center gap-2 font-mono text-xs font-bold cursor-pointer shrink-0">
-                          <input
-                            type="checkbox"
-                            checked={socialAutomation.whatsappEnabled}
-                            onChange={(e) =>
-                              setSocialAutomation((p) => ({
-                                ...p,
-                                whatsappEnabled: e.target.checked
-                              }))
-                            }
-                            className="w-4 h-4 accent-emerald-700"
-                          />
-                          <span>
-                            {socialAutomation.whatsappEnabled
-                              ? "ACTIVE"
-                              : "PAUSED"}
-                          </span>
-                        </label>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label
-                            htmlFor="wa-number"
-                            className="block text-[10px] font-mono uppercase text-black/60 mb-1"
-                          >
-                            WhatsApp Business Number
-                          </label>
-                          <input
-                            id="wa-number"
-                            type="text"
-                            value={socialAutomation.whatsappBusinessNumber}
-                            onChange={(e) =>
-                              setSocialAutomation((p) => ({
-                                ...p,
-                                whatsappBusinessNumber: e.target.value
-                              }))
-                            }
-                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold"
-                          />
-                        </div>
-
-                        <div>
-                          <label
-                            htmlFor="wa-phone-id"
-                            className="block text-[10px] font-mono uppercase text-black/60 mb-1"
-                          >
-                            Meta Cloud Phone Number ID
-                          </label>
-                          <input
-                            id="wa-phone-id"
-                            type="text"
-                            value={socialAutomation.whatsappPhoneId}
-                            onChange={(e) =>
-                              setSocialAutomation((p) => ({
-                                ...p,
-                                whatsappPhoneId: e.target.value
-                              }))
-                            }
-                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label
-                          htmlFor="wa-template"
-                          className="block text-[10px] font-mono uppercase text-black/60 mb-1"
-                        >
-                          Automated WhatsApp Menu &amp; Order Reply Template
-                        </label>
-                        <textarea
-                          id="wa-template"
-                          rows={4}
-                          value={socialAutomation.whatsappWelcomeTemplate}
-                          onChange={(e) =>
-                            setSocialAutomation((p) => ({
-                              ...p,
-                              whatsappWelcomeTemplate: e.target.value
-                            }))
-                          }
-                          className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Instagram DM & Reel Comment Auto-Order Bot Card */}
-                    <div className="bg-white p-5 rounded-2xl border border-black/10 shadow-xs space-y-4">
-                      <div className="flex items-center justify-between border-b border-black/10 pb-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-xl bg-pink-700 text-white flex items-center justify-center">
-                            <Camera className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <h3 className="font-mono text-xs font-black uppercase tracking-wider text-black">
-                              Instagram DM &amp; Reel Auto-Checkout
-                            </h3>
-                            <span className="text-[10px] font-mono text-black/50">
-                              Auto-DMs checkout link &amp; completes DM orders
-                            </span>
-                          </div>
-                        </div>
-
-                        <label className="inline-flex items-center gap-2 font-mono text-xs font-bold cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={socialAutomation.instagramEnabled}
-                            onChange={(e) =>
-                              setSocialAutomation((p) => ({
-                                ...p,
-                                instagramEnabled: e.target.checked
-                              }))
-                            }
-                            className="w-4 h-4 accent-pink-700"
-                          />
-                          <span>
-                            {socialAutomation.instagramEnabled
-                              ? "ACTIVE"
-                              : "PAUSED"}
-                          </span>
-                        </label>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label
-                            htmlFor="ig-handle"
-                            className="block text-[10px] font-mono uppercase text-black/60 mb-1"
-                          >
-                            Instagram Brand Handle
-                          </label>
-                          <input
-                            id="ig-handle"
-                            type="text"
-                            value={socialAutomation.instagramHandle}
-                            onChange={(e) =>
-                              setSocialAutomation((p) => ({
-                                ...p,
-                                instagramHandle: e.target.value
-                              }))
-                            }
-                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold"
-                          />
-                        </div>
-
-                        <div>
-                          <label
-                            htmlFor="ig-keywords"
-                            className="block text-[10px] font-mono uppercase text-black/60 mb-1"
-                          >
-                            Comment / DM Trigger Keywords
-                          </label>
-                          <input
-                            id="ig-keywords"
-                            type="text"
-                            value={socialAutomation.instagramTriggerKeywords.join(
-                              ", "
-                            )}
-                            onChange={(e) =>
-                              setSocialAutomation((p) => ({
-                                ...p,
-                                instagramTriggerKeywords: e.target.value
-                                  .split(",")
-                                  .map((k) => k.trim().toUpperCase())
-                                  .filter(Boolean)
-                              }))
-                            }
-                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label
-                          htmlFor="ig-template"
-                          className="block text-[10px] font-mono uppercase text-black/60 mb-1"
-                        >
-                          Automated Instagram DM Checkout Reply Template
-                        </label>
-                        <textarea
-                          id="ig-template"
-                          rows={4}
-                          value={socialAutomation.instagramDmReplyTemplate}
-                          onChange={(e) =>
-                            setSocialAutomation((p) => ({
-                              ...p,
-                              instagramDmReplyTemplate: e.target.value
-                            }))
-                          }
-                          className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Live Webhook Simulator + Automation Event Feed */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    {/* Left (5 cols): Test Incoming WhatsApp / Instagram Order */}
-                    <form
-                      onSubmit={handleRunSocialOrderSimulation}
-                      className="lg:col-span-5 bg-white p-5 rounded-2xl border border-black/12 shadow-xs space-y-3"
-                    >
-                      <div className="border-b border-black/10 pb-2">
-                        <span className="font-mono text-xs font-black uppercase tracking-wider text-black flex items-center gap-1.5">
-                          <Zap className="w-4 h-4 text-amber-600" />
-                          Test Automated WhatsApp / IG Order Flow
-                        </span>
-                        <p className="text-[11px] font-mono text-black/60">
-                          Simulates an incoming customer message to `/api/webhooks/social-order` and auto-creates the order + AWB.
-                        </p>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2.5">
-                        <div>
-                          <label
-                            htmlFor="sim-channel"
-                            className="block text-[10px] font-mono uppercase text-black/60 mb-1"
-                          >
-                            Channel
-                          </label>
-                          <select
-                            id="sim-channel"
-                            value={simChannel}
-                            onChange={(e) =>
-                              setSimChannel(
-                                e.target.value as "whatsapp" | "instagram"
-                              )
-                            }
-                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold uppercase"
-                          >
-                            <option value="whatsapp">WhatsApp Bot</option>
-                            <option value="instagram">Instagram DM</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <label
-                            htmlFor="sim-product"
-                            className="block text-[10px] font-mono uppercase text-black/60 mb-1"
-                          >
-                            Product Keyword
-                          </label>
-                          <select
-                            id="sim-product"
-                            value={simProduct}
-                            onChange={(e) =>
-                              setSimProduct(
-                                e.target.value as "set1" | "set2" | "both"
-                              )
-                            }
-                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold"
-                          >
-                            <option value="set1">Set 01 (Coir Fringe)</option>
-                            <option value="set2">Set 02 (Jute Wrap)</option>
-                            <option value="both">Both Sets (15% OFF)</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <label
-                            htmlFor="sim-name"
-                            className="block text-[10px] font-mono uppercase text-black/60 mb-1"
-                          >
-                            Sender Name
-                          </label>
-                          <input
-                            id="sim-name"
-                            type="text"
-                            value={simName}
-                            onChange={(e) => setSimName(e.target.value)}
-                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
-                          />
-                        </div>
-
-                        <div>
-                          <label
-                            htmlFor="sim-handle"
-                            className="block text-[10px] font-mono uppercase text-black/60 mb-1"
-                          >
-                            Phone or @Handle
-                          </label>
-                          <input
-                            id="sim-handle"
-                            type="text"
-                            value={simHandle}
-                            onChange={(e) => setSimHandle(e.target.value)}
-                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
-                          />
-                        </div>
-
-                        <div>
-                          <label
-                            htmlFor="sim-city"
-                            className="block text-[10px] font-mono uppercase text-black/60 mb-1"
-                          >
-                            Delivery City
-                          </label>
-                          <input
-                            id="sim-city"
-                            type="text"
-                            value={simCity}
-                            onChange={(e) => setSimCity(e.target.value)}
-                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
-                          />
-                        </div>
-
-                        <div>
-                          <label
-                            htmlFor="sim-pay"
-                            className="block text-[10px] font-mono uppercase text-black/60 mb-1"
-                          >
-                            Payment Mode (Prepaid Only)
-                          </label>
-                          <select
-                            id="sim-pay"
-                            value={simPayment}
-                            onChange={(e) =>
-                              setSimPayment(
-                                e.target.value as "razorpay" | "upi" | "card"
-                              )
-                            }
-                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold uppercase"
-                          >
-                            <option value="razorpay">Razorpay Payment Link</option>
-                            <option value="upi">Razorpay UPI Paid</option>
-                            <option value="card">Razorpay Card Paid</option>
-                          </select>
-                        </div>
-                      </div>
-
                       <button
-                        type="submit"
-                        disabled={simRunning}
-                        className="w-full py-3 rounded-xl bg-[#141414] hover:bg-black text-white font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2"
+                        type="button"
+                        onClick={() => setSocialSubTab("simulator")}
+                        className={`py-2.5 px-3 rounded-xl font-mono text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                          socialSubTab === "simulator"
+                            ? "bg-[#141414] text-white shadow-xs"
+                            : "bg-neutral-50 text-black/65 hover:text-black hover:bg-black/5"
+                        }`}
                       >
-                        <Bot className="w-4 h-4 text-amber-300" />
-                        <span>
-                          {simRunning
-                            ? "Processing Webhook..."
-                            : `Simulate ${simChannel.toUpperCase()} Auto-Order`}
-                        </span>
+                        <Zap className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+                        <span>2. Webhook &amp; Simulator ({socialEvents.length})</span>
                       </button>
-                    </form>
+                    </div>
+                  </div>
 
-                    {/* Right (7 cols): Live Social Automation Log */}
-                    <div className="lg:col-span-7 bg-white p-5 rounded-2xl border border-black/12 shadow-xs space-y-3">
-                      <div className="flex items-center justify-between border-b border-black/10 pb-2">
-                        <span className="font-mono text-xs font-black uppercase tracking-wider text-black">
-                          Automated WhatsApp &amp; Instagram Order Log (
-                          {socialEvents.length})
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setActiveTab("orders")}
-                          className="text-[10px] font-mono font-bold underline text-amber-900"
-                        >
-                          View All in Orders Tab →
-                        </button>
+                  {/* SUB-TAB 1: Bot Configuration (WhatsApp & Instagram) */}
+                  {socialSubTab === "bots" && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                      {/* WhatsApp Business Auto-Order Bot Card */}
+                      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/10 shadow-xs space-y-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/10 pb-3">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className="w-8 h-8 rounded-xl bg-emerald-700 text-white flex items-center justify-center shrink-0">
+                              <MessageCircle className="w-4 h-4" />
+                            </div>
+                            <div className="min-w-0">
+                              <h3 className="font-mono text-xs font-black uppercase tracking-wider text-black">
+                                WhatsApp Business Order Bot
+                              </h3>
+                              <span className="text-[10px] font-mono text-black/50 block">
+                                Auto-replies with catalog &amp; books orders
+                              </span>
+                            </div>
+                          </div>
+
+                          <label className="inline-flex items-center gap-2 font-mono text-xs font-bold cursor-pointer shrink-0">
+                            <input
+                              type="checkbox"
+                              checked={socialAutomation.whatsappEnabled}
+                              onChange={(e) =>
+                                setSocialAutomation((p) => ({
+                                  ...p,
+                                  whatsappEnabled: e.target.checked
+                                }))
+                              }
+                              className="w-4 h-4 accent-emerald-700"
+                            />
+                            <span>
+                              {socialAutomation.whatsappEnabled
+                                ? "ACTIVE"
+                                : "PAUSED"}
+                            </span>
+                          </label>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label
+                              htmlFor="wa-number"
+                              className="block text-[10px] font-mono uppercase text-black/60 mb-1"
+                            >
+                              WhatsApp Business Number
+                            </label>
+                            <input
+                              id="wa-number"
+                              type="text"
+                              value={socialAutomation.whatsappBusinessNumber}
+                              onChange={(e) =>
+                                setSocialAutomation((p) => ({
+                                  ...p,
+                                  whatsappBusinessNumber: e.target.value
+                                }))
+                              }
+                              className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold"
+                            />
+                          </div>
+
+                          <div>
+                            <label
+                              htmlFor="wa-phone-id"
+                              className="block text-[10px] font-mono uppercase text-black/60 mb-1"
+                            >
+                              Meta Cloud Phone Number ID
+                            </label>
+                            <input
+                              id="wa-phone-id"
+                              type="text"
+                              value={socialAutomation.whatsappPhoneId}
+                              onChange={(e) =>
+                                setSocialAutomation((p) => ({
+                                  ...p,
+                                  whatsappPhoneId: e.target.value
+                                }))
+                              }
+                              className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label
+                            htmlFor="wa-template"
+                            className="block text-[10px] font-mono uppercase text-black/60 mb-1"
+                          >
+                            Automated WhatsApp Menu &amp; Order Reply Template
+                          </label>
+                          <textarea
+                            id="wa-template"
+                            rows={4}
+                            value={socialAutomation.whatsappWelcomeTemplate}
+                            onChange={(e) =>
+                              setSocialAutomation((p) => ({
+                                ...p,
+                                whatsappWelcomeTemplate: e.target.value
+                              }))
+                            }
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
+                          />
+                        </div>
                       </div>
 
-                      <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
-                        {socialEvents.map((evt) => (
-                          <div
-                            key={evt.id}
-                            className="p-3.5 rounded-xl bg-neutral-50 border border-black/10 font-mono text-xs space-y-1.5"
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2">
-                                <span
-                                  className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${evt.channel === "whatsapp"
-                                    ? "bg-emerald-100 text-emerald-900"
-                                    : "bg-pink-100 text-pink-900"
-                                    }`}
-                                >
-                                  {evt.channel}
-                                </span>
-                                <span className="font-bold text-black">
-                                  {evt.senderName} ({evt.senderHandleOrPhone})
-                                </span>
-                              </div>
-                              {evt.orderId && (
-                                <span className="px-2 py-0.5 rounded bg-black text-white text-[10px] font-bold">
-                                  {evt.orderId} • ₹
-                                  {(evt.amount || 0).toLocaleString("en-IN")}
-                                </span>
+                      {/* Instagram DM & Reel Comment Auto-Order Bot Card */}
+                      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/10 shadow-xs space-y-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/10 pb-3">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className="w-8 h-8 rounded-xl bg-pink-700 text-white flex items-center justify-center shrink-0">
+                              <Camera className="w-4 h-4" />
+                            </div>
+                            <div className="min-w-0">
+                              <h3 className="font-mono text-xs font-black uppercase tracking-wider text-black">
+                                Instagram DM &amp; Reel Auto-Checkout
+                              </h3>
+                              <span className="text-[10px] font-mono text-black/50 block">
+                                Auto-DMs checkout link &amp; completes DM orders
+                              </span>
+                            </div>
+                          </div>
+
+                          <label className="inline-flex items-center gap-2 font-mono text-xs font-bold cursor-pointer shrink-0">
+                            <input
+                              type="checkbox"
+                              checked={socialAutomation.instagramEnabled}
+                              onChange={(e) =>
+                                setSocialAutomation((p) => ({
+                                  ...p,
+                                  instagramEnabled: e.target.checked
+                                }))
+                              }
+                              className="w-4 h-4 accent-pink-700"
+                            />
+                            <span>
+                              {socialAutomation.instagramEnabled
+                                ? "ACTIVE"
+                                : "PAUSED"}
+                            </span>
+                          </label>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label
+                              htmlFor="ig-handle"
+                              className="block text-[10px] font-mono uppercase text-black/60 mb-1"
+                            >
+                              Instagram Brand Handle
+                            </label>
+                            <input
+                              id="ig-handle"
+                              type="text"
+                              value={socialAutomation.instagramHandle}
+                              onChange={(e) =>
+                                setSocialAutomation((p) => ({
+                                  ...p,
+                                  instagramHandle: e.target.value
+                                }))
+                              }
+                              className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold"
+                            />
+                          </div>
+
+                          <div>
+                            <label
+                              htmlFor="ig-keywords"
+                              className="block text-[10px] font-mono uppercase text-black/60 mb-1"
+                            >
+                              Comment / DM Trigger Keywords
+                            </label>
+                            <input
+                              id="ig-keywords"
+                              type="text"
+                              value={socialAutomation.instagramTriggerKeywords.join(
+                                ", "
                               )}
+                              onChange={(e) =>
+                                setSocialAutomation((p) => ({
+                                  ...p,
+                                  instagramTriggerKeywords: e.target.value
+                                    .split(",")
+                                    .map((k) => k.trim().toUpperCase())
+                                    .filter(Boolean)
+                                }))
+                              }
+                              className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label
+                            htmlFor="ig-template"
+                            className="block text-[10px] font-mono uppercase text-black/60 mb-1"
+                          >
+                            Automated Instagram DM Checkout Reply Template
+                          </label>
+                          <textarea
+                            id="ig-template"
+                            rows={4}
+                            value={socialAutomation.instagramDmReplyTemplate}
+                            onChange={(e) =>
+                              setSocialAutomation((p) => ({
+                                ...p,
+                                instagramDmReplyTemplate: e.target.value
+                              }))
+                            }
+                            className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SUB-TAB 2: Webhook Endpoints, Simulator & Event Feed */}
+                  {socialSubTab === "simulator" && (
+                    <div className="space-y-5">
+                      {/* Webhook & Meta Cloud API Integration Banner */}
+                      <div className="bg-[#141414] text-white p-4 sm:p-5 rounded-2xl space-y-3">
+                        <div>
+                          <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-300 font-bold block">
+                            META CLOUD API • MANYCHAT • INTERAKT • WATI READY
+                          </span>
+                          <h2 className="text-sm font-mono font-black uppercase tracking-wider mt-0.5">
+                            WEBHOOK ENDPOINT &amp; VERIFY TOKEN
+                          </h2>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div className="p-3 rounded-xl bg-white/10 border border-white/15 font-mono text-xs flex items-center justify-between gap-2 min-w-0">
+                            <div className="min-w-0 flex-1">
+                              <span className="text-[10px] text-white/60 block uppercase">
+                                Live Webhook Endpoint URL (POST &amp; GET):
+                              </span>
+                              <code className="text-amber-300 font-bold block truncate">
+                                /api/webhooks/social-order
+                              </code>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard?.writeText(
+                                  `${window.location.origin}/api/webhooks/social-order`
+                                );
+                                showToastMessage("success", "Copied Webhook URL!");
+                              }}
+                              className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white flex-shrink-0"
+                              title="Copy Webhook URL"
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          <div className="p-3 rounded-xl bg-white/10 border border-white/15 font-mono text-xs flex items-center justify-between gap-2 min-w-0">
+                            <div className="min-w-0 flex-1">
+                              <span className="text-[10px] text-white/60 block uppercase">
+                                Meta Webhook Verify Token (hub.verify_token):
+                              </span>
+                              <code className="text-emerald-300 font-bold block truncate">
+                                {socialAutomation.webhookVerifyToken}
+                              </code>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard?.writeText(
+                                  socialAutomation.webhookVerifyToken
+                                );
+                                showToastMessage("success", "Copied Verify Token!");
+                              }}
+                              className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white flex-shrink-0"
+                              title="Copy Verify Token"
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Live Webhook Simulator + Automation Event Feed */}
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                        {/* Left (5 cols): Test Incoming WhatsApp / Instagram Order */}
+                        <form
+                          onSubmit={handleRunSocialOrderSimulation}
+                          className="lg:col-span-5 bg-white p-4 sm:p-5 rounded-2xl border border-black/12 shadow-xs space-y-3"
+                        >
+                          <div className="border-b border-black/10 pb-2">
+                            <span className="font-mono text-xs font-black uppercase tracking-wider text-black flex items-center gap-1.5">
+                              <Zap className="w-4 h-4 text-amber-600" />
+                              Test Automated Order Flow
+                            </span>
+                            <p className="text-[11px] font-mono text-black/60">
+                              Simulates an incoming customer message and auto-creates the order + AWB.
+                            </p>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            <div>
+                              <label
+                                htmlFor="sim-channel"
+                                className="block text-[10px] font-mono uppercase text-black/60 mb-1"
+                              >
+                                Channel
+                              </label>
+                              <select
+                                id="sim-channel"
+                                value={simChannel}
+                                onChange={(e) =>
+                                  setSimChannel(
+                                    e.target.value as "whatsapp" | "instagram"
+                                  )
+                                }
+                                className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold uppercase"
+                              >
+                                <option value="whatsapp">WhatsApp Bot</option>
+                                <option value="instagram">Instagram DM</option>
+                              </select>
                             </div>
 
-                            <div className="text-[11px] text-black/70 bg-white p-2 rounded-lg border border-black/5">
-                              <strong>Customer DM:</strong> {evt.incomingMessage}
+                            <div>
+                              <label
+                                htmlFor="sim-product"
+                                className="block text-[10px] font-mono uppercase text-black/60 mb-1"
+                              >
+                                Product Keyword
+                              </label>
+                              <select
+                                id="sim-product"
+                                value={simProduct}
+                                onChange={(e) =>
+                                  setSimProduct(
+                                    e.target.value as "set1" | "set2" | "both"
+                                  )
+                                }
+                                className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold"
+                              >
+                                <option value="set1">Set 01 (Coir Fringe)</option>
+                                <option value="set2">Set 02 (Jute Wrap)</option>
+                                <option value="both">Both Sets (15% OFF)</option>
+                              </select>
                             </div>
-                            <div className="text-[11px] text-emerald-950 bg-emerald-50 p-2 rounded-lg border border-emerald-900/10">
-                              <strong>Bot Reply:</strong> {evt.automatedReply}
+
+                            <div>
+                              <label
+                                htmlFor="sim-name"
+                                className="block text-[10px] font-mono uppercase text-black/60 mb-1"
+                              >
+                                Sender Name
+                              </label>
+                              <input
+                                id="sim-name"
+                                type="text"
+                                value={simName}
+                                onChange={(e) => setSimName(e.target.value)}
+                                className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
+                              />
+                            </div>
+
+                            <div>
+                              <label
+                                htmlFor="sim-handle"
+                                className="block text-[10px] font-mono uppercase text-black/60 mb-1"
+                              >
+                                Phone or @Handle
+                              </label>
+                              <input
+                                id="sim-handle"
+                                type="text"
+                                value={simHandle}
+                                onChange={(e) => setSimHandle(e.target.value)}
+                                className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
+                              />
+                            </div>
+
+                            <div>
+                              <label
+                                htmlFor="sim-city"
+                                className="block text-[10px] font-mono uppercase text-black/60 mb-1"
+                              >
+                                Delivery City
+                              </label>
+                              <input
+                                id="sim-city"
+                                type="text"
+                                value={simCity}
+                                onChange={(e) => setSimCity(e.target.value)}
+                                className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
+                              />
+                            </div>
+
+                            <div>
+                              <label
+                                htmlFor="sim-pay"
+                                className="block text-[10px] font-mono uppercase text-black/60 mb-1"
+                              >
+                                Payment Mode
+                              </label>
+                              <select
+                                id="sim-pay"
+                                value={simPayment}
+                                onChange={(e) =>
+                                  setSimPayment(
+                                    e.target.value as "razorpay" | "upi" | "card"
+                                  )
+                                }
+                                className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold uppercase"
+                              >
+                                <option value="razorpay">Razorpay Link</option>
+                                <option value="upi">Razorpay UPI Paid</option>
+                                <option value="card">Razorpay Card Paid</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          <button
+                            type="submit"
+                            disabled={simRunning}
+                            className="w-full py-3 rounded-xl bg-[#141414] hover:bg-black text-white font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2"
+                          >
+                            <Bot className="w-4 h-4 text-amber-300" />
+                            <span>
+                              {simRunning
+                                ? "Processing Webhook..."
+                                : `Simulate ${simChannel.toUpperCase()} Auto-Order`}
+                            </span>
+                          </button>
+                        </form>
+
+                        {/* Right (7 cols): Live Social Automation Log */}
+                        <div className="lg:col-span-7 bg-white p-4 sm:p-5 rounded-2xl border border-black/12 shadow-xs space-y-3">
+                          <div className="flex items-center justify-between border-b border-black/10 pb-2">
+                            <span className="font-mono text-xs font-black uppercase tracking-wider text-black">
+                              Automated Order Log ({socialEvents.length})
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setActiveTab("orders")}
+                              className="text-[10px] font-mono font-bold underline text-amber-900"
+                            >
+                              View All in Orders →
+                            </button>
+                          </div>
+
+                          <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+                            {socialEvents.map((evt) => (
+                              <div
+                                key={evt.id}
+                                className="p-3.5 rounded-xl bg-neutral-50 border border-black/10 font-mono text-xs space-y-1.5"
+                              >
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2">
+                                    <span
+                                      className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${
+                                        evt.channel === "whatsapp"
+                                          ? "bg-emerald-100 text-emerald-900"
+                                          : "bg-pink-100 text-pink-900"
+                                      }`}
+                                    >
+                                      {evt.channel}
+                                    </span>
+                                    <span className="font-bold text-black">
+                                      {evt.senderName} ({evt.senderHandleOrPhone})
+                                    </span>
+                                  </div>
+                                  {evt.orderId && (
+                                    <span className="px-2 py-0.5 rounded bg-black text-white text-[10px] font-bold">
+                                      {evt.orderId} • ₹
+                                      {(evt.amount || 0).toLocaleString("en-IN")}
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="text-[11px] text-black/70 bg-white p-2 rounded-lg border border-black/5">
+                                  <strong>Customer DM:</strong> {evt.incomingMessage}
+                                </div>
+                                <div className="text-[11px] text-emerald-950 bg-emerald-50 p-2 rounded-lg border border-emerald-900/10">
+                                  <strong>Bot Reply:</strong> {evt.automatedReply}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* =============================================================
+                  TAB 4: MEDIA LIBRARY & LOOKBOOK EDITOR
+                 ============================================================= */}
+              {activeTab === "media" && (
+                <div className="space-y-5">
+                  {/* Sub-Navigation for Media Tab */}
+                  <div className="bg-white p-2 rounded-2xl border border-black/10 shadow-xs grid grid-cols-3 gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setMediaSubTab("library")}
+                      className={`py-2.5 px-2 sm:px-3 rounded-xl font-mono text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                        mediaSubTab === "library"
+                          ? "bg-[#141414] text-white shadow-xs"
+                          : "bg-neutral-50 text-black/65 hover:text-black hover:bg-black/5"
+                      }`}
+                    >
+                      <ImageIcon className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+                      <span>1. Media Files ({mediaLibrary.length})</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMediaSubTab("lookbook")}
+                      className={`py-2.5 px-2 sm:px-3 rounded-xl font-mono text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                        mediaSubTab === "lookbook"
+                          ? "bg-[#141414] text-white shadow-xs"
+                          : "bg-neutral-50 text-black/65 hover:text-black hover:bg-black/5"
+                      }`}
+                    >
+                      <Layers className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+                      <span>2. Lookbook (4)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMediaSubTab("paths")}
+                      className={`py-2.5 px-2 sm:px-3 rounded-xl font-mono text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                        mediaSubTab === "paths"
+                          ? "bg-[#141414] text-white shadow-xs"
+                          : "bg-neutral-50 text-black/65 hover:text-black hover:bg-black/5"
+                      }`}
+                    >
+                      <FolderOpen className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+                      <span>3. Storage Paths</span>
+                    </button>
+                  </div>
+
+                  {/* SUB-TAB 1: Media Files Library */}
+                  {mediaSubTab === "library" && (
+                    <div className="space-y-4">
+                      {/* Upload & Add URL Bar */}
+                      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/10 shadow-xs flex flex-col lg:flex-row items-stretch lg:items-end justify-between gap-4">
+                        <div>
+                          <h3 className="font-mono text-sm font-black uppercase tracking-wider text-black">
+                            All Stored Media Files ({mediaLibrary.length})
+                          </h3>
+                          <p className="font-mono text-xs text-black/60 mt-0.5">
+                            Upload new images or `.mp4` videos, or assign any file to Set 01 / Set 02 with one click.
+                          </p>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-end gap-2">
+                          <form
+                            onSubmit={handleAddCustomMediaUrl}
+                            className="flex items-center gap-2 w-full sm:w-auto"
+                          >
+                            <input
+                              type="text"
+                              aria-label="Media URL"
+                              placeholder="Paste external image or .mp4 URL..."
+                              value={customMediaUrl}
+                              onChange={(e) => setCustomMediaUrl(e.target.value)}
+                              className="px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs flex-1 sm:w-56 min-w-0"
+                            />
+                            <button
+                              type="submit"
+                              className="px-3.5 py-2 rounded-xl bg-black text-white font-mono text-xs font-bold uppercase whitespace-nowrap shrink-0"
+                            >
+                              Add URL
+                            </button>
+                          </form>
+
+                          <button
+                            type="button"
+                            onClick={() => triggerUploadForField()}
+                            disabled={uploading}
+                            className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5"
+                          >
+                            <Upload className="w-3.5 h-3.5 shrink-0" />
+                            <span>
+                              {uploading
+                                ? "Uploading..."
+                                : "Upload to /public/uploads"}
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Media Library Grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">
+                        {mediaLibrary.map((asset) => (
+                          <div
+                            key={asset.id}
+                            className="bg-white rounded-2xl border border-black/12 overflow-hidden shadow-xs flex flex-col justify-between"
+                          >
+                            <div className="h-36 bg-[#181512] relative flex items-center justify-center overflow-hidden">
+                              {asset.type === "video" ? (
+                                <video
+                                  src={asset.url}
+                                  muted
+                                  loop
+                                  autoPlay
+                                  playsInline
+                                  style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover"
+                                  }}
+                                />
+                              ) : (
+                                <Image
+                                  src={asset.url}
+                                  alt={asset.name}
+                                  width={140}
+                                  height={140}
+                                  unoptimized
+                                  style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "contain",
+                                    padding: "6px"
+                                  }}
+                                />
+                              )}
+                              <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/75 text-white font-mono text-[9px] uppercase font-bold">
+                                {asset.type}
+                              </span>
+                              {asset.sizeKB ? (
+                                <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/75 text-amber-300 font-mono text-[9px]">
+                                  {asset.sizeKB} KB
+                                </span>
+                              ) : null}
+                            </div>
+
+                            <div className="p-2.5 space-y-1.5">
+                              <div
+                                className="font-mono text-[10px] font-bold text-black truncate"
+                                title={asset.diskPath}
+                              >
+                                {asset.name}
+                              </div>
+                              <div
+                                className="font-mono text-[9px] text-black/50 truncate"
+                                title={asset.diskPath}
+                              >
+                                📁 {asset.folder}
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-1 pt-1">
+                                {asset.type === "video" ? (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        handleUpdateProductField(
+                                          0,
+                                          "video",
+                                          asset.url
+                                        );
+                                        showToastMessage(
+                                          "success",
+                                          `Assigned ${asset.name} as Set 01 Video! Click Save Changes.`
+                                        );
+                                      }}
+                                      className="py-1 px-1.5 rounded bg-black/5 hover:bg-black hover:text-white font-mono text-[9px] font-bold uppercase transition-colors"
+                                    >
+                                      Use Set 01
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        handleUpdateProductField(
+                                          1,
+                                          "video",
+                                          asset.url
+                                        );
+                                        showToastMessage(
+                                          "success",
+                                          `Assigned ${asset.name} as Set 02 Video! Click Save Changes.`
+                                        );
+                                      }}
+                                      className="py-1 px-1.5 rounded bg-black/5 hover:bg-black hover:text-white font-mono text-[9px] font-bold uppercase transition-colors"
+                                    >
+                                      Use Set 02
+                                    </button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        handleUpdateProductField(
+                                          0,
+                                          "image",
+                                          asset.url
+                                        );
+                                        showToastMessage(
+                                          "success",
+                                          `Assigned ${asset.name} to Set 01 360° Cutout! Click Save Changes.`
+                                        );
+                                      }}
+                                      className="py-1 px-1.5 rounded bg-black/5 hover:bg-black hover:text-white font-mono text-[9px] font-bold uppercase transition-colors"
+                                    >
+                                      360° Set 01
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        handleUpdateProductField(
+                                          1,
+                                          "image",
+                                          asset.url
+                                        );
+                                        showToastMessage(
+                                          "success",
+                                          `Assigned ${asset.name} to Set 02 360° Cutout! Click Save Changes.`
+                                        );
+                                      }}
+                                      className="py-1 px-1.5 rounded bg-black/5 hover:bg-black hover:text-white font-mono text-[9px] font-bold uppercase transition-colors"
+                                    >
+                                      360° Set 02
+                                    </button>
+                                  </>
+                                )}
+                              </div>
                             </div>
                           </div>
                         ))}
                       </div>
                     </div>
-                  </div>
-                </div>
-              )}
+                  )}
 
-              {/* =============================================================
-                  TAB 4: MEDIA STORAGE LOCATIONS & LOOKBOOK EDITOR
-                 ============================================================= */}
-              {activeTab === "media" && (
-                <div className="space-y-6">
-                  {/* EXACT DISK STORAGE LOCATIONS EXPLANATION BOX */}
-                  <div className="bg-[#141414] text-white p-5 rounded-2xl space-y-3">
-                    <div className="flex items-center gap-2">
-                      <FolderOpen className="w-4 h-4 text-amber-300" />
-                      <h2 className="font-mono text-xs sm:text-sm font-black uppercase tracking-wider">
-                        WHERE YOUR MEDIA &amp; STORE DATA ARE STORED ON DISK
-                      </h2>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 font-mono text-xs">
-                      <div className="p-3 rounded-xl bg-white/10 border border-white/15">
-                        <span className="text-[10px] text-amber-300 font-bold uppercase block">
-                          1. Built-In 360° Cutouts &amp; Beach Photos:
-                        </span>
-                        <code className="text-white break-all text-[11px]">
-                          {storagePaths.builtInImagesDir}
-                        </code>
-                        <span className="block text-[10px] text-white/60 mt-0.5">
-                          Served publicly at: <code>/images/...</code>
+                  {/* SUB-TAB 2: 4 Beachwear Lookbook Moments Editor */}
+                  {mediaSubTab === "lookbook" && (
+                    <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/10 shadow-xs space-y-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/10 pb-2">
+                        <span className="font-mono text-xs font-black uppercase tracking-wider text-black flex items-center gap-1.5">
+                          <Layers className="w-4 h-4 text-amber-800 shrink-0" />
+                          <span>Beachwear Lookbook Moments (4 Lifestyle Cards)</span>
                         </span>
                       </div>
 
-                      <div className="p-3 rounded-xl bg-white/10 border border-white/15">
-                        <span className="text-[10px] text-amber-300 font-bold uppercase block">
-                          2. Built-In Product Motion Videos (.mp4):
-                        </span>
-                        <code className="text-white break-all text-[11px]">
-                          {storagePaths.builtInVideosDir}
-                        </code>
-                        <span className="block text-[10px] text-white/60 mt-0.5">
-                          Served publicly at: <code>/videos/...</code>
-                        </span>
-                      </div>
-
-                      <div className="p-3 rounded-xl bg-white/10 border border-white/15">
-                        <span className="text-[10px] text-emerald-300 font-bold uppercase block">
-                          3. New Images &amp; Videos Uploaded via Admin Panel:
-                        </span>
-                        <code className="text-white break-all text-[11px]">
-                          {storagePaths.adminUploadsDir}
-                        </code>
-                        <span className="block text-[10px] text-white/60 mt-0.5">
-                          Served publicly at: <code>/uploads/...</code>
-                        </span>
-                      </div>
-
-                      <div className="p-3 rounded-xl bg-white/10 border border-white/15">
-                        <span className="text-[10px] text-emerald-300 font-bold uppercase block">
-                          4. Persistent Store Database (Pricing, Orders, Bots):
-                        </span>
-                        <code className="text-white break-all text-[11px]">
-                          {storagePaths.databaseJsonFile}
-                        </code>
-                        <span className="block text-[10px] text-white/60 mt-0.5">
-                          Auto-saved JSON file updated on every change
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Upload & Add URL Bar */}
-                  <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/10 shadow-xs flex flex-col lg:flex-row items-stretch lg:items-end justify-between gap-4">
-                    <div>
-                      <h3 className="font-mono text-sm font-black uppercase tracking-wider text-black">
-                        All Stored Media Files ({mediaLibrary.length})
-                      </h3>
-                      <p className="font-mono text-xs text-black/60 mt-0.5">
-                        Every card below shows the file&apos;s folder, size, and 1-click assignment to Set 01 or Set 02.
-                      </p>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-end gap-2">
-                      <form
-                        onSubmit={handleAddCustomMediaUrl}
-                        className="flex items-center gap-2 w-full sm:w-auto"
-                      >
-                        <input
-                          type="text"
-                          aria-label="Media URL"
-                          placeholder="Paste external image or .mp4 URL..."
-                          value={customMediaUrl}
-                          onChange={(e) => setCustomMediaUrl(e.target.value)}
-                          className="px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs flex-1 sm:w-56 min-w-0"
-                        />
-                        <button
-                          type="submit"
-                          className="px-3.5 py-2 rounded-xl bg-black text-white font-mono text-xs font-bold uppercase whitespace-nowrap shrink-0"
-                        >
-                          Add URL
-                        </button>
-                      </form>
-
-                      <button
-                        type="button"
-                        onClick={() => triggerUploadForField()}
-                        disabled={uploading}
-                        className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5"
-                      >
-                        <Upload className="w-3.5 h-3.5 shrink-0" />
-                        <span>
-                          {uploading
-                            ? "Uploading..."
-                            : "Upload to /public/uploads"}
-                        </span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Media Library Grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">
-                    {mediaLibrary.map((asset) => (
-                      <div
-                        key={asset.id}
-                        className="bg-white rounded-2xl border border-black/12 overflow-hidden shadow-xs flex flex-col justify-between"
-                      >
-                        <div className="h-36 bg-[#181512] relative flex items-center justify-center overflow-hidden">
-                          {asset.type === "video" ? (
-                            <video
-                              src={asset.url}
-                              muted
-                              loop
-                              autoPlay
-                              playsInline
-                              style={{
-                                width: "100%",
-                                height: "100%",
-                                objectFit: "cover"
-                              }}
-                            />
-                          ) : (
-                            <Image
-                              src={asset.url}
-                              alt={asset.name}
-                              width={140}
-                              height={140}
-                              unoptimized
-                              style={{
-                                width: "100%",
-                                height: "100%",
-                                objectFit: "contain",
-                                padding: "6px"
-                              }}
-                            />
-                          )}
-                          <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/75 text-white font-mono text-[9px] uppercase font-bold">
-                            {asset.type}
-                          </span>
-                          {asset.sizeKB ? (
-                            <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/75 text-amber-300 font-mono text-[9px]">
-                              {asset.sizeKB} KB
-                            </span>
-                          ) : null}
-                        </div>
-
-                        <div className="p-2.5 space-y-1.5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {beachMoments.map((moment, mIdx) => (
                           <div
-                            className="font-mono text-[10px] font-bold text-black truncate"
-                            title={asset.diskPath}
+                            key={moment.id}
+                            className="p-3 rounded-2xl bg-neutral-50 border border-black/10 space-y-2.5"
                           >
-                            {asset.name}
-                          </div>
-                          <div
-                            className="font-mono text-[9px] text-black/50 truncate"
-                            title={asset.diskPath}
-                          >
-                            📁 {asset.folder}
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-1 pt-1">
-                            {asset.type === "video" ? (
-                              <>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    handleUpdateProductField(
-                                      0,
-                                      "video",
-                                      asset.url
-                                    );
-                                    showToastMessage(
-                                      "success",
-                                      `Assigned ${asset.name} as Set 01 Video! Click Save & Publish.`
-                                    );
-                                  }}
-                                  className="py-1 px-1.5 rounded bg-black/5 hover:bg-black hover:text-white font-mono text-[9px] font-bold uppercase transition-colors"
-                                >
-                                  Use Set 01
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    handleUpdateProductField(
-                                      1,
-                                      "video",
-                                      asset.url
-                                    );
-                                    showToastMessage(
-                                      "success",
-                                      `Assigned ${asset.name} as Set 02 Video! Click Save & Publish.`
-                                    );
-                                  }}
-                                  className="py-1 px-1.5 rounded bg-black/5 hover:bg-black hover:text-white font-mono text-[9px] font-bold uppercase transition-colors"
-                                >
-                                  Use Set 02
-                                </button>
-                              </>
-                            ) : (
-                              <>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    handleUpdateProductField(
-                                      0,
-                                      "image",
-                                      asset.url
-                                    );
-                                    showToastMessage(
-                                      "success",
-                                      `Assigned ${asset.name} to Set 01 360° Cutout! Click Save & Publish.`
-                                    );
-                                  }}
-                                  className="py-1 px-1.5 rounded bg-black/5 hover:bg-black hover:text-white font-mono text-[9px] font-bold uppercase transition-colors"
-                                >
-                                  360° Set 01
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    handleUpdateProductField(
-                                      1,
-                                      "image",
-                                      asset.url
-                                    );
-                                    showToastMessage(
-                                      "success",
-                                      `Assigned ${asset.name} to Set 02 360° Cutout! Click Save & Publish.`
-                                    );
-                                  }}
-                                  className="py-1 px-1.5 rounded bg-black/5 hover:bg-black hover:text-white font-mono text-[9px] font-bold uppercase transition-colors"
-                                >
-                                  360° Set 02
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* 4 Beachwear Lookbook Moments Editor */}
-                  <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/10 shadow-xs space-y-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/10 pb-2">
-                      <span className="font-mono text-xs font-black uppercase tracking-wider text-black flex items-center gap-1.5">
-                        <Layers className="w-4 h-4 text-amber-800 shrink-0" />
-                        <span>Beachwear Lookbook Moments (4 Lifestyle Cards)</span>
-                      </span>
-                      <button
-                        type="button"
-                        onClick={handleSaveAll}
-                        className="px-3.5 py-1.5 rounded-full bg-black text-white font-mono text-[10px] font-bold uppercase shrink-0"
-                      >
-                        Save Lookbook
-                      </button>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                      {beachMoments.map((moment, mIdx) => (
-                        <div
-                          key={moment.id}
-                          className="p-3 rounded-2xl bg-neutral-50 border border-black/10 space-y-2.5"
-                        >
-                          <div className="h-36 rounded-xl overflow-hidden bg-black relative">
-                            <Image
-                              src={moment.image}
-                              alt={moment.title}
-                              width={220}
-                              height={144}
-                              unoptimized
-                              style={{
-                                width: "100%",
-                                height: "100%",
-                                objectFit: "cover"
-                              }}
-                            />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setMediaPickerTarget({
-                                  label: `Change Photo for ${moment.title}`,
-                                  filterType: "image",
-                                  onSelect: (url) =>
-                                    setBeachMoments((prev) =>
-                                      prev.map((m, i) =>
-                                        i === mIdx ? { ...m, image: url } : m
+                            <div className="h-36 rounded-xl overflow-hidden bg-black relative">
+                              <Image
+                                src={moment.image}
+                                alt={moment.title}
+                                width={220}
+                                height={144}
+                                unoptimized
+                                style={{
+                                  width: "100%",
+                                  height: "100%",
+                                  objectFit: "cover"
+                                }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setMediaPickerTarget({
+                                    label: `Change Photo for ${moment.title}`,
+                                    filterType: "image",
+                                    onSelect: (url) =>
+                                      setBeachMoments((prev) =>
+                                        prev.map((m, i) =>
+                                          i === mIdx ? { ...m, image: url } : m
+                                        )
                                       )
+                                  })
+                                }
+                                className="absolute bottom-2 right-2 px-2.5 py-1 rounded-full bg-black/80 text-white font-mono text-[9px] font-bold uppercase"
+                              >
+                                Change Photo
+                              </button>
+                            </div>
+
+                            <div>
+                              <label
+                                htmlFor={`moment-occ-${mIdx}`}
+                                className="block text-[9px] font-mono uppercase text-black/50"
+                              >
+                                Occasion Tag
+                              </label>
+                              <input
+                                id={`moment-occ-${mIdx}`}
+                                type="text"
+                                value={moment.occasion}
+                                onChange={(e) =>
+                                  setBeachMoments((prev) =>
+                                    prev.map((m, i) =>
+                                      i === mIdx
+                                        ? { ...m, occasion: e.target.value }
+                                        : m
                                     )
-                                })
-                              }
-                              className="absolute bottom-2 right-2 px-2.5 py-1 rounded-full bg-black/80 text-white font-mono text-[9px] font-bold uppercase"
-                            >
-                              Change Photo
-                            </button>
-                          </div>
-
-                          <div>
-                            <label
-                              htmlFor={`moment-occ-${mIdx}`}
-                              className="block text-[9px] font-mono uppercase text-black/50"
-                            >
-                              Occasion Tag
-                            </label>
-                            <input
-                              id={`moment-occ-${mIdx}`}
-                              type="text"
-                              value={moment.occasion}
-                              onChange={(e) =>
-                                setBeachMoments((prev) =>
-                                  prev.map((m, i) =>
-                                    i === mIdx
-                                      ? { ...m, occasion: e.target.value }
-                                      : m
                                   )
-                                )
-                              }
-                              className="w-full px-2.5 py-1 rounded-lg bg-white border border-black/15 font-mono text-[11px] font-bold"
-                            />
-                          </div>
+                                }
+                                className="w-full px-2.5 py-1 rounded-lg bg-white border border-black/15 font-mono text-[11px] font-bold"
+                              />
+                            </div>
 
-                          <div>
-                            <label
-                              htmlFor={`moment-title-${mIdx}`}
-                              className="block text-[9px] font-mono uppercase text-black/50"
-                            >
-                              Card Title
-                            </label>
-                            <input
-                              id={`moment-title-${mIdx}`}
-                              type="text"
-                              value={moment.title}
-                              onChange={(e) =>
-                                setBeachMoments((prev) =>
-                                  prev.map((m, i) =>
-                                    i === mIdx
-                                      ? { ...m, title: e.target.value }
-                                      : m
+                            <div>
+                              <label
+                                htmlFor={`moment-title-${mIdx}`}
+                                className="block text-[9px] font-mono uppercase text-black/50"
+                              >
+                                Card Title
+                              </label>
+                              <input
+                                id={`moment-title-${mIdx}`}
+                                type="text"
+                                value={moment.title}
+                                onChange={(e) =>
+                                  setBeachMoments((prev) =>
+                                    prev.map((m, i) =>
+                                      i === mIdx
+                                        ? { ...m, title: e.target.value }
+                                        : m
+                                    )
                                   )
-                                )
-                              }
-                              className="w-full px-2.5 py-1 rounded-lg bg-white border border-black/15 font-mono text-[11px] font-bold"
-                            />
-                          </div>
+                                }
+                                className="w-full px-2.5 py-1 rounded-lg bg-white border border-black/15 font-mono text-[11px] font-bold"
+                              />
+                            </div>
 
-                          <div>
-                            <label
-                              htmlFor={`moment-prod-${mIdx}`}
-                              className="block text-[9px] font-mono uppercase text-black/50"
-                            >
-                              1-Click Buy Linked Set
-                            </label>
-                            <select
-                              id={`moment-prod-${mIdx}`}
-                              value={moment.productId}
-                              onChange={(e) =>
-                                setBeachMoments((prev) =>
-                                  prev.map((m, i) =>
-                                    i === mIdx
-                                      ? { ...m, productId: e.target.value }
-                                      : m
+                            <div>
+                              <label
+                                htmlFor={`moment-prod-${mIdx}`}
+                                className="block text-[9px] font-mono uppercase text-black/50"
+                              >
+                                1-Click Buy Linked Set
+                              </label>
+                              <select
+                                id={`moment-prod-${mIdx}`}
+                                value={moment.productId}
+                                onChange={(e) =>
+                                  setBeachMoments((prev) =>
+                                    prev.map((m, i) =>
+                                      i === mIdx
+                                        ? { ...m, productId: e.target.value }
+                                        : m
+                                    )
                                   )
-                                )
-                              }
-                              className="w-full px-2.5 py-1 rounded-lg bg-white border border-black/15 font-mono text-[11px] font-bold"
-                            >
-                              {products.map((p) => (
-                                <option key={p.id} value={p.id}>
-                                  Set {p.number}: {p.shortName}
-                                </option>
-                              ))}
-                            </select>
+                                }
+                                className="w-full px-2.5 py-1 rounded-lg bg-white border border-black/15 font-mono text-[11px] font-bold"
+                              >
+                                {products.map((p) => (
+                                  <option key={p.id} value={p.id}>
+                                    Set {p.number}: {p.shortName}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* SUB-TAB 3: Server Storage Paths */}
+                  {mediaSubTab === "paths" && (
+                    <div className="bg-[#141414] text-white p-5 rounded-2xl space-y-3">
+                      <div className="flex items-center gap-2">
+                        <FolderOpen className="w-4 h-4 text-amber-300" />
+                        <h2 className="font-mono text-xs sm:text-sm font-black uppercase tracking-wider">
+                          WHERE YOUR MEDIA &amp; STORE DATA ARE STORED ON DISK
+                        </h2>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 font-mono text-xs">
+                        <div className="p-3 rounded-xl bg-white/10 border border-white/15">
+                          <span className="text-[10px] text-amber-300 font-bold uppercase block">
+                            1. Built-In 360° Cutouts &amp; Beach Photos:
+                          </span>
+                          <code className="text-white break-all text-[11px]">
+                            {storagePaths.builtInImagesDir}
+                          </code>
+                          <span className="block text-[10px] text-white/60 mt-0.5">
+                            Served publicly at: <code>/images/...</code>
+                          </span>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-white/10 border border-white/15">
+                          <span className="text-[10px] text-amber-300 font-bold uppercase block">
+                            2. Built-In Product Motion Videos (.mp4):
+                          </span>
+                          <code className="text-white break-all text-[11px]">
+                            {storagePaths.builtInVideosDir}
+                          </code>
+                          <span className="block text-[10px] text-white/60 mt-0.5">
+                            Served publicly at: <code>/videos/...</code>
+                          </span>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-white/10 border border-white/15">
+                          <span className="text-[10px] text-emerald-300 font-bold uppercase block">
+                            3. New Images &amp; Videos Uploaded via Admin Panel:
+                          </span>
+                          <code className="text-white break-all text-[11px]">
+                            {storagePaths.adminUploadsDir}
+                          </code>
+                          <span className="block text-[10px] text-white/60 mt-0.5">
+                            Served publicly at: <code>/uploads/...</code>
+                          </span>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-white/10 border border-white/15">
+                          <span className="text-[10px] text-emerald-300 font-bold uppercase block">
+                            4. Persistent Store Database (Pricing, Orders, Bots):
+                          </span>
+                          <code className="text-white break-all text-[11px]">
+                            {storagePaths.databaseJsonFile}
+                          </code>
+                          <span className="block text-[10px] text-white/60 mt-0.5">
+                            Auto-saved JSON file updated on every change
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
