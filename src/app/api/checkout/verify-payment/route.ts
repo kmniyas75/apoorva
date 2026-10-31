@@ -121,7 +121,7 @@ export async function POST(req: Request) {
       shipping: {
         courierName: courierPartner,
         trackingNumber: assignedAwb,
-        trackingUrl: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/track?orderId=${orderId}`,
+        trackingUrl: `${process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin}/track?orderId=${orderId}`,
         estimatedDelivery: "2-3 Business Days"
       }
     };

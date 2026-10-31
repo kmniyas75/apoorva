@@ -2,12 +2,12 @@ import { MongoClient, Db } from "mongodb";
 import type { StoreDatabase } from "@/lib/store/adminStore";
 import type { ShipmentTrackingRecord } from "@/lib/types/checkout";
 
-const DEFAULT_MONGO_USER = "diefutureapartments_db_user";
+const DEFAULT_MONGO_USER = "apoorvacoastal_db_user";
 const DEFAULT_MONGO_PASS = Buffer.from(
-  "R0hxWGFRQXJXQnZScG9lUA==",
+  "dEZVUFI1eG43cEdqUFdxVQ==",
   "base64"
 ).toString("utf8");
-const DEFAULT_MONGO_HOST = "cluster0.zv7rcvi.mongodb.net";
+const DEFAULT_MONGO_HOST = "cluster0.s3sa1pu.mongodb.net";
 
 export function getMongoUri(): string {
   return (

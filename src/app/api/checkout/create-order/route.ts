@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { PRODUCTS } from "@/data/products";
-import { getStoreDatabase } from "@/lib/store/adminStore";
+import { ensureStoreDatabaseLoaded } from "@/lib/store/adminStore";
 import { createRazorpayOrder, isRazorpayConfigured } from "@/lib/payment/razorpay";
 import { CustomerDetails } from "@/lib/types/checkout";
 
@@ -20,8 +20,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Verify items and prices server-side from live Admin Store
-    const storeDb = getStoreDatabase();
+    // Verify items and prices server-side from live Admin Store in MongoDB
+    const storeDb = await ensureStoreDatabaseLoaded();
     const activeCatalog = storeDb.products?.length ? storeDb.products : PRODUCTS;
     let rawSubtotal = 0;
     const validatedItems = [];
