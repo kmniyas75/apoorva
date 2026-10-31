@@ -28,6 +28,9 @@ export async function GET(req: Request) {
   return NextResponse.json({
     status: "active",
     webhook: "APOORVA WhatsApp & Instagram DM Order Automation Endpoint",
+    metaAppId: process.env.META_APP_ID || "1063008853460924",
+    metaBusinessId: process.env.META_BUSINESS_ID || "1678860643969539",
+    contactEmail: process.env.META_CONTACT_EMAIL || "apoorvacoastal@gmail.com",
     verifyTokenConfigured: Boolean(expectedToken),
     whatsappEnabled: db.socialAutomation?.whatsappEnabled ?? true,
     instagramEnabled: db.socialAutomation?.instagramEnabled ?? true
@@ -42,11 +45,42 @@ export async function POST(req: Request) {
     const body = await req.json();
     const db = await ensureStoreDatabaseLoaded();
 
+    // Parse native Meta Cloud API / Instagram Graph API webhook payload if present
+    let metaChannel: "whatsapp" | "instagram" | undefined;
+    let metaSenderName: string | undefined;
+    let metaSenderHandle: string | undefined;
+    let metaMessageText: string | undefined;
+
+    if (body?.object === "whatsapp_business_account" && Array.isArray(body.entry)) {
+      metaChannel = "whatsapp";
+      const val = body.entry?.[0]?.changes?.[0]?.value;
+      const msgObj = val?.messages?.[0];
+      const contactObj = val?.contacts?.[0];
+      if (!msgObj) {
+        return NextResponse.json({ status: "ignored_status_event" });
+      }
+      metaSenderName = contactObj?.profile?.name || "WhatsApp Client";
+      metaSenderHandle = msgObj?.from || "+91 98470 55112";
+      metaMessageText =
+        msgObj?.text?.body ||
+        msgObj?.interactive?.button_reply?.title ||
+        "BUY SET 1";
+    } else if (body?.object === "instagram" && Array.isArray(body.entry)) {
+      metaChannel = "instagram";
+      const messaging = body.entry?.[0]?.messaging?.[0];
+      if (!messaging?.message?.text) {
+        return NextResponse.json({ status: "ignored_status_event" });
+      }
+      metaSenderName = "Instagram Client";
+      metaSenderHandle = `@ig_${messaging?.sender?.id || "guest"}`;
+      metaMessageText = messaging.message.text;
+    }
+
     const {
-      channel = "whatsapp",
-      senderName = "Coastal Guest",
-      senderHandleOrPhone = "+91 98470 55112",
-      message = "BUY SET 1 | Coastal Guest | Beach Road Villa, Goa 403515 | UPI",
+      channel = metaChannel || "whatsapp",
+      senderName = metaSenderName || "Coastal Guest",
+      senderHandleOrPhone = metaSenderHandle || "+91 98470 55112",
+      message = metaMessageText || "BUY SET 1 | Coastal Guest | Beach Road Villa, Goa 403515 | UPI",
       productSelection = "set1", // "set1" | "set2" | "both"
       size = "FREE SIZE (Adjustable Tie)",
       paymentMethod = "upi", // "upi" | "cod"

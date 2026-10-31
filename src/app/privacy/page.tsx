@@ -50,11 +50,39 @@ export default function PrivacyPage() {
 
       <section className="space-y-2">
         <h2 className="text-sm sm:text-base font-black uppercase text-black">
-          4. Data Protection &amp; Grievance Officer
+          4. Meta (WhatsApp, Instagram &amp; Facebook) User Data Deletion Instructions
+        </h2>
+        <p>
+          If you have interacted with APOORVA™ through Facebook Login, Instagram
+          DM, or WhatsApp Business and wish to delete all personal data
+          associated with your account or phone number:
+        </p>
+        <ul className="list-disc pl-5 space-y-1">
+          <li>
+            Send an email with the subject <strong>&quot;DATA DELETION REQUEST&quot;</strong> to{" "}
+            <strong>apoorvacoastal@gmail.com</strong> (or{" "}
+            <strong>concierge@apoorva.luxury</strong>), or
+          </li>
+          <li>
+            Send the message <strong>&quot;DELETE MY DATA&quot;</strong> to our
+            official WhatsApp Business / Instagram handle.
+          </li>
+          <li>
+            All associated profile, messaging, and order contact records will be
+            permanently purged within 48 hours and a confirmation receipt will
+            be issued.
+          </li>
+        </ul>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="text-sm sm:text-base font-black uppercase text-black">
+          5. Data Protection &amp; Grievance Officer
         </h2>
         <p>
           To request access, correction, or deletion of your personal data,
           please contact our Privacy &amp; Grievance Officer at{" "}
+          <strong>apoorvacoastal@gmail.com</strong> /{" "}
           <strong>concierge@apoorva.luxury</strong> or write to APOORVA Coastal
           Atelier, Periyar River Road, Aluva, Ernakulam, Kerala — 683101.
         </p>
