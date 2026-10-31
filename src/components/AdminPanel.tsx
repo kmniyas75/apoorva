@@ -1156,33 +1156,34 @@ export default function AdminPanel({
         {/* =================================================================
             KPI SUMMARY STRIP & 5 NAVIGATION TABS
            ================================================================= */}
-        <div className="bg-neutral-100 border-b border-black/10 px-3.5 sm:px-5 py-2.5 sm:py-3 flex flex-col xl:flex-row xl:items-center justify-between gap-2.5 sm:gap-3">
-          {/* Navigation Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar overscroll-x-contain -mx-3.5 px-3.5 sm:mx-0 sm:px-0 pb-1 xl:pb-0">
+        <div className="bg-neutral-100 border-b border-black/10 px-3 sm:px-5 py-3 flex flex-col xl:flex-row xl:items-center justify-between gap-2.5 sm:gap-3">
+          {/* 5 Main Navigation Tabs — All visible in 2-col grid on mobile, flex row on sm+ */}
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-1.5 sm:gap-2 w-full xl:w-auto">
             <button
               type="button"
               onClick={() => setActiveTab("products")}
-              className={`px-3 sm:px-3.5 py-2 rounded-full font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${activeTab === "products"
-                ? "bg-[#141414] text-white shadow-xs"
-                : "bg-white/70 hover:bg-white text-black/80"
+              className={`px-2.5 sm:px-3.5 py-2.5 sm:py-2 rounded-xl sm:rounded-full font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1.5 transition-all border min-w-0 ${activeTab === "products"
+                ? "bg-[#141414] text-white border-[#141414] shadow-xs"
+                : "bg-white hover:bg-neutral-50 text-black/85 border-black/10"
                 }`}
             >
               <RotateCw className="w-3.5 h-3.5 shrink-0" />
-              <span>1. 360° Media &amp; Pricing</span>
+              <span className="truncate sm:hidden">1. 360° &amp; Pricing</span>
+              <span className="hidden sm:inline">1. 360° Media &amp; Pricing</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("orders")}
-              className={`px-3 sm:px-3.5 py-2 rounded-full font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${activeTab === "orders"
-                ? "bg-[#141414] text-white shadow-xs"
-                : "bg-white/70 hover:bg-white text-black/80"
+              className={`px-2.5 sm:px-3.5 py-2.5 sm:py-2 rounded-xl sm:rounded-full font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1.5 transition-all border min-w-0 ${activeTab === "orders"
+                ? "bg-[#141414] text-white border-[#141414] shadow-xs"
+                : "bg-white hover:bg-neutral-50 text-black/85 border-black/10"
                 }`}
             >
               <Package className="w-3.5 h-3.5 shrink-0" />
-              <span>2. Orders ({orders.length})</span>
+              <span className="truncate">2. Orders ({orders.length})</span>
               {pendingOrdersCount > 0 && (
-                <span className="ml-0.5 px-1.5 py-0.2 bg-amber-400 text-black rounded-full text-[10px] font-black">
+                <span className="ml-0.5 px-1.5 py-0.2 bg-amber-400 text-black rounded-full text-[10px] font-black shrink-0">
                   {pendingOrdersCount}
                 </span>
               )}
@@ -1191,13 +1192,16 @@ export default function AdminPanel({
             <button
               type="button"
               onClick={() => setActiveTab("social")}
-              className={`px-3 sm:px-3.5 py-2 rounded-full font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${activeTab === "social"
-                ? "bg-[#141414] text-white shadow-xs"
-                : "bg-white/70 hover:bg-white text-black/80"
+              className={`px-2.5 sm:px-3.5 py-2.5 sm:py-2 rounded-xl sm:rounded-full font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1.5 transition-all border min-w-0 ${activeTab === "social"
+                ? "bg-[#141414] text-white border-[#141414] shadow-xs"
+                : "bg-white hover:bg-neutral-50 text-black/85 border-black/10"
                 }`}
             >
-              <Bot className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-              <span>
+              <Bot className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span className="truncate sm:hidden">
+                3. WA &amp; IG Bot ({whatsappOrdersCount + instagramOrdersCount})
+              </span>
+              <span className="hidden sm:inline">
                 3. WhatsApp &amp; Instagram Bot (
                 {whatsappOrdersCount + instagramOrdersCount})
               </span>
@@ -1206,37 +1210,42 @@ export default function AdminPanel({
             <button
               type="button"
               onClick={() => setActiveTab("media")}
-              className={`px-3 sm:px-3.5 py-2 rounded-full font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${activeTab === "media"
-                ? "bg-[#141414] text-white shadow-xs"
-                : "bg-white/70 hover:bg-white text-black/80"
+              className={`px-2.5 sm:px-3.5 py-2.5 sm:py-2 rounded-xl sm:rounded-full font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1.5 transition-all border min-w-0 ${activeTab === "media"
+                ? "bg-[#141414] text-white border-[#141414] shadow-xs"
+                : "bg-white hover:bg-neutral-50 text-black/85 border-black/10"
                 }`}
             >
               <HardDrive className="w-3.5 h-3.5 shrink-0" />
-              <span>4. Media Storage ({mediaLibrary.length})</span>
+              <span className="truncate sm:hidden">
+                4. Media ({mediaLibrary.length})
+              </span>
+              <span className="hidden sm:inline">
+                4. Media Storage ({mediaLibrary.length})
+              </span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("settings")}
-              className={`px-3 sm:px-3.5 py-2 rounded-full font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${activeTab === "settings"
-                ? "bg-[#141414] text-white shadow-xs"
-                : "bg-white/70 hover:bg-white text-black/80"
+              className={`col-span-2 sm:col-span-1 px-2.5 sm:px-3.5 py-2.5 sm:py-2 rounded-xl sm:rounded-full font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1.5 transition-all border min-w-0 ${activeTab === "settings"
+                ? "bg-[#141414] text-white border-[#141414] shadow-xs"
+                : "bg-white hover:bg-neutral-50 text-black/85 border-black/10"
                 }`}
             >
               <Settings className="w-3.5 h-3.5 shrink-0" />
-              <span>5. Security &amp; Settings</span>
+              <span className="truncate">5. Security &amp; Settings</span>
             </button>
           </div>
 
           {/* Quick KPI Badges */}
-          <div className="flex flex-wrap items-center gap-2 text-[10px] sm:text-[11px] font-mono">
-            <div className="px-2.5 sm:px-3 py-1 rounded-xl bg-white/80 border border-black/10">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 text-[10px] sm:text-[11px] font-mono">
+            <div className="px-2.5 sm:px-3 py-1.5 sm:py-1 rounded-xl bg-white border border-black/10 text-center sm:text-left truncate">
               <span className="text-black/50 mr-1">REVENUE:</span>
               <span className="font-black text-emerald-900">
                 ₹{totalRevenue.toLocaleString("en-IN")}
               </span>
             </div>
-            <div className="px-2.5 sm:px-3 py-1 rounded-xl bg-white/80 border border-black/10">
+            <div className="px-2.5 sm:px-3 py-1.5 sm:py-1 rounded-xl bg-white border border-black/10 text-center sm:text-left truncate">
               <span className="text-black/50 mr-1">WA/IG ORDERS:</span>
               <span className="font-black text-black">
                 {whatsappOrdersCount} WA • {instagramOrdersCount} IG
@@ -1264,27 +1273,34 @@ export default function AdminPanel({
                   {/* Top Bar: 360° Orbit Stage Controls + Product Switcher + Add New Product */}
                   <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-black/10 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 sm:gap-4">
                     <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2">
-                      {products.map((p, idx) => (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => setSelectedProdIdx(idx)}
-                          className={`px-3.5 sm:px-4 py-2.5 rounded-xl font-mono text-xs font-black uppercase tracking-wider flex items-center justify-between sm:justify-start gap-2 transition-all border ${selectedProdIdx === idx
-                            ? "bg-[#141414] text-white border-[#141414] shadow-sm"
-                            : "bg-neutral-50 hover:bg-black/10 text-black border-black/10"
-                            }`}
-                        >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-500 shrink-0">
-                              SET {p.number}
+                      <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-2">
+                        {products.map((p, idx) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => setSelectedProdIdx(idx)}
+                            className={`px-3.5 sm:px-4 py-2.5 rounded-xl font-mono text-xs font-black uppercase tracking-wider flex items-center justify-between sm:justify-start gap-2 transition-all border ${selectedProdIdx === idx
+                              ? "bg-[#141414] text-white border-[#141414] shadow-sm"
+                              : "bg-neutral-100 hover:bg-neutral-200/70 text-black border-black/15"
+                              }`}
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span
+                                className={`px-1.5 py-0.5 rounded text-[10px] shrink-0 ${selectedProdIdx === idx
+                                  ? "bg-amber-400 text-black font-black"
+                                  : "bg-amber-500/20 text-amber-900 font-black"
+                                  }`}
+                              >
+                                SET {p.number}
+                              </span>
+                              <span className="truncate">{p.shortName}</span>
+                            </div>
+                            <span className="font-normal opacity-80 shrink-0">
+                              (₹{p.price.toLocaleString("en-IN")})
                             </span>
-                            <span className="truncate">{p.shortName}</span>
-                          </div>
-                          <span className="font-normal opacity-80 shrink-0">
-                            (₹{p.price.toLocaleString("en-IN")})
-                          </span>
-                        </button>
-                      ))}
+                          </button>
+                        ))}
+                      </div>
 
                       <div className="grid grid-cols-2 sm:flex items-center gap-2">
                         {/* Add New Product Button */}
@@ -1683,46 +1699,57 @@ export default function AdminPanel({
                   )}
 
                   {/* Side-by-Side 360° Orbit Pair Overview Strip */}
-                  <div className="bg-neutral-100 p-3.5 sm:p-4 rounded-2xl border border-black/10 flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 sm:gap-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3.5 w-full lg:w-auto flex-1">
+                  <div className="bg-neutral-100 p-3 sm:p-4 rounded-2xl border border-black/10 flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3.5 w-full lg:w-auto flex-1">
                       {products.map((prod, idx) => (
-                        <div
+                        <button
                           key={prod.id}
+                          type="button"
                           onClick={() => setSelectedProdIdx(idx)}
-                          className={`flex items-center gap-3 p-2.5 sm:p-3 rounded-xl cursor-pointer border transition-all min-w-0 ${selectedProdIdx === idx
-                            ? "bg-white border-black shadow-xs"
-                            : "bg-white/60 border-black/10 hover:bg-white"
+                          className={`flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl cursor-pointer border text-left transition-all min-w-0 overflow-hidden ${selectedProdIdx === idx
+                            ? "bg-white border-2 border-black shadow-xs"
+                            : "bg-white/70 border-black/15 hover:bg-white"
                             }`}
                         >
-                          <Image
-                            src={prod.image}
-                            alt={prod.name}
-                            width={48}
-                            height={52}
-                            unoptimized
-                            className="shrink-0"
-                            style={{
-                              width: "48px",
-                              height: "52px",
-                              objectFit: "contain"
-                            }}
-                          />
-                          <div className="font-mono min-w-0 flex-1">
-                            <div className="text-[10px] font-black text-amber-900 uppercase truncate">
+                          <div className="flex items-center gap-2 w-full sm:w-auto min-w-0">
+                            <Image
+                              src={prod.image}
+                              alt={prod.name}
+                              width={40}
+                              height={44}
+                              unoptimized
+                              className="shrink-0"
+                              style={{
+                                width: "40px",
+                                height: "44px",
+                                objectFit: "contain"
+                              }}
+                            />
+                            <span
+                              className={`sm:hidden px-1.5 py-0.5 rounded font-mono text-[9px] font-black uppercase truncate ${selectedProdIdx === idx
+                                ? "bg-[#141414] text-amber-300"
+                                : "bg-amber-500/15 text-amber-900"
+                                }`}
+                            >
+                              SLOT {prod.number}
+                            </span>
+                          </div>
+                          <div className="font-mono min-w-0 w-full flex-1">
+                            <div className="hidden sm:block text-[10px] font-black text-amber-900 uppercase truncate">
                               360° ORBIT SLOT {prod.number}
                             </div>
-                            <div className="text-xs font-bold text-black truncate">
+                            <div className="text-[11px] sm:text-xs font-bold text-black truncate">
                               {prod.shortName}
                             </div>
-                            <div className="text-[10px] text-black/60 truncate">
+                            <div className="text-[9px] sm:text-[10px] text-black/60 truncate">
                               {prod.image}
                             </div>
                           </div>
-                        </div>
+                        </button>
                       ))}
                     </div>
                     <div className="text-[11px] font-mono text-black/70 lg:max-w-xs leading-relaxed">
-                      Both cutouts above continuously circle 360° on the hero stage. Tap either slot to replace its 360° cutout image or `.mp4` motion video below.
+                      Both cutouts above continuously circle 360° on the hero stage. Tap either slot tab to replace its 360° cutout image or `.mp4` motion video below.
                     </div>
                   </div>
 
@@ -2310,9 +2337,9 @@ export default function AdminPanel({
               {activeTab === "orders" && (
                 <div className="space-y-4">
                   {/* Search, Channel Filter, Status Filter & Manual Order Bar */}
-                  <div className="bg-white p-4 rounded-2xl border border-black/10 shadow-xs flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-                    <div className="flex flex-wrap items-center gap-2 flex-1">
-                      <div className="relative flex-1 min-w-[220px] max-w-md">
+                  <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-black/10 shadow-xs flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+                    <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 flex-1">
+                      <div className="relative flex-1 min-w-0 sm:min-w-[220px] sm:max-w-md">
                         <Search className="w-4 h-4 text-black/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
                         <input
                           type="text"
@@ -2324,42 +2351,44 @@ export default function AdminPanel({
                         />
                       </div>
 
-                      <select
-                        aria-label="Filter orders by source channel"
-                        value={orderChannelFilter}
-                        onChange={(e) => setOrderChannelFilter(e.target.value)}
-                        className="px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold uppercase"
-                      >
-                        <option value="all">All Channels ({orders.length})</option>
-                        <option value="website">Website Checkout</option>
-                        <option value="whatsapp">WhatsApp Bot</option>
-                        <option value="instagram">Instagram DM</option>
-                        <option value="concierge">Concierge Desk</option>
-                      </select>
+                      <div className="grid grid-cols-2 sm:flex items-center gap-2">
+                        <select
+                          aria-label="Filter orders by source channel"
+                          value={orderChannelFilter}
+                          onChange={(e) => setOrderChannelFilter(e.target.value)}
+                          className="px-2.5 sm:px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-[11px] sm:text-xs font-bold uppercase min-w-0"
+                        >
+                          <option value="all">All Channels ({orders.length})</option>
+                          <option value="website">Website Checkout</option>
+                          <option value="whatsapp">WhatsApp Bot</option>
+                          <option value="instagram">Instagram DM</option>
+                          <option value="concierge">Concierge Desk</option>
+                        </select>
 
-                      <select
-                        aria-label="Filter orders by status"
-                        value={orderStatusFilter}
-                        onChange={(e) => setOrderStatusFilter(e.target.value)}
-                        className="px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs font-bold uppercase"
-                      >
-                        <option value="all">All Statuses</option>
-                        <option value="paid">Paid</option>
-                        <option value="processing">Processing</option>
-                        <option value="handcrafted">Handcrafted</option>
-                        <option value="dispatched">Dispatched</option>
-                        <option value="out_for_delivery">Out for Delivery</option>
-                        <option value="delivered">Delivered</option>
-                        <option value="cancelled">Cancelled</option>
-                      </select>
+                        <select
+                          aria-label="Filter orders by status"
+                          value={orderStatusFilter}
+                          onChange={(e) => setOrderStatusFilter(e.target.value)}
+                          className="px-2.5 sm:px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-[11px] sm:text-xs font-bold uppercase min-w-0"
+                        >
+                          <option value="all">All Statuses</option>
+                          <option value="paid">Paid</option>
+                          <option value="processing">Processing</option>
+                          <option value="handcrafted">Handcrafted</option>
+                          <option value="dispatched">Dispatched</option>
+                          <option value="out_for_delivery">Out for Delivery</option>
+                          <option value="delivered">Delivered</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
+                      </div>
                     </div>
 
                     <button
                       type="button"
                       onClick={() => setShowNewOrderForm(!showNewOrderForm)}
-                      className="px-4 py-2 rounded-xl bg-[#141414] text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
+                      className="px-4 py-2.5 sm:py-2 rounded-xl bg-[#141414] text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
                     >
-                      <Plus className="w-3.5 h-3.5 text-amber-300" />
+                      <Plus className="w-3.5 h-3.5 text-amber-300 shrink-0" />
                       <span>Create Order (WA / IG / Phone)</span>
                     </button>
                   </div>
@@ -2619,7 +2648,7 @@ export default function AdminPanel({
                                 </span>
                               </div>
 
-                              <div className="flex items-center gap-2">
+                              <div className="flex flex-wrap items-center gap-2">
                                 <span className="font-mono text-base font-black text-black mr-1">
                                   ₹
                                   {(order.pricing?.total || 0).toLocaleString(
@@ -2634,7 +2663,7 @@ export default function AdminPanel({
                                   className="px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-mono text-[10px] font-bold uppercase flex items-center gap-1"
                                   title="Send Order Update on WhatsApp"
                                 >
-                                  <MessageCircle className="w-3.5 h-3.5" />
+                                  <MessageCircle className="w-3.5 h-3.5 shrink-0" />
                                   <span>WhatsApp Client</span>
                                 </a>
 
@@ -2645,7 +2674,7 @@ export default function AdminPanel({
                                     className="px-3 py-1.5 rounded-xl bg-black/5 hover:bg-black/10 font-mono text-[10px] font-bold uppercase flex items-center gap-1"
                                     title="Print GST Invoice & Thermal Label"
                                   >
-                                    <Printer className="w-3.5 h-3.5" />
+                                    <Printer className="w-3.5 h-3.5 shrink-0" />
                                     <span>Invoice / Label</span>
                                   </button>
                                 )}
@@ -2664,15 +2693,15 @@ export default function AdminPanel({
                             {/* Middle Row: Customer Info + Ordered Items */}
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                               <div className="md:col-span-5 font-mono text-xs space-y-1 bg-neutral-50 p-3.5 rounded-xl border border-black/8">
-                                <div className="font-black text-black uppercase flex items-center justify-between">
+                                <div className="font-black text-black uppercase flex items-center justify-between gap-2">
                                   <span>{order.customer.fullName}</span>
                                   {order.socialHandle && (
-                                    <span className="text-[10px] text-amber-900 font-bold">
+                                    <span className="text-[10px] text-amber-900 font-bold truncate">
                                       {order.socialHandle}
                                     </span>
                                   )}
                                 </div>
-                                <div className="text-black/75">
+                                <div className="text-black/75 break-words">
                                   📞 {order.customer.phone} • ✉️{" "}
                                   {order.customer.email}
                                 </div>
@@ -2750,9 +2779,9 @@ export default function AdminPanel({
                                     onClick={() =>
                                       handleUpdateOrderStatus(order, st, false)
                                     }
-                                    className={`px-2.5 py-1 rounded-lg font-mono text-[10px] font-bold uppercase transition-all ${order.status === st
-                                      ? "bg-[#141414] text-white"
-                                      : "bg-white hover:bg-black/10 text-black/75"
+                                    className={`px-2.5 py-1 rounded-lg font-mono text-[10px] font-bold uppercase transition-all border ${order.status === st
+                                      ? "bg-[#141414] text-white border-[#141414]"
+                                      : "bg-neutral-50 hover:bg-black/10 text-black/75 border-black/10"
                                       }`}
                                   >
                                     {st.replace(/_/g, " ")}
@@ -2761,8 +2790,8 @@ export default function AdminPanel({
                               </div>
 
                               <div className="flex flex-wrap items-center gap-2">
-                                <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-black/10">
-                                  <Truck className="w-3.5 h-3.5 text-amber-900" />
+                                <div className="flex items-center gap-1.5 bg-white px-2.5 py-1.5 rounded-xl border border-black/10 flex-1 sm:flex-initial min-w-[140px]">
+                                  <Truck className="w-3.5 h-3.5 text-amber-900 shrink-0" />
                                   <input
                                     type="text"
                                     aria-label="Courier Name"
@@ -2777,12 +2806,12 @@ export default function AdminPanel({
                                         e.target.value
                                       )
                                     }
-                                    className="bg-transparent font-mono text-[11px] font-bold w-32 focus:outline-none"
+                                    className="bg-transparent font-mono text-[11px] font-bold w-full sm:w-32 focus:outline-none min-w-0"
                                   />
                                 </div>
 
-                                <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-xl border border-black/10">
-                                  <span className="text-[10px] font-mono text-black/50">
+                                <div className="flex items-center gap-1.5 bg-white px-2.5 py-1.5 rounded-xl border border-black/10 flex-1 sm:flex-initial min-w-[130px]">
+                                  <span className="text-[10px] font-mono text-black/50 shrink-0">
                                     AWB:
                                   </span>
                                   <input
@@ -2799,7 +2828,7 @@ export default function AdminPanel({
                                         e.target.value
                                       )
                                     }
-                                    className="bg-transparent font-mono text-[11px] font-bold w-28 focus:outline-none"
+                                    className="bg-transparent font-mono text-[11px] font-bold w-full sm:w-28 focus:outline-none min-w-0"
                                   />
                                 </div>
 
@@ -2813,9 +2842,9 @@ export default function AdminPanel({
                                       true
                                     )
                                   }
-                                  className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-[10px] font-black uppercase tracking-wider flex items-center gap-1"
+                                  className="w-full sm:w-auto px-3 py-2 sm:py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1"
                                 >
-                                  <Send className="w-3 h-3" />
+                                  <Send className="w-3 h-3 shrink-0" />
                                   <span>
                                     {isBusy
                                       ? "Updating..."
@@ -2838,7 +2867,7 @@ export default function AdminPanel({
               {activeTab === "social" && (
                 <div className="space-y-6">
                   {/* Top Webhook & Meta Cloud API Integration Banner */}
-                  <div className="bg-[#141414] text-white p-5 rounded-2xl space-y-3">
+                  <div className="bg-[#141414] text-white p-4 sm:p-5 rounded-2xl space-y-3">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                       <div>
                         <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-300 font-bold block">
@@ -2855,26 +2884,26 @@ export default function AdminPanel({
                         style={{ backgroundColor: "#f59e0b", color: "#000000" }}
                         className="px-4 py-2 rounded-full font-mono text-xs font-black uppercase tracking-wider flex items-center gap-1.5 self-start md:self-auto"
                       >
-                        <Save className="w-3.5 h-3.5" />
+                        <Save className="w-3.5 h-3.5 shrink-0" />
                         <span>Save Automation Rules</span>
                       </button>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-                      <div className="p-3 rounded-xl bg-white/10 border border-white/15 font-mono text-xs flex items-center justify-between gap-2">
-                        <div className="truncate">
+                      <div className="p-3 rounded-xl bg-white/10 border border-white/15 font-mono text-xs flex items-center justify-between gap-2 min-w-0">
+                        <div className="min-w-0 flex-1">
                           <span className="text-[10px] text-white/60 block uppercase">
                             Live Webhook Endpoint URL (POST &amp; GET):
                           </span>
-                          <code className="text-amber-300 font-bold">
-                            http://localhost:3000/api/webhooks/social-order
+                          <code className="text-amber-300 font-bold block truncate">
+                            /api/webhooks/social-order
                           </code>
                         </div>
                         <button
                           type="button"
                           onClick={() => {
                             navigator.clipboard?.writeText(
-                              "http://localhost:3000/api/webhooks/social-order"
+                              `${window.location.origin}/api/webhooks/social-order`
                             );
                             showToastMessage("success", "Copied Webhook URL!");
                           }}
@@ -2885,12 +2914,12 @@ export default function AdminPanel({
                         </button>
                       </div>
 
-                      <div className="p-3 rounded-xl bg-white/10 border border-white/15 font-mono text-xs flex items-center justify-between gap-2">
-                        <div className="truncate">
+                      <div className="p-3 rounded-xl bg-white/10 border border-white/15 font-mono text-xs flex items-center justify-between gap-2 min-w-0">
+                        <div className="min-w-0 flex-1">
                           <span className="text-[10px] text-white/60 block uppercase">
                             Meta Webhook Verify Token (hub.verify_token):
                           </span>
-                          <code className="text-emerald-300 font-bold">
+                          <code className="text-emerald-300 font-bold block truncate">
                             {socialAutomation.webhookVerifyToken}
                           </code>
                         </div>
@@ -2914,23 +2943,23 @@ export default function AdminPanel({
                   {/* Two-Column Bot Configuration: WhatsApp vs Instagram */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* WhatsApp Business Auto-Order Bot Card */}
-                    <div className="bg-white p-5 rounded-2xl border border-black/10 shadow-xs space-y-4">
-                      <div className="flex items-center justify-between border-b border-black/10 pb-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-xl bg-emerald-700 text-white flex items-center justify-center">
+                    <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/10 shadow-xs space-y-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/10 pb-3">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-8 h-8 rounded-xl bg-emerald-700 text-white flex items-center justify-center shrink-0">
                             <MessageCircle className="w-4 h-4" />
                           </div>
-                          <div>
+                          <div className="min-w-0">
                             <h3 className="font-mono text-xs font-black uppercase tracking-wider text-black">
                               WhatsApp Business Order Bot
                             </h3>
-                            <span className="text-[10px] font-mono text-black/50">
+                            <span className="text-[10px] font-mono text-black/50 block">
                               Auto-replies with catalog &amp; books UPI/COD orders
                             </span>
                           </div>
                         </div>
 
-                        <label className="inline-flex items-center gap-2 font-mono text-xs font-bold cursor-pointer">
+                        <label className="inline-flex items-center gap-2 font-mono text-xs font-bold cursor-pointer shrink-0">
                           <input
                             type="checkbox"
                             checked={socialAutomation.whatsappEnabled}
