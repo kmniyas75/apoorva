@@ -494,9 +494,19 @@ export default function CheckoutModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="checkout-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-md animate-fadeIn"
+      style={{
+        paddingTop: "max(0.5rem, env(safe-area-inset-top, 0px))",
+        paddingBottom: "max(0.5rem, env(safe-area-inset-bottom, 0px))"
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center px-2 sm:p-4 bg-black/75 backdrop-blur-md animate-fadeIn"
     >
-      <div className="relative w-full max-w-2xl max-h-[94vh] bg-white text-[#141414] rounded-3xl shadow-2xl border border-black/15 flex flex-col overflow-hidden">
+      <div
+        style={{
+          maxHeight:
+            "calc(100dvh - 1rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))"
+        }}
+        className="relative w-full max-w-2xl bg-white text-[#141414] rounded-3xl shadow-2xl border border-black/15 flex flex-col overflow-hidden overscroll-contain"
+      >
         {/* Modal Header */}
         <div className="px-5 py-3.5 bg-neutral-50 border-b border-black/10 flex items-center justify-between">
           <div className="flex items-center gap-3">

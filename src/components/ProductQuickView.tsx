@@ -67,28 +67,40 @@ export default function ProductQuickView({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-5xl bg-white text-[#141414] rounded-3xl shadow-2xl overflow-hidden border border-black/10 flex flex-col md:flex-row max-h-[92vh]">
+    <div
+      style={{
+        paddingTop: "max(0.75rem, env(safe-area-inset-top, 0px))",
+        paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))"
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center px-2.5 sm:p-6 bg-black/60 backdrop-blur-md animate-fadeIn"
+    >
+      <div
+        style={{
+          maxHeight:
+            "calc(100dvh - 1.5rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))"
+        }}
+        className="relative w-full max-w-5xl bg-white text-[#141414] rounded-3xl shadow-2xl overflow-y-auto md:overflow-hidden overscroll-contain border border-black/10 flex flex-col md:flex-row"
+      >
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/5 hover:bg-black/15 text-black transition-colors"
+          className="sticky md:absolute top-3 right-3 ml-auto mr-3 mt-3 md:m-0 z-30 p-2 rounded-full bg-white/90 md:bg-black/5 hover:bg-black/15 border border-black/10 md:border-0 text-black shadow-sm md:shadow-none transition-colors"
           aria-label="Close modal"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Left Side: Product Video & Photo Gallery */}
-        <div className="relative md:w-5/12 bg-neutral-50 p-5 sm:p-6 flex flex-col items-center justify-between border-b md:border-b-0 md:border-r border-black/10">
-          <div className="w-full flex items-center justify-between text-[10px] font-mono text-black/60">
-            <span>BEACHWEAR SET {product.number} // KERALA</span>
-            <span className="font-bold text-amber-950 bg-amber-300/60 px-2 py-0.5 rounded-full">
+        <div className="relative md:w-5/12 bg-neutral-50 px-4 pb-4 pt-2 sm:p-6 -mt-9 md:mt-0 flex flex-col items-center justify-between border-b md:border-b-0 md:border-r border-black/10">
+          <div className="w-full flex items-center justify-between gap-2 pr-11 md:pr-0 text-[10px] font-mono text-black/60">
+            <span className="truncate">BEACHWEAR SET {product.number} // KERALA</span>
+            <span className="font-bold text-amber-950 bg-amber-300/60 px-2 py-0.5 rounded-full flex-shrink-0">
               HANDCRAFTED BEACHWEAR
             </span>
           </div>
 
-          <div className="relative w-full aspect-square max-w-[340px] my-3 rounded-2xl overflow-hidden bg-[#181512] border border-black/10 flex items-center justify-center">
+          <div className="relative w-full aspect-square max-w-[260px] sm:max-w-[340px] my-2.5 sm:my-3 rounded-2xl overflow-hidden bg-[#181512] border border-black/10 flex items-center justify-center">
             {selectedPhotoIdx === -1 && product.video ? (
               <video
                 src={product.video}
@@ -153,9 +165,9 @@ export default function ProductQuickView({
         </div>
 
         {/* Right Side: Detailed Technical Specifications & 1-Click Buy */}
-        <div className="md:w-7/12 p-5 sm:p-7 flex flex-col justify-between overflow-y-auto max-h-[85vh] md:max-h-[92vh]">
+        <div className="md:w-7/12 p-4 sm:p-7 flex flex-col justify-between md:overflow-y-auto md:overscroll-contain md:max-h-[90dvh]">
           <div>
-            <div className="flex items-center justify-between text-xs font-mono text-black/60 mb-1">
+            <div className="flex items-center justify-between text-xs font-mono text-black/60 mb-1 md:pr-8">
               <span>SKU: {product.sku}</span>
               <span className="font-semibold text-amber-800">
                 ● TROPICAL BEACHWEAR EDITION
@@ -353,8 +365,13 @@ export default function ProductQuickView({
             </div>
           </div>
 
-          {/* 1-Click Buy Now + Add to Bag CTAs */}
-          <div className="pt-3 border-t border-black/10 space-y-2">
+          {/* 1-Click Buy Now + Add to Bag CTAs (Sticky safe-area bottom dock on mobile) */}
+          <div
+            style={{
+              paddingBottom: "max(0.25rem, env(safe-area-inset-bottom, 0px))"
+            }}
+            className="sticky bottom-0 z-20 bg-white pt-3 mt-2 border-t border-black/10 space-y-2"
+          >
             <div className="flex flex-col sm:flex-row gap-2">
               <button
                 type="button"

@@ -119,9 +119,19 @@ export default function NotificationCenterModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="notification-center-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-fadeIn"
+      style={{
+        paddingTop: "max(0.75rem, env(safe-area-inset-top, 0px))",
+        paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))"
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center px-3 sm:p-6 bg-black/80 backdrop-blur-md animate-fadeIn"
     >
-      <div className="relative w-full max-w-4xl h-[90vh] bg-white text-[#141414] rounded-3xl shadow-2xl border border-black/15 flex flex-col overflow-hidden">
+      <div
+        style={{
+          height:
+            "calc(100dvh - 1.5rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))"
+        }}
+        className="relative w-full max-w-4xl bg-white text-[#141414] rounded-3xl shadow-2xl border border-black/15 flex flex-col overflow-hidden overscroll-contain"
+      >
         
         {/* Header */}
         <div className="px-6 py-4 bg-neutral-50 border-b border-black/10 flex items-center justify-between">
