@@ -504,12 +504,12 @@ export default function HeroShowcase({
           </button>
         </div>
 
-        {/* Product Easy-Buy + Video Cards Grid */}
+        {/* Product Easy-Buy + Video Cards (Horizontal Swipe Carousel on Mobile, Grid on Desktop) */}
         <div
-          className={`grid grid-cols-1 ${products.length >= 3
+          className={`flex md:grid ${products.length >= 3
               ? "md:grid-cols-2 lg:grid-cols-3"
               : "md:grid-cols-2"
-            } gap-5`}
+            } gap-4 md:gap-5 overflow-x-auto md:overflow-visible snap-x snap-mandatory no-scrollbar overscroll-x-contain pb-2 -mx-3 px-3 md:mx-0 md:px-0`}
         >
           {products.map((prod) => {
             const activeSize =
@@ -521,7 +521,7 @@ export default function HeroShowcase({
             return (
               <div
                 key={prod.id}
-                className="bg-white border border-black/15 rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-all flex flex-col justify-between"
+                className="w-[86vw] max-w-[380px] md:w-auto md:max-w-none flex-shrink-0 snap-center bg-white border border-black/15 rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-all flex flex-col justify-between"
               >
                 {/* Live Motion Video Header for Each Product */}
                 <div
@@ -710,13 +710,18 @@ export default function HeroShowcase({
               SHORELINE, INFINITY POOL &amp; ISLAND NIGHTS
             </h3>
           </div>
-          <span className="text-[11px] font-mono text-black/60">
-            Tap any look to buy immediately via Razorpay
-          </span>
+          <div className="flex items-center justify-between sm:justify-end gap-2 mt-1 sm:mt-0">
+            <span className="text-[11px] font-mono text-black/60">
+              Tap any look to buy immediately via Razorpay
+            </span>
+            <span className="sm:hidden text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-neutral-100 text-black/80 border border-black/10">
+              Swipe ↔
+            </span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-          {beachMoments.map((moment) => {
+        <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5 overflow-x-auto sm:overflow-visible snap-x snap-mandatory no-scrollbar overscroll-x-contain pb-2 -mx-3 px-3 sm:mx-0 sm:px-0">
+          {beachMoments.map((moment, idx) => {
             const matchedProduct =
               products.find((p) => p.id === moment.productId) || products[0];
             return (
@@ -730,8 +735,12 @@ export default function HeroShowcase({
                   )
                 }
                 style={{ height: "320px", position: "relative" }}
-                className="group rounded-3xl overflow-hidden bg-[#1a1612] border border-black/15 shadow-md hover:shadow-xl cursor-pointer flex flex-col justify-end"
+                className="w-[80vw] max-w-[320px] sm:w-auto sm:max-w-none flex-shrink-0 snap-center group rounded-3xl overflow-hidden bg-[#1a1612] border border-black/15 shadow-md hover:shadow-xl cursor-pointer flex flex-col justify-end"
               >
+                {/* Slide Counter Pill on Mobile */}
+                <span className="sm:hidden absolute top-3 right-3 z-20 px-2.5 py-0.5 rounded-full bg-black/65 text-white font-mono text-[10px] font-bold backdrop-blur-xs">
+                  {idx + 1} / {beachMoments.length}
+                </span>
                 <Image
                   src={moment.image}
                   alt={moment.title}
