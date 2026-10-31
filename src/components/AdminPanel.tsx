@@ -1049,38 +1049,38 @@ export default function AdminPanel({
       <div
         className={
           isFullPage
-            ? "w-full max-w-7xl mx-auto flex-1 flex flex-col my-4 px-3 sm:px-6"
-            : "relative w-full max-w-6xl max-h-[94vh] bg-white border border-black/20 rounded-3xl shadow-2xl flex flex-col overflow-hidden"
+            ? "w-full max-w-7xl mx-auto flex-1 flex flex-col my-2 sm:my-4 px-2.5 sm:px-6 pb-[env(safe-area-inset-bottom,0px)]"
+            : "relative w-full max-w-6xl max-h-[calc(100dvh-1rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] sm:max-h-[94dvh] bg-white border border-black/20 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden"
         }
       >
         {/* =================================================================
             TOP ADMIN HEADER BAR
            ================================================================= */}
-        <header className="px-5 py-4 bg-[#141414] text-[#faf8f5] flex flex-wrap items-center justify-between gap-3 rounded-t-3xl">
-          <div className="flex items-center gap-3">
+        <header className="px-3.5 sm:px-5 py-3.5 sm:py-4 bg-[#141414] text-[#faf8f5] flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-between gap-3 rounded-t-2xl sm:rounded-t-3xl">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <ApoorvaLogo size="sm" variant="light" showTagline={false} />
             <div className="h-5 w-[1px] bg-white/20 hidden sm:block" />
-            <div>
-              <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-300 font-bold flex items-center gap-1.5">
-                <Lock className="w-3 h-3" />
-                <span>PROTECTED ADMIN PORTAL (/admin)</span>
+            <div className="min-w-0 flex-1">
+              <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.15em] sm:tracking-[0.2em] text-amber-300 font-bold flex items-center gap-1.5">
+                <Lock className="w-3 h-3 shrink-0" />
+                <span className="truncate">PROTECTED ADMIN PORTAL (/admin)</span>
               </span>
-              <h1 className="text-xs sm:text-sm font-mono font-bold uppercase tracking-wider text-white">
+              <h1 className="text-[11px] sm:text-sm font-mono font-bold uppercase tracking-wider text-white leading-tight mt-0.5">
                 360° MEDIA • PRICING • ORDERS • WHATSAPP &amp; IG AUTOMATION
               </h1>
             </div>
           </div>
 
           {/* Right Action Buttons */}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:flex-wrap">
             <button
               type="button"
               onClick={() => triggerUploadForField()}
               disabled={uploading}
-              className="px-3.5 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors"
+              className="px-3 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors"
             >
-              <Upload className="w-3.5 h-3.5 text-amber-300" />
-              <span>{uploading ? "UPLOADING..." : "UPLOAD MEDIA"}</span>
+              <Upload className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+              <span className="truncate">{uploading ? "UPLOADING..." : "UPLOAD MEDIA"}</span>
             </button>
 
             <button
@@ -1088,63 +1088,65 @@ export default function AdminPanel({
               onClick={handleSaveAll}
               disabled={saving}
               style={{ backgroundColor: "#f59e0b", color: "#000000" }}
-              className="px-4 py-2 rounded-full font-mono text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md hover:opacity-95 active:scale-95 transition-all"
+              className="px-3 sm:px-4 py-2 rounded-full font-mono text-[10px] sm:text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md hover:opacity-95 active:scale-95 transition-all"
             >
-              <Save className="w-3.5 h-3.5" />
-              <span>{saving ? "SAVING..." : "SAVE & PUBLISH LIVE"}</span>
+              <Save className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">{saving ? "SAVING..." : "SAVE & PUBLISH"}</span>
             </button>
 
             <a
               href="/"
-              className="px-3.5 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5"
+              className="px-3 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
             >
-              <ExternalLink className="w-3.5 h-3.5" />
+              <ExternalLink className="w-3.5 h-3.5 shrink-0" />
               <span>STOREFRONT</span>
             </a>
 
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="px-3 py-2 rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-200 font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1"
-              title="Lock & Logout of Admin Portal"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">LOCK</span>
-            </button>
-
-            {!isFullPage && onClose && (
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={onClose}
-                className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
-                title="Close Admin Panel"
+                onClick={handleLogout}
+                className="flex-1 sm:flex-initial px-3 py-2 rounded-full bg-red-500/20 hover:bg-red-500/30 text-red-200 font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
+                title="Lock & Logout of Admin Portal"
               >
-                <X className="w-4 h-4" />
+                <LogOut className="w-3.5 h-3.5 shrink-0" />
+                <span>LOCK</span>
               </button>
-            )}
+
+              {!isFullPage && onClose && (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                  title="Close Admin Panel"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
         </header>
 
         {/* Status Toast Banner */}
         {toast && (
           <div
-            className={`px-5 py-2.5 font-mono text-xs font-bold flex items-center justify-between ${toast.type === "success"
+            className={`px-3.5 sm:px-5 py-2.5 font-mono text-xs font-bold flex items-center justify-between gap-2 ${toast.type === "success"
               ? "bg-emerald-800 text-white"
               : "bg-red-800 text-white"
               }`}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               {toast.type === "success" ? (
-                <Check className="w-4 h-4 text-emerald-300" />
+                <Check className="w-4 h-4 text-emerald-300 shrink-0" />
               ) : (
-                <AlertCircle className="w-4 h-4 text-red-200" />
+                <AlertCircle className="w-4 h-4 text-red-200 shrink-0" />
               )}
-              <span>{toast.text}</span>
+              <span className="break-words">{toast.text}</span>
             </div>
             <button
               type="button"
               onClick={() => setToast(null)}
-              className="text-white/80 hover:text-white text-[10px] uppercase"
+              className="text-white/80 hover:text-white text-[10px] uppercase shrink-0"
             >
               Dismiss
             </button>
@@ -1154,30 +1156,30 @@ export default function AdminPanel({
         {/* =================================================================
             KPI SUMMARY STRIP & 5 NAVIGATION TABS
            ================================================================= */}
-        <div className="bg-neutral-100 border-b border-black/10 px-5 py-3 flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+        <div className="bg-neutral-100 border-b border-black/10 px-3.5 sm:px-5 py-2.5 sm:py-3 flex flex-col xl:flex-row xl:items-center justify-between gap-2.5 sm:gap-3">
           {/* Navigation Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 xl:pb-0">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar overscroll-x-contain -mx-3.5 px-3.5 sm:mx-0 sm:px-0 pb-1 xl:pb-0">
             <button
               type="button"
               onClick={() => setActiveTab("products")}
-              className={`px-3.5 py-2 rounded-full font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all whitespace-nowrap ${activeTab === "products"
+              className={`px-3 sm:px-3.5 py-2 rounded-full font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${activeTab === "products"
                 ? "bg-[#141414] text-white shadow-xs"
                 : "bg-white/70 hover:bg-white text-black/80"
                 }`}
             >
-              <RotateCw className="w-3.5 h-3.5" />
+              <RotateCw className="w-3.5 h-3.5 shrink-0" />
               <span>1. 360° Media &amp; Pricing</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("orders")}
-              className={`px-3.5 py-2 rounded-full font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all whitespace-nowrap ${activeTab === "orders"
+              className={`px-3 sm:px-3.5 py-2 rounded-full font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${activeTab === "orders"
                 ? "bg-[#141414] text-white shadow-xs"
                 : "bg-white/70 hover:bg-white text-black/80"
                 }`}
             >
-              <Package className="w-3.5 h-3.5" />
+              <Package className="w-3.5 h-3.5 shrink-0" />
               <span>2. Orders ({orders.length})</span>
               {pendingOrdersCount > 0 && (
                 <span className="ml-0.5 px-1.5 py-0.2 bg-amber-400 text-black rounded-full text-[10px] font-black">
@@ -1189,12 +1191,12 @@ export default function AdminPanel({
             <button
               type="button"
               onClick={() => setActiveTab("social")}
-              className={`px-3.5 py-2 rounded-full font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all whitespace-nowrap ${activeTab === "social"
+              className={`px-3 sm:px-3.5 py-2 rounded-full font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${activeTab === "social"
                 ? "bg-[#141414] text-white shadow-xs"
                 : "bg-white/70 hover:bg-white text-black/80"
                 }`}
             >
-              <Bot className="w-3.5 h-3.5 text-emerald-700" />
+              <Bot className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
               <span>
                 3. WhatsApp &amp; Instagram Bot (
                 {whatsappOrdersCount + instagramOrdersCount})
@@ -1204,37 +1206,37 @@ export default function AdminPanel({
             <button
               type="button"
               onClick={() => setActiveTab("media")}
-              className={`px-3.5 py-2 rounded-full font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all whitespace-nowrap ${activeTab === "media"
+              className={`px-3 sm:px-3.5 py-2 rounded-full font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${activeTab === "media"
                 ? "bg-[#141414] text-white shadow-xs"
                 : "bg-white/70 hover:bg-white text-black/80"
                 }`}
             >
-              <HardDrive className="w-3.5 h-3.5" />
+              <HardDrive className="w-3.5 h-3.5 shrink-0" />
               <span>4. Media Storage ({mediaLibrary.length})</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("settings")}
-              className={`px-3.5 py-2 rounded-full font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all whitespace-nowrap ${activeTab === "settings"
+              className={`px-3 sm:px-3.5 py-2 rounded-full font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all whitespace-nowrap shrink-0 ${activeTab === "settings"
                 ? "bg-[#141414] text-white shadow-xs"
                 : "bg-white/70 hover:bg-white text-black/80"
                 }`}
             >
-              <Settings className="w-3.5 h-3.5" />
+              <Settings className="w-3.5 h-3.5 shrink-0" />
               <span>5. Security &amp; Settings</span>
             </button>
           </div>
 
           {/* Quick KPI Badges */}
-          <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono">
-            <div className="px-3 py-1 rounded-xl bg-white/80 border border-black/10">
+          <div className="flex flex-wrap items-center gap-2 text-[10px] sm:text-[11px] font-mono">
+            <div className="px-2.5 sm:px-3 py-1 rounded-xl bg-white/80 border border-black/10">
               <span className="text-black/50 mr-1">REVENUE:</span>
               <span className="font-black text-emerald-900">
                 ₹{totalRevenue.toLocaleString("en-IN")}
               </span>
             </div>
-            <div className="px-3 py-1 rounded-xl bg-white/80 border border-black/10">
+            <div className="px-2.5 sm:px-3 py-1 rounded-xl bg-white/80 border border-black/10">
               <span className="text-black/50 mr-1">WA/IG ORDERS:</span>
               <span className="font-black text-black">
                 {whatsappOrdersCount} WA • {instagramOrdersCount} IG
@@ -1246,7 +1248,7 @@ export default function AdminPanel({
         {/* =================================================================
             MAIN ADMIN WORKSPACE BODY
            ================================================================= */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-white rounded-b-3xl">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-5 sm:space-y-6 bg-white rounded-b-2xl sm:rounded-b-3xl">
           {loading ? (
             <div className="py-20 text-center font-mono text-sm text-black/60 flex flex-col items-center gap-3">
               <RefreshCw className="w-6 h-6 animate-spin text-amber-800" />
@@ -1258,69 +1260,75 @@ export default function AdminPanel({
                   TAB 1: 360° MEDIA, VIDEOS & PRICING EDITOR
                  ============================================================= */}
               {activeTab === "products" && activeProduct && (
-                <div className="space-y-6">
+                <div className="space-y-5 sm:space-y-6">
                   {/* Top Bar: 360° Orbit Stage Controls + Product Switcher + Add New Product */}
-                  <div className="bg-white p-4 rounded-2xl border border-black/10 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                    <div className="flex flex-wrap items-center gap-2">
+                  <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-black/10 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 sm:gap-4">
+                    <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2">
                       {products.map((p, idx) => (
                         <button
                           key={p.id}
                           type="button"
                           onClick={() => setSelectedProdIdx(idx)}
-                          className={`px-4 py-2.5 rounded-xl font-mono text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all ${selectedProdIdx === idx
-                            ? "bg-[#141414] text-white shadow-sm"
-                            : "bg-white hover:bg-black/10 text-black"
+                          className={`px-3.5 sm:px-4 py-2.5 rounded-xl font-mono text-xs font-black uppercase tracking-wider flex items-center justify-between sm:justify-start gap-2 transition-all border ${selectedProdIdx === idx
+                            ? "bg-[#141414] text-white border-[#141414] shadow-sm"
+                            : "bg-neutral-50 hover:bg-black/10 text-black border-black/10"
                             }`}
                         >
-                          <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">
-                            SET {p.number}
-                          </span>
-                          <span>{p.shortName}</span>
-                          <span className="font-normal opacity-80">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-500 shrink-0">
+                              SET {p.number}
+                            </span>
+                            <span className="truncate">{p.shortName}</span>
+                          </div>
+                          <span className="font-normal opacity-80 shrink-0">
                             (₹{p.price.toLocaleString("en-IN")})
                           </span>
                         </button>
                       ))}
 
-                      {/* + Add New Product Button */}
-                      <button
-                        type="button"
-                        onClick={() => setShowAddProductForm(!showAddProductForm)}
-                        style={{ backgroundColor: "#f59e0b", color: "#000000" }}
-                        className="px-4 py-2.5 rounded-xl font-mono text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm hover:opacity-95 transition-all"
-                      >
-                        <Plus className="w-4 h-4" />
-                        <span>
-                          {showAddProductForm
-                            ? "Close Add Form"
-                            : "+ Add New Product"}
-                        </span>
-                      </button>
-
-                      {/* Delete Product Button (when more than 1 product exists) */}
-                      {products.length > 1 && (
+                      <div className="grid grid-cols-2 sm:flex items-center gap-2">
+                        {/* Add New Product Button */}
                         <button
                           type="button"
-                          onClick={() => handleDeleteProduct(selectedProdIdx)}
-                          className="px-3 py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 font-mono text-[11px] font-bold uppercase tracking-wider flex items-center gap-1"
-                          title={`Remove Set ${activeProduct.number} from catalog`}
+                          onClick={() => setShowAddProductForm(!showAddProductForm)}
+                          style={{ backgroundColor: "#f59e0b", color: "#000000" }}
+                          className="px-3 sm:px-4 py-2.5 rounded-xl font-mono text-[11px] sm:text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm hover:opacity-95 transition-all"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          <span>Delete Set {activeProduct.number}</span>
+                          <Plus className="w-4 h-4 shrink-0" />
+                          <span className="truncate">
+                            {showAddProductForm
+                              ? "Close Add Form"
+                              : "Add New Product"}
+                          </span>
                         </button>
-                      )}
+
+                        {/* Delete Product Button (when more than 1 product exists) */}
+                        {products.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteProduct(selectedProdIdx)}
+                            className="px-3 py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 font-mono text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1"
+                            title={`Remove Set ${activeProduct.number} from catalog`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                            <span className="truncate">Delete Set {activeProduct.number}</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {/* 360° Rotation Speed Control */}
-                    <div className="flex flex-wrap items-center gap-3">
-                      <div className="flex items-center gap-2 bg-neutral-50 px-3 py-1.5 rounded-xl border border-black/10">
-                        <RotateCw className="w-3.5 h-3.5 text-amber-800 animate-spin" />
-                        <label
-                          htmlFor="orbit-speed-select"
-                          className="text-[10px] font-mono font-bold uppercase text-black/70"
-                        >
-                          360° Orbit Speed:
-                        </label>
+                    <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3">
+                      <div className="flex items-center justify-between sm:justify-start gap-2 bg-neutral-50 px-3 py-2 sm:py-1.5 rounded-xl border border-black/10">
+                        <div className="flex items-center gap-1.5">
+                          <RotateCw className="w-3.5 h-3.5 text-amber-800 animate-spin shrink-0" />
+                          <label
+                            htmlFor="orbit-speed-select"
+                            className="text-[10px] font-mono font-bold uppercase text-black/70 whitespace-nowrap"
+                          >
+                            360° Orbit Speed:
+                          </label>
+                        </div>
                         <select
                           id="orbit-speed-select"
                           value={settings.orbitSpeedMultiplier || 1}
@@ -1330,7 +1338,7 @@ export default function AdminPanel({
                               orbitSpeedMultiplier: Number(e.target.value) || 1
                             }))
                           }
-                          className="bg-white px-2 py-1 rounded-lg border border-black/15 font-mono text-xs font-black"
+                          className="bg-white px-2.5 py-1 rounded-lg border border-black/15 font-mono text-xs font-black"
                         >
                           <option value={0.5}>0.5x (Slow Luxury)</option>
                           <option value={1}>1.0x (Standard Smooth)</option>
@@ -1343,9 +1351,9 @@ export default function AdminPanel({
                         type="button"
                         onClick={handleSaveAll}
                         disabled={saving}
-                        className="px-4 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5"
+                        className="px-4 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
                       >
-                        <Save className="w-3.5 h-3.5" />
+                        <Save className="w-3.5 h-3.5 shrink-0" />
                         <span>
                           {saving ? "Saving..." : "Publish 360° & Pricing"}
                         </span>
@@ -1528,7 +1536,7 @@ export default function AdminPanel({
                           >
                             360° Orbit Cutout Image (PNG / JPG)
                           </label>
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <input
                               id="new-prod-img"
                               type="text"
@@ -1539,7 +1547,7 @@ export default function AdminPanel({
                                   image: e.target.value
                                 }))
                               }
-                              className="flex-1 px-3 py-2 rounded-lg bg-white border border-black/15 font-mono text-xs"
+                              className="w-full sm:flex-1 min-w-[160px] px-3 py-2 rounded-lg bg-white border border-black/15 font-mono text-xs"
                             />
                             <button
                               type="button"
@@ -1554,7 +1562,7 @@ export default function AdminPanel({
                                     }))
                                 })
                               }
-                              className="px-3 py-2 rounded-lg bg-black text-white font-mono text-[10px] font-bold uppercase whitespace-nowrap"
+                              className="flex-1 sm:flex-initial px-3 py-2 rounded-lg bg-black text-white font-mono text-[10px] font-bold uppercase whitespace-nowrap text-center"
                             >
                               Pick Image
                             </button>
@@ -1568,7 +1576,7 @@ export default function AdminPanel({
                                   }))
                                 )
                               }
-                              className="px-3 py-2 rounded-lg bg-amber-500 text-black font-mono text-[10px] font-black uppercase whitespace-nowrap"
+                              className="flex-1 sm:flex-initial px-3 py-2 rounded-lg bg-amber-500 text-black font-mono text-[10px] font-black uppercase whitespace-nowrap text-center"
                             >
                               Upload
                             </button>
@@ -1582,7 +1590,7 @@ export default function AdminPanel({
                           >
                             Product Motion Video (.MP4)
                           </label>
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <input
                               id="new-prod-vid"
                               type="text"
@@ -1593,7 +1601,7 @@ export default function AdminPanel({
                                   video: e.target.value
                                 }))
                               }
-                              className="flex-1 px-3 py-2 rounded-lg bg-white border border-black/15 font-mono text-xs"
+                              className="w-full sm:flex-1 min-w-[160px] px-3 py-2 rounded-lg bg-white border border-black/15 font-mono text-xs"
                             />
                             <button
                               type="button"
@@ -1608,7 +1616,7 @@ export default function AdminPanel({
                                     }))
                                 })
                               }
-                              className="px-3 py-2 rounded-lg bg-black text-white font-mono text-[10px] font-bold uppercase whitespace-nowrap"
+                              className="flex-1 sm:flex-initial px-3 py-2 rounded-lg bg-black text-white font-mono text-[10px] font-bold uppercase whitespace-nowrap text-center"
                             >
                               Pick Video
                             </button>
@@ -1622,7 +1630,7 @@ export default function AdminPanel({
                                   }))
                                 )
                               }
-                              className="px-3 py-2 rounded-lg bg-amber-500 text-black font-mono text-[10px] font-black uppercase whitespace-nowrap"
+                              className="flex-1 sm:flex-initial px-3 py-2 rounded-lg bg-amber-500 text-black font-mono text-[10px] font-black uppercase whitespace-nowrap text-center"
                             >
                               Upload MP4
                             </button>
@@ -1651,7 +1659,7 @@ export default function AdminPanel({
                         />
                       </div>
 
-                      <div className="flex items-center justify-end gap-3 pt-2 border-t border-black/10">
+                      <div className="flex flex-wrap items-center justify-end gap-2.5 sm:gap-3 pt-2 border-t border-black/10">
                         <button
                           type="button"
                           onClick={() => setShowAddProductForm(false)}
@@ -1662,9 +1670,9 @@ export default function AdminPanel({
                         <button
                           type="submit"
                           disabled={saving}
-                          className="px-6 py-2.5 rounded-xl bg-[#141414] hover:bg-black text-white font-mono text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-md"
+                          className="px-4 sm:px-6 py-2.5 rounded-xl bg-[#141414] hover:bg-black text-white font-mono text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-md"
                         >
-                          <Plus className="w-4 h-4 text-amber-300" />
+                          <Plus className="w-4 h-4 text-amber-300 shrink-0" />
                           <span>
                             Create &amp; Publish Set{" "}
                             {String(products.length + 1).padStart(2, "0")} to 360° Showcase
@@ -1675,13 +1683,13 @@ export default function AdminPanel({
                   )}
 
                   {/* Side-by-Side 360° Orbit Pair Overview Strip */}
-                  <div className="bg-neutral-100 p-4 rounded-2xl border border-black/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
+                  <div className="bg-neutral-100 p-3.5 sm:p-4 rounded-2xl border border-black/10 flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 sm:gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3.5 w-full lg:w-auto flex-1">
                       {products.map((prod, idx) => (
                         <div
                           key={prod.id}
                           onClick={() => setSelectedProdIdx(idx)}
-                          className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer border transition-all ${selectedProdIdx === idx
+                          className={`flex items-center gap-3 p-2.5 sm:p-3 rounded-xl cursor-pointer border transition-all min-w-0 ${selectedProdIdx === idx
                             ? "bg-white border-black shadow-xs"
                             : "bg-white/60 border-black/10 hover:bg-white"
                             }`}
@@ -1692,41 +1700,42 @@ export default function AdminPanel({
                             width={48}
                             height={52}
                             unoptimized
+                            className="shrink-0"
                             style={{
                               width: "48px",
                               height: "52px",
                               objectFit: "contain"
                             }}
                           />
-                          <div className="font-mono">
-                            <div className="text-[10px] font-black text-amber-900 uppercase">
+                          <div className="font-mono min-w-0 flex-1">
+                            <div className="text-[10px] font-black text-amber-900 uppercase truncate">
                               360° ORBIT SLOT {prod.number}
                             </div>
-                            <div className="text-xs font-bold text-black">
+                            <div className="text-xs font-bold text-black truncate">
                               {prod.shortName}
                             </div>
-                            <div className="text-[10px] text-black/60 truncate max-w-[160px]">
+                            <div className="text-[10px] text-black/60 truncate">
                               {prod.image}
                             </div>
                           </div>
                         </div>
                       ))}
                     </div>
-                    <div className="text-[11px] font-mono text-black/70 max-w-xs">
-                      Both cutouts above continuously circle 360° on the hero stage. Click either slot to replace its 360° cutout image or `.mp4` motion video below.
+                    <div className="text-[11px] font-mono text-black/70 lg:max-w-xs leading-relaxed">
+                      Both cutouts above continuously circle 360° on the hero stage. Tap either slot to replace its 360° cutout image or `.mp4` motion video below.
                     </div>
                   </div>
 
                   {/* Main Two-Column Product Editor */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
                     {/* LEFT COLUMN (5 cols): 360° CUTOUT IMAGE & MOTION VIDEO */}
                     <div className="lg:col-span-5 space-y-5">
                       {/* 1. 360° Rotating Cutout Image Card */}
-                      <div className="bg-white p-5 rounded-2xl border border-black/10 shadow-xs space-y-3">
-                        <div className="flex items-center justify-between">
+                      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/10 shadow-xs space-y-3">
+                        <div className="flex flex-wrap items-center justify-between gap-1.5">
                           <span className="text-xs font-mono font-black uppercase tracking-wider text-black flex items-center gap-1.5">
-                            <Sparkles className="w-4 h-4 text-amber-700" />
-                            360° Orbit Cutout Image (Set {activeProduct.number})
+                            <Sparkles className="w-4 h-4 text-amber-700 shrink-0" />
+                            <span>360° Orbit Cutout Image (Set {activeProduct.number})</span>
                           </span>
                           <span className="text-[10px] font-mono text-black/50">
                             Stored in /public/images or /public/uploads
@@ -1787,7 +1796,7 @@ export default function AdminPanel({
                             }
                             className="py-2 px-3 rounded-xl bg-[#141414] text-white font-mono text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
                           >
-                            <ImageIcon className="w-3.5 h-3.5 text-amber-300" />
+                            <ImageIcon className="w-3.5 h-3.5 text-amber-300 shrink-0" />
                             <span>Pick Library</span>
                           </button>
 
@@ -1804,18 +1813,18 @@ export default function AdminPanel({
                             }
                             className="py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5"
                           >
-                            <Upload className="w-3.5 h-3.5" />
+                            <Upload className="w-3.5 h-3.5 shrink-0" />
                             <span>Upload Cutout</span>
                           </button>
                         </div>
                       </div>
 
                       {/* 2. Product Motion Video Card */}
-                      <div className="bg-white p-5 rounded-2xl border border-black/10 shadow-xs space-y-3">
-                        <div className="flex items-center justify-between">
+                      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/10 shadow-xs space-y-3">
+                        <div className="flex flex-wrap items-center justify-between gap-1.5">
                           <span className="text-xs font-mono font-black uppercase tracking-wider text-black flex items-center gap-1.5">
-                            <Film className="w-4 h-4 text-amber-700" />
-                            Product Motion Video (Set {activeProduct.number})
+                            <Film className="w-4 h-4 text-amber-700 shrink-0" />
+                            <span>Product Motion Video (Set {activeProduct.number})</span>
                           </span>
                           <span className="text-[10px] font-mono text-black/50">
                             Stored in /public/videos or /public/uploads
@@ -1900,7 +1909,7 @@ export default function AdminPanel({
                             }
                             className="py-2 px-3 rounded-xl bg-[#141414] text-white font-mono text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
                           >
-                            <Film className="w-3.5 h-3.5 text-amber-300" />
+                            <Film className="w-3.5 h-3.5 text-amber-300 shrink-0" />
                             <span>Pick Video</span>
                           </button>
 
@@ -1917,7 +1926,7 @@ export default function AdminPanel({
                             }
                             className="py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5"
                           >
-                            <Upload className="w-3.5 h-3.5" />
+                            <Upload className="w-3.5 h-3.5 shrink-0" />
                             <span>Upload MP4</span>
                           </button>
                         </div>
@@ -1927,11 +1936,11 @@ export default function AdminPanel({
                     {/* RIGHT COLUMN (7 cols): PRICING, COPY, GALLERY & STOCK */}
                     <div className="lg:col-span-7 space-y-5">
                       {/* 1. Pricing & Bundle Discount Controls */}
-                      <div className="bg-white p-5 rounded-2xl border border-black/10 shadow-xs space-y-4">
-                        <div className="flex items-center justify-between border-b border-black/10 pb-3">
+                      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/10 shadow-xs space-y-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/10 pb-3">
                           <span className="text-xs font-mono font-black uppercase tracking-wider text-black flex items-center gap-1.5">
-                            <IndianRupee className="w-4 h-4 text-emerald-800" />
-                            Pricing &amp; Bundle Offer (Set {activeProduct.number})
+                            <IndianRupee className="w-4 h-4 text-emerald-800 shrink-0" />
+                            <span>Pricing &amp; Bundle Offer (Set {activeProduct.number})</span>
                           </span>
                           {activeProduct.originalPrice &&
                             activeProduct.originalPrice > activeProduct.price && (
@@ -3389,7 +3398,7 @@ export default function AdminPanel({
                   </div>
 
                   {/* Upload & Add URL Bar */}
-                  <div className="bg-white p-5 rounded-2xl border border-black/10 shadow-xs flex flex-col lg:flex-row items-stretch lg:items-end justify-between gap-4">
+                  <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/10 shadow-xs flex flex-col lg:flex-row items-stretch lg:items-end justify-between gap-4">
                     <div>
                       <h3 className="font-mono text-sm font-black uppercase tracking-wider text-black">
                         All Stored Media Files ({mediaLibrary.length})
@@ -3399,10 +3408,10 @@ export default function AdminPanel({
                       </p>
                     </div>
 
-                    <div className="flex flex-wrap items-end gap-2">
+                    <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-end gap-2">
                       <form
                         onSubmit={handleAddCustomMediaUrl}
-                        className="flex flex-wrap items-center gap-2"
+                        className="flex items-center gap-2 w-full sm:w-auto"
                       >
                         <input
                           type="text"
@@ -3410,11 +3419,11 @@ export default function AdminPanel({
                           placeholder="Paste external image or .mp4 URL..."
                           value={customMediaUrl}
                           onChange={(e) => setCustomMediaUrl(e.target.value)}
-                          className="px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs w-56"
+                          className="px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs flex-1 sm:w-56 min-w-0"
                         />
                         <button
                           type="submit"
-                          className="px-3.5 py-2 rounded-xl bg-black text-white font-mono text-xs font-bold uppercase"
+                          className="px-3.5 py-2 rounded-xl bg-black text-white font-mono text-xs font-bold uppercase whitespace-nowrap shrink-0"
                         >
                           Add URL
                         </button>
@@ -3424,9 +3433,9 @@ export default function AdminPanel({
                         type="button"
                         onClick={() => triggerUploadForField()}
                         disabled={uploading}
-                        className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-xs font-black uppercase tracking-wider flex items-center gap-1.5"
+                        className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5"
                       >
-                        <Upload className="w-3.5 h-3.5" />
+                        <Upload className="w-3.5 h-3.5 shrink-0" />
                         <span>
                           {uploading
                             ? "Uploading..."
@@ -3579,16 +3588,16 @@ export default function AdminPanel({
                   </div>
 
                   {/* 4 Beachwear Lookbook Moments Editor */}
-                  <div className="bg-white p-5 rounded-2xl border border-black/10 shadow-xs space-y-4">
-                    <div className="flex items-center justify-between border-b border-black/10 pb-2">
+                  <div className="bg-white p-4 sm:p-5 rounded-2xl border border-black/10 shadow-xs space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/10 pb-2">
                       <span className="font-mono text-xs font-black uppercase tracking-wider text-black flex items-center gap-1.5">
-                        <Layers className="w-4 h-4 text-amber-800" />
-                        Beachwear Lookbook Moments (4 Lifestyle Cards)
+                        <Layers className="w-4 h-4 text-amber-800 shrink-0" />
+                        <span>Beachwear Lookbook Moments (4 Lifestyle Cards)</span>
                       </span>
                       <button
                         type="button"
                         onClick={handleSaveAll}
-                        className="px-3.5 py-1.5 rounded-full bg-black text-white font-mono text-[10px] font-bold uppercase"
+                        className="px-3.5 py-1.5 rounded-full bg-black text-white font-mono text-[10px] font-bold uppercase shrink-0"
                       >
                         Save Lookbook
                       </button>
@@ -3798,7 +3807,7 @@ export default function AdminPanel({
                         />
                       </div>
 
-                      <div className="pt-2 flex items-center justify-between">
+                      <div className="pt-2 flex flex-wrap items-center justify-between gap-2.5">
                         <button
                           type="button"
                           onClick={handleResetDefaults}
@@ -3813,7 +3822,7 @@ export default function AdminPanel({
                           disabled={saving}
                           className="px-5 py-2.5 rounded-full bg-[#141414] text-white font-mono text-xs font-black uppercase tracking-wider flex items-center gap-2"
                         >
-                          <Save className="w-3.5 h-3.5 text-amber-300" />
+                          <Save className="w-3.5 h-3.5 text-amber-300 shrink-0" />
                           <span>Save Settings</span>
                         </button>
                       </div>
@@ -3821,14 +3830,14 @@ export default function AdminPanel({
                   </div>
 
                   {/* Admin Password Security Card */}
-                  <div className="bg-white p-6 rounded-2xl border border-black/10 shadow-xs space-y-5">
+                  <div className="bg-white p-4 sm:p-6 rounded-2xl border border-black/10 shadow-xs space-y-5">
                     <div className="border-b border-black/10 pb-3">
                       <h2 className="font-mono text-sm font-black uppercase tracking-wider text-black flex items-center gap-2">
-                        <Lock className="w-4 h-4 text-amber-800" />
+                        <Lock className="w-4 h-4 text-amber-800 shrink-0" />
                         <span>/admin Password Protection</span>
                       </h2>
                       <p className="font-mono text-xs text-black/60 mt-0.5">
-                        Update the password required to unlock <code>http://localhost:3000/admin</code>.
+                        Update the password required to unlock <code>/admin</code>.
                       </p>
                     </div>
 
@@ -3854,13 +3863,13 @@ export default function AdminPanel({
                         />
                       </div>
 
-                      <div className="flex items-center justify-between pt-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2">
                         <button
                           type="button"
                           onClick={handleLogout}
                           className="px-4 py-2 rounded-full bg-red-50 text-red-800 border border-red-200 font-mono text-xs font-bold uppercase flex items-center gap-1.5"
                         >
-                          <LogOut className="w-3.5 h-3.5" />
+                          <LogOut className="w-3.5 h-3.5 shrink-0" />
                           <span>Lock / Logout Now</span>
                         </button>
 
@@ -3884,22 +3893,22 @@ export default function AdminPanel({
           MEDIA LIBRARY PICKER MODAL (FOR ASSIGNING IMAGES / VIDEOS)
          ===================================================================== */}
       {mediaPickerTarget && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-3xl bg-white rounded-3xl border border-black/20 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-            <div className="px-5 py-3.5 bg-[#141414] text-white flex items-center justify-between">
-              <span className="font-mono text-xs font-bold uppercase tracking-wider">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-2.5 sm:p-4 pt-[max(0.75rem,env(safe-area-inset-top,0px))] pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]">
+          <div className="w-full max-w-3xl bg-white rounded-2xl sm:rounded-3xl border border-black/20 shadow-2xl overflow-hidden flex flex-col max-h-[calc(100dvh-2rem-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px))] sm:max-h-[85dvh]">
+            <div className="px-4 sm:px-5 py-3.5 bg-[#141414] text-white flex items-center justify-between gap-2">
+              <span className="font-mono text-xs font-bold uppercase tracking-wider truncate">
                 {mediaPickerTarget.label}
               </span>
               <button
                 type="button"
                 onClick={() => setMediaPickerTarget(null)}
-                className="p-1 rounded-full hover:bg-white/10"
+                className="p-1 rounded-full hover:bg-white/10 shrink-0"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="p-5 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            <div className="p-3.5 sm:p-5 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {mediaLibrary
                 .filter(
                   (m) =>
