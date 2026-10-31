@@ -19,6 +19,7 @@ import {
   loadStoreFromMongoDB,
   saveStoreToMongoDB
 } from "@/lib/db/mongodb";
+import bundledStoreDb from "../../../data/store-db.json";
 
 export interface StoreSettings {
   capsuleTitle: string;
@@ -474,6 +475,12 @@ export function getStoreDatabase(): StoreDatabase {
     console.warn("[AdminStore] Failed to read store-db.json, initializing defaults:", err);
   }
 
+  const bundled = JSON.parse(JSON.stringify(bundledStoreDb)) as StoreDatabase;
+  if (bundled && Array.isArray(bundled.products) && bundled.products.length > 0) {
+    globalStore.__APOORVA_ADMIN_DB__ = bundled;
+    return bundled;
+  }
+
   const initialDb: StoreDatabase = {
     products: JSON.parse(JSON.stringify(PRODUCTS)),
     beachMoments: JSON.parse(JSON.stringify(BEACH_MOMENTS)),
@@ -490,7 +497,7 @@ export function getStoreDatabase(): StoreDatabase {
 }
 
 export async function ensureStoreDatabaseLoaded(): Promise<StoreDatabase> {
-  // 1. Always try loading latest state from MongoDB (`apoorva` DB in diefuture cluster)
+  // 1. Always try loading latest state from Apoorva MongoDB (`cluster0.s3sa1pu.mongodb.net`)
   try {
     const mongoDb = await loadStoreFromMongoDB();
     if (
@@ -518,36 +525,35 @@ export async function ensureStoreDatabaseLoaded(): Promise<StoreDatabase> {
     console.warn("[AdminStore] MongoDB load fallback:", err);
   }
 
-  // 2. Fallback to Cloudinary raw state or local disk
-  if (!globalStore.__APOORVA_CLOUD_SYNCED__) {
-    globalStore.__APOORVA_CLOUD_SYNCED__ = true;
-    try {
-      const cloudDb = await loadDatabaseFromCloudinary<StoreDatabase>();
-      if (
-        cloudDb &&
-        Array.isArray(cloudDb.products) &&
-        cloudDb.products.length > 0
-      ) {
-        if (!cloudDb.socialAutomation) {
-          cloudDb.socialAutomation = { ...DEFAULT_SOCIAL_CONFIG };
-        }
-        if (!Array.isArray(cloudDb.socialEvents)) {
-          cloudDb.socialEvents = createInitialSocialEvents();
-        }
-        if (!cloudDb.settings.adminPassword) {
-          cloudDb.settings.adminPassword = DEFAULT_SETTINGS.adminPassword;
-        }
-        globalStore.__APOORVA_ADMIN_DB__ = cloudDb;
-        await saveStoreToMongoDB(cloudDb);
-        return cloudDb;
+  // 2. Fallback to Cloudinary raw state or bundled store-db.json
+  try {
+    const cloudDb = await loadDatabaseFromCloudinary<StoreDatabase>();
+    if (
+      cloudDb &&
+      Array.isArray(cloudDb.products) &&
+      cloudDb.products.length > 0
+    ) {
+      if (!cloudDb.socialAutomation) {
+        cloudDb.socialAutomation = { ...DEFAULT_SOCIAL_CONFIG };
       }
-    } catch {
-      // Fallback to local disk
+      if (!Array.isArray(cloudDb.socialEvents)) {
+        cloudDb.socialEvents = createInitialSocialEvents();
+      }
+      if (!cloudDb.settings.adminPassword) {
+        cloudDb.settings.adminPassword = DEFAULT_SETTINGS.adminPassword;
+      }
+      if (!Array.isArray(cloudDb.deletedMediaUrls)) {
+        cloudDb.deletedMediaUrls = [];
+      }
+      globalStore.__APOORVA_ADMIN_DB__ = cloudDb;
+      globalStore.__APOORVA_CLOUD_SYNCED__ = true;
+      return cloudDb;
     }
+  } catch {
+    // Fallback to local / bundled store-db.json
   }
-  const localDb = getStoreDatabase();
-  await saveStoreToMongoDB(localDb);
-  return localDb;
+
+  return getStoreDatabase();
 }
 
 export async function persistStoreDatabase(

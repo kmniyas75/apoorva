@@ -53,9 +53,13 @@ const DEFAULT_CLD_SEC = Buffer.from(
   "base64"
 ).toString("utf8");
 
+function cleanEnv(val?: string): string {
+  return (val || "").trim().replace(/^["']+|["']+$/g, "").trim();
+}
+
 export function getCloudinaryConfig(): CloudinaryConfig {
   // 1. Parse CLOUDINARY_URL=cloudinary://key:secret@cloud_name if present
-  const cldUrl = process.env.CLOUDINARY_URL || "";
+  const cldUrl = cleanEnv(process.env.CLOUDINARY_URL);
   if (cldUrl.startsWith("cloudinary://")) {
     try {
       const parsed = new URL(cldUrl);
@@ -71,9 +75,9 @@ export function getCloudinaryConfig(): CloudinaryConfig {
   }
 
   // 2. Individual env vars or configured project defaults
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME || DEFAULT_CLD_CLOUD;
-  const apiKey = process.env.CLOUDINARY_API_KEY || DEFAULT_CLD_KEY;
-  const apiSecret = process.env.CLOUDINARY_API_SECRET || DEFAULT_CLD_SEC;
+  const cloudName = cleanEnv(process.env.CLOUDINARY_CLOUD_NAME) || DEFAULT_CLD_CLOUD;
+  const apiKey = cleanEnv(process.env.CLOUDINARY_API_KEY) || DEFAULT_CLD_KEY;
+  const apiSecret = cleanEnv(process.env.CLOUDINARY_API_SECRET) || DEFAULT_CLD_SEC;
 
   return {
     enabled: Boolean(cloudName && apiKey && apiSecret),

@@ -117,16 +117,16 @@ export const PRODUCTS: Product[] = [
     price: 4200,
     originalPrice: 5200,
     badge: "BESTSELLER // SUNSET & BONFIRE BEACHWEAR",
-    image: `${BASE_PATH}/images/apoorva_model_editorial.png`,
-    modelImage: `${BASE_PATH}/images/beach_couple_sunset.jpg`,
-    video: `${BASE_PATH}/videos/coir_fringe_beach.mp4`,
+    image: "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435605/apoorva/apoorva_model_editorial.png",
+    modelImage: "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435607/apoorva/beach_couple_sunset.jpg",
+    video: "https://res.cloudinary.com/oiu0lhfe/video/upload/v1793435623/apoorva/coir_fringe_beach.mp4",
     videoCaption: "Live Beach Motion: Hand-braided waistband & kinetic Kerala coir fringe in ocean breeze",
     gallery: [
-      `${BASE_PATH}/images/apoorva_model_editorial.png`,
-      `${BASE_PATH}/images/beach_couple_sunset.jpg`,
-      `${BASE_PATH}/images/beach_pool_lounge.jpg`,
-      `${BASE_PATH}/images/beach_resort_gift.jpg`,
-      `${BASE_PATH}/images/beach_bonfire_party.jpg`
+      "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435605/apoorva/apoorva_model_editorial.png",
+      "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435607/apoorva/beach_couple_sunset.jpg",
+      "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435608/apoorva/beach_pool_lounge.jpg",
+      "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435608/apoorva/beach_resort_gift.jpg",
+      "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435606/apoorva/beach_bonfire_party.jpg"
     ],
     color: "Sun-Kissed Golden Coir & Polished Coconut Shell",
     fit: "Free Size Adjustable Braided Halter & Waist Tie",
@@ -169,16 +169,16 @@ export const PRODUCTS: Product[] = [
     price: 4500,
     originalPrice: 5500,
     badge: "RESORT EDITION // CABANA & POOL LOUNGE",
-    image: `${BASE_PATH}/images/apoorva_coconut_set.png`,
-    modelImage: `${BASE_PATH}/images/beach_pool_lounge.jpg`,
-    video: `${BASE_PATH}/videos/jute_wrap_skirt.mp4`,
+    image: "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435598/apoorva/apoorva_coconut_set.png",
+    modelImage: "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435608/apoorva/beach_pool_lounge.jpg",
+    video: "https://res.cloudinary.com/oiu0lhfe/video/upload/v1793435639/apoorva/jute_wrap_skirt.mp4",
     videoCaption: "Close-Up Craft Film: Carved coconut ring buckle, 3 shell buttons & soft cotton interior lining",
     gallery: [
-      `${BASE_PATH}/images/apoorva_coconut_set.png`,
-      `${BASE_PATH}/images/apoorva_skirt.jpg`,
-      `${BASE_PATH}/images/apoorva_bra.jpg`,
-      `${BASE_PATH}/images/beach_pool_lounge.jpg`,
-      `${BASE_PATH}/images/beach_couple_sunset.jpg`
+      "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435598/apoorva/apoorva_coconut_set.png",
+      "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435606/apoorva/apoorva_skirt.jpg",
+      "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435597/apoorva/apoorva_bra.jpg",
+      "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435608/apoorva/beach_pool_lounge.jpg",
+      "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435607/apoorva/beach_couple_sunset.jpg"
     ],
     color: "Natural Sand Jute & Satin-Polished Coconut Shell",
     fit: "Adjustable Wrap Waist with Coconut Buckle & Side Slit",
@@ -219,7 +219,7 @@ export const BEACH_MOMENTS: BeachMoment[] = [
     title: "Golden Hour Shoreline Walk",
     subtitle: "Sunset Beach Romance",
     occasion: "Couple Beach Stroll",
-    image: `${BASE_PATH}/images/beach_couple_sunset.jpg`,
+    image: "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435607/apoorva/beach_couple_sunset.jpg",
     productId: "apoorva-01-coir-beach-set"
   },
   {
@@ -227,7 +227,7 @@ export const BEACH_MOMENTS: BeachMoment[] = [
     title: "Infinity Pool & Cabana Lounge",
     subtitle: "Tropical Resort Escape",
     occasion: "Daytime Poolside",
-    image: `${BASE_PATH}/images/beach_pool_lounge.jpg`,
+    image: "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435608/apoorva/beach_pool_lounge.jpg",
     productId: "apoorva-02-jute-wrap-set"
   },
   {
@@ -235,7 +235,7 @@ export const BEACH_MOMENTS: BeachMoment[] = [
     title: "Honeymoon Villa Surprise",
     subtitle: "Unbox the Island Vibe",
     occasion: "Resort Gift Box",
-    image: `${BASE_PATH}/images/beach_resort_gift.jpg`,
+    image: "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435608/apoorva/beach_resort_gift.jpg",
     productId: "apoorva-01-coir-beach-set"
   },
   {
@@ -243,7 +243,7 @@ export const BEACH_MOMENTS: BeachMoment[] = [
     title: "Midnight Beach Bonfire Luau",
     subtitle: "Made for Island Dancing",
     occasion: "Night Beach Party",
-    image: `${BASE_PATH}/images/beach_bonfire_party.jpg`,
+    image: "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435606/apoorva/beach_bonfire_party.jpg",
     productId: "apoorva-01-coir-beach-set"
   }
 ];
