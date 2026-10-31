@@ -1,15 +1,16 @@
 import { PRODUCTS } from "@/data/products";
 
 export default function SeoStructuredData() {
+  const siteUrl = "https://apoorva-eight.vercel.app";
   const jsonLdData = {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "Organization",
-        "@id": "https://apoorva.store/#organization",
+        "@id": `${siteUrl}/#organization`,
         "name": "APOORVA",
-        "url": "https://apoorva.store",
-        "logo": "https://apoorva.store/images/apoorva_logo.svg",
+        "url": siteUrl,
+        "logo": `${siteUrl}/images/apoorva_logo.svg`,
         "sameAs": [
           "https://instagram.com/apoorva_atelier"
         ],
@@ -25,21 +26,23 @@ export default function SeoStructuredData() {
       },
       {
         "@type": "WebSite",
-        "@id": "https://apoorva.store/#website",
-        "url": "https://apoorva.store",
+        "@id": `${siteUrl}/#website`,
+        "url": siteUrl,
         "name": "APOORVA Coastal Beachwear",
         "description": "Handcrafted Coconut, Coir & Jute Beachwear // 2-Product Capsule",
         "publisher": {
-          "@id": "https://apoorva.store/#organization"
+          "@id": `${siteUrl}/#organization`
         }
       },
       ...PRODUCTS.map((product) => ({
         "@type": "Product",
-        "@id": `https://apoorva.store/products/${product.id}`,
+        "@id": `${siteUrl}/products/${product.id}`,
         "name": product.name,
         "description": product.description,
         "sku": product.sku,
-        "image": `https://apoorva.store${product.image}`,
+        "image": product.image.startsWith("http")
+          ? product.image
+          : `${siteUrl}${product.image}`,
         "brand": {
           "@type": "Brand",
           "name": "APOORVA"
@@ -48,14 +51,14 @@ export default function SeoStructuredData() {
         "material": product.material,
         "offers": {
           "@type": "Offer",
-          "url": `https://apoorva.store/products/${product.id}`,
+          "url": `${siteUrl}/products/${product.id}`,
           "priceCurrency": "INR",
           "price": product.price,
           "availability": "https://schema.org/InStock",
           "itemCondition": "https://schema.org/NewCondition",
           "priceValidUntil": "2027-12-31",
           "seller": {
-            "@id": "https://apoorva.store/#organization"
+            "@id": `${siteUrl}/#organization`
           }
         },
         "aggregateRating": {

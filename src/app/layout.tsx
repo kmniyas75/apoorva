@@ -28,7 +28,9 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://apoorva.store"),
+  metadataBase: new URL(
+    process.env.SITE_URL || "https://apoorva-eight.vercel.app"
+  ),
   title: "APOORVA™ — Handcrafted Coconut & Coir Tropical Beachwear (Aluva, Kerala)",
   description:
     "Discover APOORVA's signature handcrafted beachwear sets from our Aluva, Kerala Atelier: the Coconut & Coir Fringe Beach Set and the Coconut & Fine Jute Wrap Beach Set.",
@@ -58,14 +60,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://apoorva.store",
+    url: "https://apoorva-eight.vercel.app",
     siteName: "APOORVA Atelier",
     title: "APOORVA™ // Exotic Innerwear Atelier",
     description:
       "Explore the Signature Coconut & Raw Jute Exotic Innerwear Set — 100% Handcrafted & Biodegradable.",
     images: [
       {
-        url: "/images/apoorva_coconut_set.png",
+        url: "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435598/apoorva/apoorva_coconut_set.png",
         width: 1024,
         height: 578,
         alt: "APOORVA Coconut & Raw Jute Exotic Innerwear Set"
@@ -77,10 +79,12 @@ export const metadata: Metadata = {
     title: "APOORVA™ — Exotic Innerwear & Artisanal Coconut Atelier",
     description:
       "Handcrafted exotic innerwear combining raw natural coconut shell and handwoven jute textures.",
-    images: ["/images/apoorva_coconut_set.png"]
+    images: [
+      "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435598/apoorva/apoorva_coconut_set.png"
+    ]
   },
   alternates: {
-    canonical: "https://apoorva.store"
+    canonical: "https://apoorva-eight.vercel.app"
   }
 };
 
