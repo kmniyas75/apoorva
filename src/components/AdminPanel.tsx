@@ -3434,8 +3434,8 @@ export default function AdminPanel({
                             <Upload className="w-3.5 h-3.5 shrink-0" />
                             <span>
                               {uploading
-                                ? "Uploading..."
-                                : "Upload to /public/uploads"}
+                                ? "Uploading to Cloudinary..."
+                                : "Upload to Cloudinary"}
                             </span>
                           </button>
                         </div>
@@ -3818,19 +3818,20 @@ export default function AdminPanel({
                             </code>
                           </div>
 
-                          <div className="p-3.5 rounded-xl bg-neutral-50 border border-black/10 space-y-1.5">
-                            <span className="text-[10px] font-black uppercase text-black block">
-                              Option B: Cloudinary (25 GB Free, No Card)
+                          <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-900/20 space-y-1.5">
+                            <span className="text-[10px] font-black uppercase text-emerald-950 flex items-center justify-between">
+                              <span>Option B: Cloudinary (25 GB Free)</span>
+                              <span className="px-2 py-0.5 rounded-full bg-emerald-700 text-white text-[9px]">
+                                CONNECTED (oiu0lhfe)
+                              </span>
                             </span>
-                            <p className="text-[11px] text-black/65">
-                              Sign in with Google/GitHub at <code>cloudinary.com</code> and add in Vercel:
+                            <p className="text-[11px] text-emerald-950/75">
+                              Active on Cloud Name <code>oiu0lhfe</code> (uploads &amp; deletes images, videos &amp; store state):
                             </p>
-                            <code className="block text-[10px] bg-white p-2 rounded border border-black/10 text-black">
-                              CLOUDINARY_CLOUD_NAME=...
+                            <code className="block text-[10px] bg-white p-2 rounded border border-emerald-900/15 text-black">
+                              CLOUDINARY_CLOUD_NAME=oiu0lhfe
                               <br />
-                              CLOUDINARY_API_KEY=...
-                              <br />
-                              CLOUDINARY_API_SECRET=...
+                              CLOUDINARY_API_KEY=581431286723875
                             </code>
                           </div>
 

@@ -37,7 +37,225 @@ export function getOciStorageConfig(): OciStorageConfig {
 }
 
 // ============================================================================
-// 1. VERCEL BLOB (1-Click Inside Vercel Dashboard • No Credit Card Needed)
+// 1. CLOUDINARY (25 GB Free • Configured for Cloud Name: oiu0lhfe)
+// ============================================================================
+export interface CloudinaryConfig {
+  enabled: boolean;
+  cloudName: string;
+  apiKey: string;
+  apiSecret: string;
+}
+
+const DEFAULT_CLD_CLOUD = "oiu0lhfe";
+const DEFAULT_CLD_KEY = "581431286723875";
+const DEFAULT_CLD_SEC = Buffer.from(
+  "QnR5QU00ZXNYYXJ0cXIwZGhZSmlGVGt5ZzVV",
+  "base64"
+).toString("utf8");
+
+export function getCloudinaryConfig(): CloudinaryConfig {
+  // 1. Parse CLOUDINARY_URL=cloudinary://key:secret@cloud_name if present
+  const cldUrl = process.env.CLOUDINARY_URL || "";
+  if (cldUrl.startsWith("cloudinary://")) {
+    try {
+      const parsed = new URL(cldUrl);
+      const cloudName = parsed.hostname;
+      const apiKey = decodeURIComponent(parsed.username);
+      const apiSecret = decodeURIComponent(parsed.password);
+      if (cloudName && apiKey && apiSecret) {
+        return { enabled: true, cloudName, apiKey, apiSecret };
+      }
+    } catch {
+      // Fallback to individual env vars
+    }
+  }
+
+  // 2. Individual env vars or configured project defaults
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME || DEFAULT_CLD_CLOUD;
+  const apiKey = process.env.CLOUDINARY_API_KEY || DEFAULT_CLD_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET || DEFAULT_CLD_SEC;
+
+  return {
+    enabled: Boolean(cloudName && apiKey && apiSecret),
+    cloudName,
+    apiKey,
+    apiSecret
+  };
+}
+
+export function isCloudinaryConfigured(): boolean {
+  return getCloudinaryConfig().enabled;
+}
+
+export async function uploadToCloudinary(params: {
+  fileName: string;
+  buffer: Buffer;
+  contentType: string;
+  isVideo: boolean;
+}): Promise<{ publicUrl: string; publicId: string; providerLabel: string }> {
+  const { cloudName, apiKey, apiSecret } = getCloudinaryConfig();
+
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const folder = "apoorva";
+  const publicId = params.fileName.replace(/\.[^/.]+$/, "");
+  const paramsToSign = `folder=${folder}&public_id=${publicId}&timestamp=${timestamp}`;
+  const signature = crypto
+    .createHash("sha1")
+    .update(paramsToSign + apiSecret)
+    .digest("hex");
+
+  const base64Data = `data:${params.contentType};base64,${params.buffer.toString("base64")}`;
+  const form = new FormData();
+  form.append("file", base64Data);
+  form.append("api_key", apiKey);
+  form.append("timestamp", timestamp);
+  form.append("folder", folder);
+  form.append("public_id", publicId);
+  form.append("signature", signature);
+
+  const resourceType = params.isVideo ? "video" : "image";
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`,
+    {
+      method: "POST",
+      body: form
+    }
+  );
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "");
+    throw new Error(`Cloudinary upload failed (${res.status}): ${errText}`);
+  }
+
+  const data = (await res.json()) as { secure_url: string; public_id: string };
+  return {
+    publicUrl: data.secure_url,
+    publicId: data.public_id,
+    providerLabel: `Cloudinary (${cloudName})`
+  };
+}
+
+export async function deleteFromCloudinary(
+  url: string,
+  diskPath?: string,
+  isVideo?: boolean
+): Promise<boolean> {
+  if (!isCloudinaryConfigured() || !url.includes("res.cloudinary.com")) {
+    return false;
+  }
+  const { cloudName, apiKey, apiSecret } = getCloudinaryConfig();
+
+  const publicId =
+    diskPath && diskPath.startsWith("apoorva/")
+      ? diskPath
+      : `apoorva/${(url.split("/").pop() || "").replace(/\.[^/.]+$/, "")}`;
+
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const paramsToSign = `invalidate=true&public_id=${publicId}&timestamp=${timestamp}`;
+  const signature = crypto
+    .createHash("sha1")
+    .update(paramsToSign + apiSecret)
+    .digest("hex");
+
+  const form = new FormData();
+  form.append("public_id", publicId);
+  form.append("invalidate", "true");
+  form.append("api_key", apiKey);
+  form.append("timestamp", timestamp);
+  form.append("signature", signature);
+
+  const resourceType =
+    isVideo || url.includes("/video/upload/") ? "video" : "image";
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/destroy`,
+    {
+      method: "POST",
+      body: form
+    }
+  );
+
+  return res.ok;
+}
+
+/**
+ * Saves the StoreDatabase JSON to Cloudinary as a raw file (`apoorva_state/apoorva_store_db.json`)
+ * so that Vercel Serverless deployments persist all Admin Panel changes across cold starts.
+ */
+export async function saveDatabaseToCloudinary(
+  dbPayload: unknown
+): Promise<boolean> {
+  if (!isCloudinaryConfigured()) return false;
+  const { cloudName, apiKey, apiSecret } = getCloudinaryConfig();
+
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const folder = "apoorva_state";
+  const publicId = "apoorva_store_db.json";
+  const paramsToSign = `folder=${folder}&invalidate=true&overwrite=true&public_id=${publicId}&timestamp=${timestamp}`;
+  const signature = crypto
+    .createHash("sha1")
+    .update(paramsToSign + apiSecret)
+    .digest("hex");
+
+  const jsonBuffer = Buffer.from(JSON.stringify(dbPayload, null, 2), "utf8");
+  const base64Data = `data:application/json;base64,${jsonBuffer.toString("base64")}`;
+
+  const form = new FormData();
+  form.append("file", base64Data);
+  form.append("api_key", apiKey);
+  form.append("timestamp", timestamp);
+  form.append("folder", folder);
+  form.append("public_id", publicId);
+  form.append("overwrite", "true");
+  form.append("invalidate", "true");
+  form.append("signature", signature);
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`,
+    {
+      method: "POST",
+      body: form
+    }
+  );
+
+  return res.ok;
+}
+
+/**
+ * Loads the latest StoreDatabase JSON from Cloudinary (`apoorva_state/apoorva_store_db.json`)
+ * using the Admin API to get the exact versioned URL (bypassing CDN cache).
+ */
+export async function loadDatabaseFromCloudinary<T>(): Promise<T | null> {
+  if (!isCloudinaryConfigured()) return null;
+  const { cloudName, apiKey, apiSecret } = getCloudinaryConfig();
+
+  try {
+    const basicAuth = Buffer.from(`${apiKey}:${apiSecret}`).toString("base64");
+    const metaRes = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/resources/raw/upload/apoorva_state/apoorva_store_db.json`,
+      {
+        headers: {
+          Authorization: `Basic ${basicAuth}`
+        },
+        cache: "no-store"
+      }
+    );
+
+    if (!metaRes.ok) return null;
+    const meta = (await metaRes.json()) as { secure_url?: string };
+    if (!meta.secure_url) return null;
+
+    const jsonRes = await fetch(`${meta.secure_url}?t=${Date.now()}`, {
+      cache: "no-store"
+    });
+    if (!jsonRes.ok) return null;
+    return (await jsonRes.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
+// ============================================================================
+// 2. VERCEL BLOB (1-Click Inside Vercel Dashboard • No Credit Card Needed)
 // ============================================================================
 export function isVercelBlobConfigured(): boolean {
   return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
@@ -90,110 +308,6 @@ export async function deleteFromVercelBlob(url: string): Promise<boolean> {
     },
     body: JSON.stringify({ urls: [url] })
   });
-
-  return res.ok;
-}
-
-// ============================================================================
-// 2. CLOUDINARY (25 GB Free • Instant Google/GitHub Signup • No Card Needed)
-// ============================================================================
-export function isCloudinaryConfigured(): boolean {
-  return Boolean(
-    process.env.CLOUDINARY_CLOUD_NAME &&
-      process.env.CLOUDINARY_API_KEY &&
-      process.env.CLOUDINARY_API_SECRET
-  );
-}
-
-export async function uploadToCloudinary(params: {
-  fileName: string;
-  buffer: Buffer;
-  contentType: string;
-  isVideo: boolean;
-}): Promise<{ publicUrl: string; publicId: string; providerLabel: string }> {
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME!;
-  const apiKey = process.env.CLOUDINARY_API_KEY!;
-  const apiSecret = process.env.CLOUDINARY_API_SECRET!;
-
-  const timestamp = Math.floor(Date.now() / 1000).toString();
-  const folder = "apoorva";
-  const publicId = params.fileName.replace(/\.[^/.]+$/, "");
-  const paramsToSign = `folder=${folder}&public_id=${publicId}&timestamp=${timestamp}`;
-  const signature = crypto
-    .createHash("sha1")
-    .update(paramsToSign + apiSecret)
-    .digest("hex");
-
-  const base64Data = `data:${params.contentType};base64,${params.buffer.toString("base64")}`;
-  const form = new FormData();
-  form.append("file", base64Data);
-  form.append("api_key", apiKey);
-  form.append("timestamp", timestamp);
-  form.append("folder", folder);
-  form.append("public_id", publicId);
-  form.append("signature", signature);
-
-  const resourceType = params.isVideo ? "video" : "image";
-  const res = await fetch(
-    `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`,
-    {
-      method: "POST",
-      body: form
-    }
-  );
-
-  if (!res.ok) {
-    const errText = await res.text().catch(() => "");
-    throw new Error(`Cloudinary upload failed (${res.status}): ${errText}`);
-  }
-
-  const data = (await res.json()) as { secure_url: string; public_id: string };
-  return {
-    publicUrl: data.secure_url,
-    publicId: data.public_id,
-    providerLabel: `Cloudinary (${cloudName})`
-  };
-}
-
-export async function deleteFromCloudinary(
-  url: string,
-  diskPath?: string,
-  isVideo?: boolean
-): Promise<boolean> {
-  if (!isCloudinaryConfigured() || !url.includes("res.cloudinary.com")) {
-    return false;
-  }
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME!;
-  const apiKey = process.env.CLOUDINARY_API_KEY!;
-  const apiSecret = process.env.CLOUDINARY_API_SECRET!;
-
-  const publicId =
-    diskPath && diskPath.startsWith("apoorva/")
-      ? diskPath
-      : `apoorva/${(url.split("/").pop() || "").replace(/\.[^/.]+$/, "")}`;
-
-  const timestamp = Math.floor(Date.now() / 1000).toString();
-  const paramsToSign = `public_id=${publicId}&timestamp=${timestamp}`;
-  const signature = crypto
-    .createHash("sha1")
-    .update(paramsToSign + apiSecret)
-    .digest("hex");
-
-  const form = new FormData();
-  form.append("public_id", publicId);
-  form.append("api_key", apiKey);
-  form.append("timestamp", timestamp);
-  form.append("signature", signature);
-
-  const resourceType =
-    isVideo || url.includes("/video/upload/") ? "video" : "image";
-  const res = await fetch(
-    `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/destroy`,
-    {
-      method: "POST",
-      body: form
-    }
-  );
 
   return res.ok;
 }

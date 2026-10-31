@@ -3,7 +3,8 @@ import fs from "fs";
 import path from "path";
 import {
   getStoreDatabase,
-  saveStoreDatabase,
+  ensureStoreDatabaseLoaded,
+  persistStoreDatabase,
   recordOrderInStore,
   resetStoreToDefaults,
   scanPublicMediaLibrary,
@@ -26,7 +27,7 @@ import {
 
 export async function GET() {
   try {
-    const db = getStoreDatabase();
+    const db = await ensureStoreDatabaseLoaded();
     const mediaLibrary = scanPublicMediaLibrary(db.customMedia || []);
     const storagePaths = getStoragePathsInfo();
     return NextResponse.json({
@@ -48,6 +49,7 @@ export async function PUT(req: Request) {
 
     if (body.action === "reset") {
       const resetDb = resetStoreToDefaults();
+      await persistStoreDatabase(resetDb);
       const mediaLibrary = scanPublicMediaLibrary(resetDb.customMedia || []);
       const storagePaths = getStoragePathsInfo();
       return NextResponse.json({
@@ -57,7 +59,7 @@ export async function PUT(req: Request) {
       });
     }
 
-    const db = getStoreDatabase();
+    const db = await ensureStoreDatabaseLoaded();
 
     if (Array.isArray(body.products)) {
       db.products = body.products;
@@ -78,7 +80,7 @@ export async function PUT(req: Request) {
       db.customMedia = body.customMedia;
     }
 
-    const saved = saveStoreDatabase(db);
+    const saved = await persistStoreDatabase(db);
     const mediaLibrary = scanPublicMediaLibrary(saved.customMedia || []);
     const storagePaths = getStoragePathsInfo();
 
@@ -98,7 +100,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { action } = body as { action: string };
 
-    const db = getStoreDatabase();
+    const db = await ensureStoreDatabaseLoaded();
 
     if (action === "record_order") {
       const { order } = body as { order: OrderRecord };
@@ -170,7 +172,7 @@ export async function POST(req: Request) {
       };
 
       db.orders[idx] = updatedOrder;
-      saveStoreDatabase(db);
+      await persistStoreDatabase(db);
 
       // Sync tracking milestones
       const trackRec = generateTrackingData(
@@ -218,7 +220,7 @@ export async function POST(req: Request) {
     if (action === "delete_order") {
       const { orderId } = body as { orderId: string };
       db.orders = db.orders.filter((o) => o.orderId !== orderId);
-      saveStoreDatabase(db);
+      await persistStoreDatabase(db);
       return NextResponse.json({
         success: true,
         message: `Order ${orderId} removed.`,
@@ -250,7 +252,7 @@ export async function POST(req: Request) {
         createdAt: new Date().toISOString()
       };
       db.customMedia = [newAsset, ...(db.customMedia || [])];
-      saveStoreDatabase(db);
+      await persistStoreDatabase(db);
       const mediaLibrary = scanPublicMediaLibrary(db.customMedia);
       return NextResponse.json({
         success: true,
@@ -345,7 +347,7 @@ export async function POST(req: Request) {
         gallery: (prod.gallery || []).filter((gUrl) => gUrl !== url)
       }));
 
-      saveStoreDatabase(db);
+      await persistStoreDatabase(db);
       const mediaLibrary = scanPublicMediaLibrary(db.customMedia);
 
       return NextResponse.json({

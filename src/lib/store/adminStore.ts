@@ -11,6 +11,10 @@ import {
   generateTrackingData,
   saveTrackingRecord
 } from "@/lib/shipping/trackingService";
+import {
+  saveDatabaseToCloudinary,
+  loadDatabaseFromCloudinary
+} from "@/lib/storage/ociStorage";
 
 export interface StoreSettings {
   capsuleTitle: string;
@@ -352,6 +356,7 @@ function createInitialOrders(): OrderRecord[] {
 
 const globalStore = globalThis as unknown as {
   __APOORVA_ADMIN_DB__?: StoreDatabase;
+  __APOORVA_CLOUD_SYNCED__?: boolean;
 };
 
 export function scanPublicMediaLibrary(customMedia: MediaAsset[] = []): MediaAsset[] {
@@ -466,6 +471,47 @@ export function getStoreDatabase(): StoreDatabase {
 
   saveStoreDatabase(initialDb);
   return initialDb;
+}
+
+export async function ensureStoreDatabaseLoaded(): Promise<StoreDatabase> {
+  if (!globalStore.__APOORVA_CLOUD_SYNCED__) {
+    globalStore.__APOORVA_CLOUD_SYNCED__ = true;
+    try {
+      const cloudDb = await loadDatabaseFromCloudinary<StoreDatabase>();
+      if (
+        cloudDb &&
+        Array.isArray(cloudDb.products) &&
+        cloudDb.products.length > 0
+      ) {
+        if (!cloudDb.socialAutomation) {
+          cloudDb.socialAutomation = { ...DEFAULT_SOCIAL_CONFIG };
+        }
+        if (!Array.isArray(cloudDb.socialEvents)) {
+          cloudDb.socialEvents = createInitialSocialEvents();
+        }
+        if (!cloudDb.settings.adminPassword) {
+          cloudDb.settings.adminPassword = DEFAULT_SETTINGS.adminPassword;
+        }
+        globalStore.__APOORVA_ADMIN_DB__ = cloudDb;
+        return cloudDb;
+      }
+    } catch {
+      // Fallback to local disk
+    }
+  }
+  return getStoreDatabase();
+}
+
+export async function persistStoreDatabase(
+  db: StoreDatabase
+): Promise<StoreDatabase> {
+  const saved = saveStoreDatabase(db);
+  try {
+    await saveDatabaseToCloudinary(saved);
+  } catch (err) {
+    console.warn("[AdminStore] Could not sync store-db.json to Cloudinary:", err);
+  }
+  return saved;
 }
 
 export function saveStoreDatabase(db: StoreDatabase): StoreDatabase {

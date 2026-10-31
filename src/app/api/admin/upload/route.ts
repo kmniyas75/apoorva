@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import {
-  getStoreDatabase,
-  saveStoreDatabase,
+  ensureStoreDatabaseLoaded,
+  persistStoreDatabase,
   scanPublicMediaLibrary,
   MediaAsset
 } from "@/lib/store/adminStore";
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
     const contentType =
       file.type || (isVideo ? "video/mp4" : "image/jpeg");
 
-    const db = getStoreDatabase();
+    const db = await ensureStoreDatabaseLoaded();
 
     // 1. Vercel Blob (1-Click inside Vercel Dashboard, No Card Needed)
     if (isVercelBlobConfigured()) {
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
         asset,
         ...(db.customMedia || []).filter((m) => m.url !== publicUrl)
       ];
-      saveStoreDatabase(db);
+      await persistStoreDatabase(db);
       const mediaLibrary = scanPublicMediaLibrary(db.customMedia);
 
       return NextResponse.json({
@@ -106,7 +106,7 @@ export async function POST(req: Request) {
         asset,
         ...(db.customMedia || []).filter((m) => m.url !== publicUrl)
       ];
-      saveStoreDatabase(db);
+      await persistStoreDatabase(db);
       const mediaLibrary = scanPublicMediaLibrary(db.customMedia);
 
       return NextResponse.json({
@@ -142,7 +142,7 @@ export async function POST(req: Request) {
         asset,
         ...(db.customMedia || []).filter((m) => m.url !== publicUrl)
       ];
-      saveStoreDatabase(db);
+      await persistStoreDatabase(db);
       const mediaLibrary = scanPublicMediaLibrary(db.customMedia);
 
       return NextResponse.json({
@@ -179,7 +179,7 @@ export async function POST(req: Request) {
         asset,
         ...(db.customMedia || []).filter((m) => m.url !== publicUrl)
       ];
-      saveStoreDatabase(db);
+      await persistStoreDatabase(db);
       const mediaLibrary = scanPublicMediaLibrary(db.customMedia);
 
       return NextResponse.json({
@@ -214,7 +214,7 @@ export async function POST(req: Request) {
     };
 
     const mediaLibrary = scanPublicMediaLibrary(db.customMedia || []);
-    saveStoreDatabase(db);
+    await persistStoreDatabase(db);
 
     return NextResponse.json({
       success: true,
