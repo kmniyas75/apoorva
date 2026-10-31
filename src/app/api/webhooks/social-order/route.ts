@@ -7,6 +7,11 @@ import {
   SocialAutomationEvent
 } from "@/lib/store/adminStore";
 import { OrderRecord } from "@/lib/types/checkout";
+import {
+  getMetaWhatsAppConfig,
+  sendWhatsAppTextMessage
+} from "@/lib/meta/whatsapp";
+import { generateGeminiReply } from "@/lib/ai/gemini";
 
 /**
  * Meta Cloud API (WhatsApp Business & Instagram Graph API) Webhook Verification
@@ -25,11 +30,17 @@ export async function GET(req: Request) {
     return new Response(challenge || "VERIFIED", { status: 200 });
   }
 
+  const metaWa = getMetaWhatsAppConfig();
+
   return NextResponse.json({
     status: "active",
     webhook: "APOORVA WhatsApp & Instagram DM Order Automation Endpoint",
     metaAppId: process.env.META_APP_ID || "1063008853460924",
     metaBusinessId: process.env.META_BUSINESS_ID || "1678860643969539",
+    whatsappPhoneNumberId: metaWa.phoneNumberId,
+    whatsappWabaId: metaWa.wabaId,
+    whatsappTestNumber: metaWa.testNumber,
+    whatsappAccessTokenConfigured: Boolean(metaWa.accessToken),
     contactEmail: process.env.META_CONTACT_EMAIL || "apoorvacoastal@gmail.com",
     verifyTokenConfigured: Boolean(expectedToken),
     whatsappEnabled: db.socialAutomation?.whatsappEnabled ?? true,
@@ -38,7 +49,7 @@ export async function GET(req: Request) {
 }
 
 /**
- * Automated Order Completion from WhatsApp Business API / Instagram DM Webhook
+ * Automated Order Completion & Gemini AI Concierge from WhatsApp Business API / Instagram DM Webhook
  */
 export async function POST(req: Request) {
   try {
@@ -46,12 +57,14 @@ export async function POST(req: Request) {
     const db = await ensureStoreDatabaseLoaded();
 
     // Parse native Meta Cloud API / Instagram Graph API webhook payload if present
+    let isNativeMetaWebhook = false;
     let metaChannel: "whatsapp" | "instagram" | undefined;
     let metaSenderName: string | undefined;
     let metaSenderHandle: string | undefined;
     let metaMessageText: string | undefined;
 
     if (body?.object === "whatsapp_business_account" && Array.isArray(body.entry)) {
+      isNativeMetaWebhook = true;
       metaChannel = "whatsapp";
       const val = body.entry?.[0]?.changes?.[0]?.value;
       const msgObj = val?.messages?.[0];
@@ -66,6 +79,7 @@ export async function POST(req: Request) {
         msgObj?.interactive?.button_reply?.title ||
         "BUY SET 1";
     } else if (body?.object === "instagram" && Array.isArray(body.entry)) {
+      isNativeMetaWebhook = true;
       metaChannel = "instagram";
       const messaging = body.entry?.[0]?.messaging?.[0];
       if (!messaging?.message?.text) {
@@ -116,11 +130,61 @@ export async function POST(req: Request) {
       );
     }
 
+    const upperMsg = message.toUpperCase();
+    const isOrderIntent =
+      !isNativeMetaWebhook ||
+      upperMsg.includes("BUY") ||
+      upperMsg.includes("ORDER") ||
+      upperMsg.includes("BOOK") ||
+      upperMsg.includes("SET 1") ||
+      upperMsg.includes("SET 2") ||
+      upperMsg.includes("SET1") ||
+      upperMsg.includes("SET2") ||
+      upperMsg.includes("BOTH");
+
+    // If a real WhatsApp/IG user sends a general question (e.g., "Hi", "What is the price?", "Cup size help"),
+    // answer with Gemini AI and send via Meta WhatsApp Cloud API!
+    if (isNativeMetaWebhook && !isOrderIntent) {
+      const aiResult = await generateGeminiReply({
+        prompt: message,
+        systemInstruction: `You are APOORVA™'s WhatsApp & Instagram AI Coastal Stylist (Aluva, Kerala). Reply warmly in 2-3 short sentences. Mention Set 01 (Coconut & Coir Fringe Beach Set, ₹4,200) and Set 02 (Coconut & Jute Wrap Beach Set, ₹4,500), 15% Bundle Discount for both, and tell them they can reply "BUY SET 1", "BUY SET 2", or "BUY BOTH" to place an instant order.`
+      });
+
+      let whatsappDelivery = null;
+      if (channel === "whatsapp") {
+        whatsappDelivery = await sendWhatsAppTextMessage({
+          to: senderHandleOrPhone,
+          body: aiResult.text
+        });
+      }
+
+      const inquiryEvent: SocialAutomationEvent = {
+        id: `soc-${Date.now()}`,
+        channel,
+        senderHandleOrPhone,
+        senderName,
+        incomingMessage: message,
+        automatedReply: aiResult.text,
+        detectedIntent: "catalog_sent",
+        timestamp: new Date().toISOString()
+      };
+
+      const updatedDb = getStoreDatabase();
+      updatedDb.socialEvents = [inquiryEvent, ...(updatedDb.socialEvents || [])];
+      await persistStoreDatabase(updatedDb);
+
+      return NextResponse.json({
+        success: true,
+        intent: "catalog_sent",
+        aiReply: aiResult.text,
+        whatsappCloudApi: whatsappDelivery,
+        event: inquiryEvent
+      });
+    }
+
     const prod1 = db.products[0];
     const prod2 = db.products[1] || db.products[0];
 
-    // Infer product choice from message or explicit selection
-    const upperMsg = message.toUpperCase();
     const isBoth =
       productSelection === "both" ||
       upperMsg.includes("BOTH") ||
@@ -146,6 +210,8 @@ export async function POST(req: Request) {
     const cleanPhone =
       senderHandleOrPhone.replace(/\D/g, "").slice(-10) || "9847089421";
 
+    const siteUrl = process.env.SITE_URL || "https://apoorva-eight.vercel.app";
+
     const newOrder: OrderRecord = {
       orderId,
       receiptNumber: `RCP-${Date.now().toString().slice(-6)}`,
@@ -162,8 +228,9 @@ export async function POST(req: Request) {
         state,
         pincode,
         country: "India",
-        orderNotes: `Auto-completed via ${channel === "whatsapp" ? "WhatsApp Business Bot" : "Instagram DM Automation"
-          }: "${message}"`
+        orderNotes: `Auto-completed via ${
+          channel === "whatsapp" ? "WhatsApp Business Bot" : "Instagram DM Automation"
+        }: "${message}"`
       },
       items: selectedProducts.map((p) => ({
         id: `${p.id}-${size}`,
@@ -197,7 +264,7 @@ export async function POST(req: Request) {
       shipping: {
         courierName: "Blue Dart Express (Air Cargo)",
         trackingNumber: awb,
-        trackingUrl: `http://localhost:3000/track?orderId=${orderId}`,
+        trackingUrl: `${siteUrl}/track?orderId=${orderId}`,
         estimatedDelivery: "2-3 Business Days"
       }
     };
@@ -206,16 +273,26 @@ export async function POST(req: Request) {
 
     const automatedReply =
       channel === "whatsapp"
-        ? `✅ Namaskaram ${senderName}! Your WhatsApp Order #${orderId} (${selectedProducts
-          .map((p) => p.shortName)
-          .join(" + ")}) for ₹${total.toLocaleString(
+        ? `✅ Namaskaram ${senderName}! Your APOORVA™ WhatsApp Order #${orderId} (${selectedProducts
+            .map((p) => p.shortName)
+            .join(" + ")}) for ₹${total.toLocaleString(
             "en-IN"
-          )} (${paymentMethod.toUpperCase()}) is confirmed! Blue Dart AWB #${awb} assigned.`
-        : `✅ Hey ${senderName}! Your Instagram DM Order #${orderId} (${selectedProducts
-          .map((p) => p.shortName)
-          .join(" + ")}) for ₹${total.toLocaleString(
+          )} (${paymentMethod.toUpperCase()}) is confirmed! Blue Dart AWB #${awb} assigned. Track live: ${siteUrl}/track?orderId=${orderId}`
+        : `✅ Hey ${senderName}! Your APOORVA™ Instagram DM Order #${orderId} (${selectedProducts
+            .map((p) => p.shortName)
+            .join(" + ")}) for ₹${total.toLocaleString(
             "en-IN"
-          )} (${paymentMethod.toUpperCase()}) is booked! Track live with AWB #${awb}.`;
+          )} (${paymentMethod.toUpperCase()}) is booked! Track live with AWB #${awb}: ${siteUrl}/track?orderId=${orderId}`;
+
+    // Send real WhatsApp confirmation message via Meta Cloud API (v25.0/1388810254321373/messages)
+    let whatsappDelivery = null;
+    if (channel === "whatsapp") {
+      whatsappDelivery = await sendWhatsAppTextMessage({
+        to: senderHandleOrPhone,
+        body: automatedReply,
+        previewUrl: true
+      });
+    }
 
     const socialEvent: SocialAutomationEvent = {
       id: `soc-${Date.now()}`,
@@ -239,6 +316,7 @@ export async function POST(req: Request) {
       message: `Automated ${channel.toUpperCase()} order #${orderId} created!`,
       order: newOrder,
       event: socialEvent,
+      whatsappCloudApi: whatsappDelivery,
       orders: updatedDb.orders,
       socialEvents: updatedDb.socialEvents
     });
@@ -248,4 +326,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-

@@ -1,0 +1,627 @@
+{
+  "products": [
+    {
+      "id": "apoorva-01-coir-beach-set",
+      "number": "01",
+      "sku": "APV-BCH-01",
+      "name": "COCONUT & COIR FRINGE BEACH SET",
+      "shortName": "Coir Fringe Beach Set",
+      "subName": "PRODUCT 01 // TROPICAL HULA FRINGE BEACHWEAR",
+      "price": 4200,
+      "originalPrice": 5200,
+      "badge": "BESTSELLER // SUNSET & BONFIRE BEACHWEAR",
+      "image": "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435605/apoorva/apoorva_model_editorial.png",
+      "modelImage": "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435607/apoorva/beach_couple_sunset.jpg",
+      "video": "https://res.cloudinary.com/oiu0lhfe/video/upload/v1793435623/apoorva/coir_fringe_beach.mp4",
+      "videoCaption": "Live Beach Motion: Hand-braided waistband & kinetic Kerala coir fringe in ocean breeze",
+      "gallery": [
+        "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435605/apoorva/apoorva_model_editorial.png",
+        "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435607/apoorva/beach_couple_sunset.jpg",
+        "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435608/apoorva/beach_pool_lounge.jpg",
+        "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435608/apoorva/beach_resort_gift.jpg",
+        "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435606/apoorva/beach_bonfire_party.jpg"
+      ],
+      "color": "Sun-Kissed Golden Coir & Polished Coconut Shell",
+      "fit": "Free Size Adjustable Braided Halter & Waist Tie",
+      "gsm": "Hand-Carved Coconut Shell & Combed Kerala Coir Fringe",
+      "material": "100% Virgin Coconut Oil Polished Shell & Combed Tender Coir",
+      "edition": "Beachwear Capsule 01 — Aluva, Kerala",
+      "description": "Our iconic two-piece tropical beachwear set handcrafted at our Aluva, Kerala atelier for golden-hour shoreline walks, poolside lounging, honeymoon surprises, and midnight beach bonfire parties. Features a cotton-lined hand-carved coconut shell bra connected with a carved coconut ring and wooden beads, paired with a kinetic combed coir fringe beach skirt.",
+      "features": [
+        "Hand-carved coconut bra with center coconut ring & wooden bead tassels",
+        "Signature 'cut a cap, don’t split in half' contour for a flattering beach fit",
+        "Soft cotton-padded interior shell lining for all-day beach & pool comfort",
+        "Combed tender Kerala coir fringe skirt that sways with every step and dance",
+        "Adjustable braided tie cords fit XS to XL effortlessly (Gift-ready!)"
+      ],
+      "cupStyles": [
+        {
+          "id": "style-a",
+          "name": "STYLE A: SHALLOW OVAL CAP",
+          "cutType": "Oval cap cut from the flattest side of the shell (not halved)",
+          "diameter": "12–14 cm length",
+          "depth": "2.5–3.5 cm shallow rise",
+          "nutSelection": "Large, round Kerala nuts harvested for flattest natural side",
+          "wallThickness": "3–5 mm lightweight beach profile",
+          "description": "Anatomically shallow curve that hugs the bust naturally without protruding like a half-sphere bowl."
+        },
+        {
+          "id": "style-b",
+          "name": "STYLE B: DEEP COVERAGE",
+          "cutType": "Full half-shell cut across the widest equatorial axis",
+          "diameter": "16–18 cm broad span",
+          "depth": "6–7 cm sculpted cup depth",
+          "nutSelection": "Largest mature nuts available (18 cm+ diameter)",
+          "wallThickness": "4–6 mm reinforced structural shell",
+          "description": "Sculpted full-coverage profile designed for larger bust sizes with elevated support for beach waves and dancing."
+        }
+      ],
+      "skirtOptions": [
+        {
+          "id": "skirt-1",
+          "name": "SKIRT 01: KERALA COMBED COIR FRINGE",
+          "fabric": "Softest grade combed tender coir fiber (non-scratch, beach-ready)",
+          "silhouette": "Dense kinetic hula fringe on braided cotton waist rope",
+          "length": "Beach Midi (45 cm) or Resort Mini (35 cm)",
+          "origin": "Master coastal artisans at our Aluva, Kerala Atelier",
+          "details": "Ultra-combed tender husk coir fiber pre-tested for salt-water breeze, dancing movement, and zero itch."
+        },
+        {
+          "id": "skirt-2",
+          "name": "SKIRT 02: LINED FINE-WEAVE JUTE WRAP",
+          "fabric": "Soft fine-weave jute-cotton blend with 100% breathable cotton lining",
+          "silhouette": "A-line wrap mini with carved coconut ring buckle & 3 shell buttons",
+          "length": "38–40 cm A-line mini drape with fringe hem",
+          "origin": "Artisanal coastal handloom weave",
+          "details": "Overlapping front panel creating an effortless 15 cm beach walk slit with reinforced fringe edging."
+        }
+      ],
+      "sizes": [
+        {
+          "size": "FREE SIZE (Adjustable Tie)",
+          "stock": 18
+        },
+        {
+          "size": "S/M (Style A Cup)",
+          "stock": 12
+        },
+        {
+          "size": "M/L (Style B Cup)",
+          "stock": 14
+        }
+      ],
+      "tags": [
+        "beachwear",
+        "coir fringe skirt",
+        "coconut shell bra",
+        "hula beach set",
+        "honeymoon gift",
+        "bonfire party",
+        "apoorva"
+      ]
+    },
+    {
+      "id": "apoorva-02-jute-wrap-set",
+      "number": "02",
+      "sku": "APV-BCH-02",
+      "name": "COCONUT & JUTE WRAP BEACH SET",
+      "shortName": "Jute Wrap Beach Set",
+      "subName": "PRODUCT 02 // TAILORED A-LINE RESORT BEACHWEAR",
+      "price": 4500,
+      "originalPrice": 5500,
+      "badge": "RESORT EDITION // CABANA & POOL LOUNGE",
+      "image": "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435598/apoorva/apoorva_coconut_set.png",
+      "modelImage": "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435608/apoorva/beach_pool_lounge.jpg",
+      "video": "https://res.cloudinary.com/oiu0lhfe/video/upload/v1793435639/apoorva/jute_wrap_skirt.mp4",
+      "videoCaption": "Close-Up Craft Film: Carved coconut ring buckle, 3 shell buttons & soft cotton interior lining",
+      "gallery": [
+        "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435598/apoorva/apoorva_coconut_set.png",
+        "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435606/apoorva/apoorva_skirt.jpg",
+        "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435597/apoorva/apoorva_bra.jpg",
+        "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435608/apoorva/beach_pool_lounge.jpg",
+        "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435607/apoorva/beach_couple_sunset.jpg"
+      ],
+      "color": "Natural Sand Jute & Satin-Polished Coconut Shell",
+      "fit": "Adjustable Wrap Waist with Coconut Buckle & Side Slit",
+      "gsm": "Hand-Carved Coconut Shell & Cotton-Lined Fine Jute Weave",
+      "material": "100% Organically Polished Coconut Shell & Soft Lined Fine Jute",
+      "edition": "Beachwear Capsule 02 — Aluva, Kerala Atelier",
+      "description": "A tailored resort beachwear two-piece combining our satin-polished coconut shell halter bra with a structured, cotton-lined fine-weave jute A-line wrap skirt. Accented with a hand-carved coconut ring buckle, three shell buttons, a breezy 15 cm side leg slit, and raw fringe hem.",
+      "features": [
+        "Fine-weave jute-cotton wrap mini skirt with full breathable cotton lining",
+        "Hand-carved coconut ring waist buckle with 3 decorative coconut shell buttons",
+        "Breezy 15 cm overlapping front slit & coastal fringe hem",
+        "Polished with 100% organic virgin coconut oil — water & sun resilient",
+        "Interior bra cups fully lined with skin-soft breathable cotton felt"
+      ],
+      "cupStyles": [
+        {
+          "id": "style-a",
+          "name": "STYLE A: SHALLOW OVAL CAP",
+          "cutType": "Oval cap cut from the flattest side of the shell (not halved)",
+          "diameter": "12–14 cm length",
+          "depth": "2.5–3.5 cm shallow rise",
+          "nutSelection": "Large, round Kerala nuts harvested for flattest natural side",
+          "wallThickness": "3–5 mm lightweight beach profile",
+          "description": "Anatomically shallow curve that hugs the bust naturally without protruding like a half-sphere bowl."
+        },
+        {
+          "id": "style-b",
+          "name": "STYLE B: DEEP COVERAGE",
+          "cutType": "Full half-shell cut across the widest equatorial axis",
+          "diameter": "16–18 cm broad span",
+          "depth": "6–7 cm sculpted cup depth",
+          "nutSelection": "Largest mature nuts available (18 cm+ diameter)",
+          "wallThickness": "4–6 mm reinforced structural shell",
+          "description": "Sculpted full-coverage profile designed for larger bust sizes with elevated support for beach waves and dancing."
+        }
+      ],
+      "skirtOptions": [
+        {
+          "id": "skirt-1",
+          "name": "SKIRT 01: KERALA COMBED COIR FRINGE",
+          "fabric": "Softest grade combed tender coir fiber (non-scratch, beach-ready)",
+          "silhouette": "Dense kinetic hula fringe on braided cotton waist rope",
+          "length": "Beach Midi (45 cm) or Resort Mini (35 cm)",
+          "origin": "Master coastal artisans at our Aluva, Kerala Atelier",
+          "details": "Ultra-combed tender husk coir fiber pre-tested for salt-water breeze, dancing movement, and zero itch."
+        },
+        {
+          "id": "skirt-2",
+          "name": "SKIRT 02: LINED FINE-WEAVE JUTE WRAP",
+          "fabric": "Soft fine-weave jute-cotton blend with 100% breathable cotton lining",
+          "silhouette": "A-line wrap mini with carved coconut ring buckle & 3 shell buttons",
+          "length": "38–40 cm A-line mini drape with fringe hem",
+          "origin": "Artisanal coastal handloom weave",
+          "details": "Overlapping front panel creating an effortless 15 cm beach walk slit with reinforced fringe edging."
+        }
+      ],
+      "sizes": [
+        {
+          "size": "FREE SIZE (Adjustable Tie)",
+          "stock": 15
+        },
+        {
+          "size": "S/M (Style A Cup)",
+          "stock": 10
+        },
+        {
+          "size": "M/L (Style B Cup)",
+          "stock": 11
+        }
+      ],
+      "tags": [
+        "beachwear",
+        "jute wrap skirt",
+        "coconut shell bikini",
+        "resortwear",
+        "poolside",
+        "aluva",
+        "apoorva"
+      ]
+    }
+  ],
+  "beachMoments": [
+    {
+      "id": "moment-sunset",
+      "title": "Golden Hour Shoreline Walk",
+      "subtitle": "Sunset Beach Romance",
+      "occasion": "Couple Beach Stroll",
+      "image": "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435607/apoorva/beach_couple_sunset.jpg",
+      "productId": "apoorva-01-coir-beach-set"
+    },
+    {
+      "id": "moment-pool",
+      "title": "Infinity Pool & Cabana Lounge",
+      "subtitle": "Tropical Resort Escape",
+      "occasion": "Daytime Poolside",
+      "image": "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435608/apoorva/beach_pool_lounge.jpg",
+      "productId": "apoorva-02-jute-wrap-set"
+    },
+    {
+      "id": "moment-gift",
+      "title": "Honeymoon Villa Surprise",
+      "subtitle": "Unbox the Island Vibe",
+      "occasion": "Resort Gift Box",
+      "image": "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435608/apoorva/beach_resort_gift.jpg",
+      "productId": "apoorva-01-coir-beach-set"
+    },
+    {
+      "id": "moment-bonfire",
+      "title": "Midnight Beach Bonfire Luau",
+      "subtitle": "Made for Island Dancing",
+      "occasion": "Night Beach Party",
+      "image": "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435606/apoorva/beach_bonfire_party.jpg",
+      "productId": "apoorva-01-coir-beach-set"
+    }
+  ],
+  "settings": {
+    "capsuleTitle": "ALUVA, KERALA // 360° ROUNDING BEACHWEAR SHOWCASE",
+    "bundleDiscountPercent": 15,
+    "enableCod": false,
+    "enableUpi": true,
+    "freeShipping": true,
+    "supportEmail": "concierge@apoorva.luxury",
+    "supportPhone": "+91 98470 89421",
+    "orbitSpeedMultiplier": 1,
+    "orbitRadiusMultiplier": 1,
+    "adminPassword": "apoorva2026"
+  },
+  "socialAutomation": {
+    "whatsappEnabled": true,
+    "whatsappBusinessNumber": "+1 (555) 649-2993",
+    "whatsappPhoneId": "1388810254321373",
+    "whatsappAutoConfirmCod": false,
+    "whatsappWelcomeTemplate": "Namaskaram from APOORVA Coastal Beachwear (Aluva, Kerala) 🌴! Reply with:\n1️⃣ 'SET 1' for Coconut & Coir Fringe Beach Set (₹{{price_set1}})\n2️⃣ 'SET 2' for Coconut & Jute Wrap Beach Set (₹{{price_set2}})\n3️⃣ 'BOTH' for the 2-Set Bundle (Save {{discount}}% • ₹{{price_bundle}})\nInclude your Name, Address & 6-digit PIN code to receive your instant Razorpay payment link!",
+    "instagramEnabled": true,
+    "instagramHandle": "@apoorva.coastal",
+    "instagramTriggerKeywords": [
+      "BEACH",
+      "PRICE",
+      "BUY",
+      "SET1",
+      "SET2",
+      "BOTH",
+      "LINK"
+    ],
+    "instagramDmReplyTemplate": "Hey beach lover! 🌊 Here is your instant 1-Click Razorpay Express Checkout for our Aluva, Kerala Coconut & Coir/Jute Beach Sets: {{checkout_link}} — or reply right here in DM with your Name, Phone, Address & PIN code for an instant Razorpay payment link!",
+    "webhookVerifyToken": "apoorva_meta_verify_2026"
+  },
+  "socialEvents": [
+    {
+      "id": "soc-evt-1",
+      "channel": "whatsapp",
+      "senderHandleOrPhone": "+91 98201 44501",
+      "senderName": "Ananya Deshmukh",
+      "incomingMessage": "BUY BOTH SETS | Ananya Deshmukh | Villa 14, Candolim Beach Road, North Goa | PIN 403515",
+      "automatedReply": "✅ Order #APV-89421 paid via Razorpay & confirmed on WhatsApp! Both Beachwear Sets (15% Bundle Savings • ₹7,395) booked from our Aluva, Kerala Atelier. Blue Dart AWB #BD-88492019IN assigned.",
+      "detectedIntent": "order_created",
+      "orderId": "APV-89421",
+      "amount": 7395,
+      "timestamp": "2026-10-30T09:43:20.718Z"
+    },
+    {
+      "id": "soc-evt-2",
+      "channel": "instagram",
+      "senderHandleOrPhone": "@rhea.kapoor.style",
+      "senderName": "Rhea Kapoor",
+      "incomingMessage": "Commented 'BEACH' on Reel & DMed: SET 2 | Rhea Kapoor | 9811234901 | 42 Pali Hill, Bandra West, Mumbai 400050",
+      "automatedReply": "✅ Instagram DM Razorpay Checkout completed! Order #APV-89314 (Coconut & Jute Wrap Beach Set • ₹4,500 Prepaid) registered & dispatched from Aluva, Kerala via Delhivery Air Express.",
+      "detectedIntent": "order_created",
+      "orderId": "APV-89314",
+      "amount": 4500,
+      "timestamp": "2026-10-28T13:43:20.718Z"
+    }
+  ],
+  "orders": [
+    {
+      "orderId": "APV-89421",
+      "receiptNumber": "RCP-894210",
+      "createdAt": "2026-10-30T09:43:20.718Z",
+      "status": "dispatched",
+      "source": "whatsapp",
+      "socialHandle": "+91 98201 44501",
+      "customer": {
+        "fullName": "Ananya Deshmukh",
+        "email": "ananya.deshmukh@example.com",
+        "phone": "9820144501",
+        "addressLine1": "Villa 14, Candolim Beach Road",
+        "addressLine2": "Near Taj Resort & Convention",
+        "city": "North Goa",
+        "state": "Goa",
+        "pincode": "403515",
+        "country": "India",
+        "orderNotes": "WhatsApp Bot Order — Honeymoon beach trip gift box."
+      },
+      "items": [
+        {
+          "id": "apoorva-01-coir-beach-set-FREE SIZE (Adjustable Tie)",
+          "productId": "apoorva-01-coir-beach-set",
+          "name": "COCONUT & COIR FRINGE BEACH SET",
+          "subName": "PRODUCT 01 // TROPICAL HULA FRINGE BEACHWEAR",
+          "size": "FREE SIZE (Adjustable Tie)",
+          "quantity": 1,
+          "unitPrice": 4200,
+          "totalPrice": 4200,
+          "image": "/images/apoorva_model_editorial.png",
+          "color": "Sun-Kissed Golden Coir & Polished Coconut Shell"
+        },
+        {
+          "id": "apoorva-02-jute-wrap-set-FREE SIZE (Adjustable Tie)",
+          "productId": "apoorva-02-jute-wrap-set",
+          "name": "COCONUT & JUTE WRAP BEACH SET",
+          "subName": "PRODUCT 02 // TAILORED A-LINE RESORT BEACHWEAR",
+          "size": "FREE SIZE (Adjustable Tie)",
+          "quantity": 1,
+          "unitPrice": 4500,
+          "totalPrice": 4500,
+          "image": "/images/apoorva_coconut_set.png",
+          "color": "Natural Sand Jute & Satin-Polished Coconut Shell"
+        }
+      ],
+      "pricing": {
+        "rawSubtotal": 8700,
+        "discountPercentage": 15,
+        "discountAmount": 1305,
+        "subtotal": 7395,
+        "shippingFee": 0,
+        "total": 7395,
+        "currency": "INR"
+      },
+      "payment": {
+        "gateway": "razorpay",
+        "razorpayOrderId": "order_apv_89421",
+        "razorpayPaymentId": "pay_upi_89421",
+        "method": "upi",
+        "isSandbox": true,
+        "paidAt": "2026-10-30T09:43:20.718Z"
+      },
+      "shipping": {
+        "courierName": "Blue Dart Express (Air Cargo)",
+        "trackingNumber": "BD-88492019IN",
+        "trackingUrl": "http://localhost:3000/track?orderId=APV-89421",
+        "estimatedDelivery": "2-3 Business Days",
+        "dispatchedAt": "2026-10-30T09:43:20.718Z"
+      }
+    },
+    {
+      "orderId": "APV-89390",
+      "receiptNumber": "RCP-893904",
+      "createdAt": "2026-10-29T17:43:20.718Z",
+      "status": "paid",
+      "source": "website",
+      "customer": {
+        "fullName": "Meera Krishnan",
+        "email": "meera.k@example.com",
+        "phone": "9847011223",
+        "addressLine1": "Flat 12B, Marine Drive Residency",
+        "city": "Kochi",
+        "state": "Kerala",
+        "pincode": "682031",
+        "country": "India",
+        "orderNotes": "1-Click Website Express Buy"
+      },
+      "items": [
+        {
+          "id": "apoorva-01-coir-beach-set-S/M (Style A Cup)",
+          "productId": "apoorva-01-coir-beach-set",
+          "name": "COCONUT & COIR FRINGE BEACH SET",
+          "subName": "PRODUCT 01 // TROPICAL HULA FRINGE BEACHWEAR",
+          "size": "S/M (Style A Cup)",
+          "quantity": 1,
+          "unitPrice": 4200,
+          "totalPrice": 4200,
+          "image": "/images/apoorva_model_editorial.png",
+          "color": "Sun-Kissed Golden Coir & Polished Coconut Shell"
+        }
+      ],
+      "pricing": {
+        "rawSubtotal": 4200,
+        "discountPercentage": 0,
+        "discountAmount": 0,
+        "subtotal": 4200,
+        "shippingFee": 0,
+        "total": 4200,
+        "currency": "INR"
+      },
+      "payment": {
+        "gateway": "razorpay",
+        "razorpayOrderId": "order_apv_89390",
+        "razorpayPaymentId": "pay_upi_89390",
+        "method": "upi",
+        "isSandbox": true,
+        "paidAt": "2026-10-29T17:43:20.718Z"
+      },
+      "shipping": {
+        "courierName": "Blue Dart Express",
+        "trackingNumber": "BD-77319042IN",
+        "trackingUrl": "http://localhost:3000/track?orderId=APV-89390",
+        "estimatedDelivery": "1-2 Business Days"
+      }
+    },
+    {
+      "orderId": "APV-89314",
+      "receiptNumber": "RCP-893148",
+      "createdAt": "2026-10-28T13:43:20.718Z",
+      "status": "delivered",
+      "source": "instagram",
+      "socialHandle": "@rhea.kapoor.style",
+      "customer": {
+        "fullName": "Rhea Kapoor",
+        "email": "rhea.kapoor@example.com",
+        "phone": "9811234901",
+        "addressLine1": "42 Pali Hill, Bandra West",
+        "city": "Mumbai",
+        "state": "Maharashtra",
+        "pincode": "400050",
+        "country": "India",
+        "orderNotes": "Instagram DM Auto-Order — Prepaid via Razorpay"
+      },
+      "items": [
+        {
+          "id": "apoorva-02-jute-wrap-set-FREE SIZE (Adjustable Tie)",
+          "productId": "apoorva-02-jute-wrap-set",
+          "name": "COCONUT & JUTE WRAP BEACH SET",
+          "subName": "PRODUCT 02 // TAILORED A-LINE RESORT BEACHWEAR",
+          "size": "FREE SIZE (Adjustable Tie)",
+          "quantity": 1,
+          "unitPrice": 4500,
+          "totalPrice": 4500,
+          "image": "/images/apoorva_coconut_set.png",
+          "color": "Natural Sand Jute & Satin-Polished Coconut Shell"
+        }
+      ],
+      "pricing": {
+        "rawSubtotal": 4500,
+        "discountPercentage": 0,
+        "discountAmount": 0,
+        "subtotal": 4500,
+        "shippingFee": 0,
+        "total": 4500,
+        "currency": "INR"
+      },
+      "payment": {
+        "gateway": "razorpay",
+        "razorpayOrderId": "order_apv_89314",
+        "razorpayPaymentId": "pay_rzp_89314",
+        "method": "razorpay",
+        "isSandbox": true,
+        "paidAt": "2026-10-28T13:43:20.718Z"
+      },
+      "shipping": {
+        "courierName": "Delhivery Air Express",
+        "trackingNumber": "DLV-99104281IN",
+        "trackingUrl": "http://localhost:3000/track?orderId=APV-89314",
+        "estimatedDelivery": "Delivered",
+        "dispatchedAt": "2026-10-28T13:43:20.718Z"
+      }
+    }
+  ],
+  "customMedia": [
+    {
+      "id": "cloudinary-apoorva_bra.jpg",
+      "url": "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435597/apoorva/apoorva_bra.jpg",
+      "name": "apoorva_bra.jpg",
+      "type": "image",
+      "category": "cutout",
+      "folder": "Cloudinary (oiu0lhfe)",
+      "diskPath": "apoorva/apoorva_bra",
+      "sizeKB": 111,
+      "createdAt": "2026-10-31T08:33:17.674Z"
+    },
+    {
+      "id": "cloudinary-apoorva_coconut_set.png",
+      "url": "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435598/apoorva/apoorva_coconut_set.png",
+      "name": "apoorva_coconut_set.png",
+      "type": "image",
+      "category": "cutout",
+      "folder": "Cloudinary (oiu0lhfe)",
+      "diskPath": "apoorva/apoorva_coconut_set",
+      "sizeKB": 975,
+      "createdAt": "2026-10-31T08:33:19.261Z"
+    },
+    {
+      "id": "cloudinary-apoorva_exotic_set.jpg",
+      "url": "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435599/apoorva/apoorva_exotic_set.jpg",
+      "name": "apoorva_exotic_set.jpg",
+      "type": "image",
+      "category": "cutout",
+      "folder": "Cloudinary (oiu0lhfe)",
+      "diskPath": "apoorva/apoorva_exotic_set",
+      "sizeKB": 346,
+      "createdAt": "2026-10-31T08:33:20.010Z"
+    },
+    {
+      "id": "cloudinary-apoorva_full_set.jpg",
+      "url": "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435600/apoorva/apoorva_full_set.jpg",
+      "name": "apoorva_full_set.jpg",
+      "type": "image",
+      "category": "cutout",
+      "folder": "Cloudinary (oiu0lhfe)",
+      "diskPath": "apoorva/apoorva_full_set",
+      "sizeKB": 279,
+      "createdAt": "2026-10-31T08:33:20.652Z"
+    },
+    {
+      "id": "cloudinary-apoorva_logo.svg",
+      "url": "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435600/apoorva/apoorva_logo.svg",
+      "name": "apoorva_logo.svg",
+      "type": "image",
+      "category": "brand",
+      "folder": "Cloudinary (oiu0lhfe)",
+      "diskPath": "apoorva/apoorva_logo",
+      "sizeKB": 2,
+      "createdAt": "2026-10-31T08:33:25.067Z"
+    },
+    {
+      "id": "cloudinary-apoorva_model_editorial.png",
+      "url": "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435605/apoorva/apoorva_model_editorial.png",
+      "name": "apoorva_model_editorial.png",
+      "type": "image",
+      "category": "cutout",
+      "folder": "Cloudinary (oiu0lhfe)",
+      "diskPath": "apoorva/apoorva_model_editorial",
+      "sizeKB": 607,
+      "createdAt": "2026-10-31T08:33:26.043Z"
+    },
+    {
+      "id": "cloudinary-apoorva_skirt.jpg",
+      "url": "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435606/apoorva/apoorva_skirt.jpg",
+      "name": "apoorva_skirt.jpg",
+      "type": "image",
+      "category": "cutout",
+      "folder": "Cloudinary (oiu0lhfe)",
+      "diskPath": "apoorva/apoorva_skirt",
+      "sizeKB": 206,
+      "createdAt": "2026-10-31T08:33:26.761Z"
+    },
+    {
+      "id": "cloudinary-beach_bonfire_party.jpg",
+      "url": "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435606/apoorva/beach_bonfire_party.jpg",
+      "name": "beach_bonfire_party.jpg",
+      "type": "image",
+      "category": "lifestyle",
+      "folder": "Cloudinary (oiu0lhfe)",
+      "diskPath": "apoorva/beach_bonfire_party",
+      "sizeKB": 233,
+      "createdAt": "2026-10-31T08:33:27.371Z"
+    },
+    {
+      "id": "cloudinary-beach_couple_sunset.jpg",
+      "url": "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435607/apoorva/beach_couple_sunset.jpg",
+      "name": "beach_couple_sunset.jpg",
+      "type": "image",
+      "category": "lifestyle",
+      "folder": "Cloudinary (oiu0lhfe)",
+      "diskPath": "apoorva/beach_couple_sunset",
+      "sizeKB": 221,
+      "createdAt": "2026-10-31T08:33:28.008Z"
+    },
+    {
+      "id": "cloudinary-beach_pool_lounge.jpg",
+      "url": "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435608/apoorva/beach_pool_lounge.jpg",
+      "name": "beach_pool_lounge.jpg",
+      "type": "image",
+      "category": "lifestyle",
+      "folder": "Cloudinary (oiu0lhfe)",
+      "diskPath": "apoorva/beach_pool_lounge",
+      "sizeKB": 204,
+      "createdAt": "2026-10-31T08:33:28.665Z"
+    },
+    {
+      "id": "cloudinary-beach_resort_gift.jpg",
+      "url": "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435608/apoorva/beach_resort_gift.jpg",
+      "name": "beach_resort_gift.jpg",
+      "type": "image",
+      "category": "lifestyle",
+      "folder": "Cloudinary (oiu0lhfe)",
+      "diskPath": "apoorva/beach_resort_gift",
+      "sizeKB": 166,
+      "createdAt": "2026-10-31T08:33:29.247Z"
+    },
+    {
+      "id": "cloudinary-coir_fringe_beach.mp4",
+      "url": "https://res.cloudinary.com/oiu0lhfe/video/upload/v1793435623/apoorva/coir_fringe_beach.mp4",
+      "name": "coir_fringe_beach.mp4",
+      "type": "video",
+      "category": "video",
+      "folder": "Cloudinary (oiu0lhfe)",
+      "diskPath": "apoorva/coir_fringe_beach",
+      "sizeKB": 11007,
+      "createdAt": "2026-10-31T08:33:44.760Z"
+    },
+    {
+      "id": "cloudinary-jute_wrap_skirt.mp4",
+      "url": "https://res.cloudinary.com/oiu0lhfe/video/upload/v1793435639/apoorva/jute_wrap_skirt.mp4",
+      "name": "jute_wrap_skirt.mp4",
+      "type": "video",
+      "category": "video",
+      "folder": "Cloudinary (oiu0lhfe)",
+      "diskPath": "apoorva/jute_wrap_skirt",
+      "sizeKB": 10070,
+      "createdAt": "2026-10-31T08:34:01.172Z"
+    }
+  ],
+  "updatedAt": "2026-10-31T08:34:01.172Z",
+  "deletedMediaUrls": []
+}
