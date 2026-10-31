@@ -24,6 +24,7 @@ import {
   deleteFromSupabaseStorage,
   deleteFromOciObjectStorage
 } from "@/lib/storage/ociStorage";
+import { getMongoStatus } from "@/lib/db/mongodb";
 
 export async function GET() {
   try {
@@ -36,7 +37,8 @@ export async function GET() {
     return NextResponse.json({
       ...db,
       mediaLibrary,
-      storagePaths
+      storagePaths,
+      mongoStatus: getMongoStatus()
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to load store data";

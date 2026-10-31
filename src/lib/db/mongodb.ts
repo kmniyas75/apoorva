@@ -9,37 +9,84 @@ const DEFAULT_MONGO_PASS = Buffer.from(
 ).toString("utf8");
 const DEFAULT_MONGO_HOST = "cluster0.s3sa1pu.mongodb.net";
 
+function stripQuotes(val?: string): string {
+  return (val || "").trim().replace(/^["']+|["']+$/g, "").trim();
+}
+
 export function getMongoUri(): string {
-  const envUri = process.env.MONGODB_URI?.trim();
-  if (envUri && !envUri.includes("zv7rcvi")) {
+  const envUri = stripQuotes(process.env.MONGODB_URI);
+  if (envUri && envUri.startsWith("mongodb") && !envUri.includes("zv7rcvi")) {
     return envUri;
   }
   return `mongodb+srv://${DEFAULT_MONGO_USER}:${DEFAULT_MONGO_PASS}@${DEFAULT_MONGO_HOST}/apoorva?retryWrites=true&w=majority&appName=Cluster0`;
 }
 
 export function getMongoDbName(): string {
-  return process.env.MONGODB_DB_NAME || process.env.DB_NAME || "apoorva";
+  return (
+    stripQuotes(process.env.MONGODB_DB_NAME) ||
+    stripQuotes(process.env.DB_NAME) ||
+    "apoorva"
+  );
 }
 
 const globalMongo = globalThis as unknown as {
   __APOORVA_MONGO_CLIENT__?: MongoClient;
   __APOORVA_MONGO_PROMISE__?: Promise<MongoClient>;
+  __APOORVA_MONGO_STATUS__?: {
+    connected: boolean;
+    host: string;
+    dbName: string;
+    lastError?: string;
+    checkedAt?: string;
+  };
 };
+
+export function getMongoStatus() {
+  return (
+    globalMongo.__APOORVA_MONGO_STATUS__ || {
+      connected: Boolean(globalMongo.__APOORVA_MONGO_CLIENT__),
+      host: DEFAULT_MONGO_HOST,
+      dbName: getMongoDbName()
+    }
+  );
+}
 
 export async function getMongoDatabase(): Promise<Db> {
   const uri = getMongoUri();
+  const dbName = getMongoDbName();
   if (!globalMongo.__APOORVA_MONGO_PROMISE__) {
     const client = new MongoClient(uri, {
       maxPoolSize: 10,
-      serverSelectionTimeoutMS: 8000
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000
     });
-    globalMongo.__APOORVA_MONGO_PROMISE__ = client.connect().then((c) => {
-      globalMongo.__APOORVA_MONGO_CLIENT__ = c;
-      return c;
-    });
+    globalMongo.__APOORVA_MONGO_PROMISE__ = client
+      .connect()
+      .then((c) => {
+        globalMongo.__APOORVA_MONGO_CLIENT__ = c;
+        globalMongo.__APOORVA_MONGO_STATUS__ = {
+          connected: true,
+          host: DEFAULT_MONGO_HOST,
+          dbName,
+          checkedAt: new Date().toISOString()
+        };
+        return c;
+      })
+      .catch((err) => {
+        globalMongo.__APOORVA_MONGO_PROMISE__ = undefined;
+        globalMongo.__APOORVA_MONGO_CLIENT__ = undefined;
+        globalMongo.__APOORVA_MONGO_STATUS__ = {
+          connected: false,
+          host: DEFAULT_MONGO_HOST,
+          dbName,
+          lastError: err instanceof Error ? err.message : String(err),
+          checkedAt: new Date().toISOString()
+        };
+        throw err;
+      });
   }
   const connectedClient = await globalMongo.__APOORVA_MONGO_PROMISE__;
-  return connectedClient.db(getMongoDbName());
+  return connectedClient.db(dbName);
 }
 
 /**
