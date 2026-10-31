@@ -8,6 +8,12 @@ import {
   MediaAsset
 } from "@/lib/store/adminStore";
 import {
+  isVercelBlobConfigured,
+  uploadToVercelBlob,
+  isCloudinaryConfigured,
+  uploadToCloudinary,
+  isSupabaseStorageConfigured,
+  uploadToSupabaseStorage,
   getOciStorageConfig,
   uploadToOciObjectStorage
 } from "@/lib/storage/ociStorage";
@@ -35,16 +41,122 @@ export async function POST(req: Request) {
     const safeFileName = `${baseName}_${Date.now().toString().slice(-5)}${ext}`;
     const isVideo = [".mp4", ".webm", ".mov"].includes(ext);
     const sizeKB = Math.round(buffer.length / 1024);
+    const contentType =
+      file.type || (isVideo ? "video/mp4" : "image/jpeg");
 
-    const ociCfg = getOciStorageConfig();
     const db = getStoreDatabase();
 
-    // 1. If Oracle Cloud (OCI) Always Free Object Storage is configured, upload to OCI bucket
+    // 1. Vercel Blob (1-Click inside Vercel Dashboard, No Card Needed)
+    if (isVercelBlobConfigured()) {
+      const { publicUrl, providerLabel } = await uploadToVercelBlob({
+        fileName: safeFileName,
+        buffer,
+        contentType
+      });
+
+      const asset: MediaAsset = {
+        id: `blob-${safeFileName}`,
+        url: publicUrl,
+        name: safeFileName,
+        type: isVideo ? "video" : "image",
+        category: "upload",
+        folder: providerLabel,
+        diskPath: publicUrl,
+        sizeKB,
+        createdAt: new Date().toISOString()
+      };
+
+      db.customMedia = [
+        asset,
+        ...(db.customMedia || []).filter((m) => m.url !== publicUrl)
+      ];
+      saveStoreDatabase(db);
+      const mediaLibrary = scanPublicMediaLibrary(db.customMedia);
+
+      return NextResponse.json({
+        success: true,
+        message: `Uploaded ${safeFileName} to Vercel Blob!`,
+        asset,
+        mediaLibrary
+      });
+    }
+
+    // 2. Cloudinary (25 GB Free, Instant Google/GitHub Signup, No Card Needed)
+    if (isCloudinaryConfigured()) {
+      const { publicUrl, publicId, providerLabel } = await uploadToCloudinary({
+        fileName: safeFileName,
+        buffer,
+        contentType,
+        isVideo
+      });
+
+      const asset: MediaAsset = {
+        id: `cloudinary-${safeFileName}`,
+        url: publicUrl,
+        name: safeFileName,
+        type: isVideo ? "video" : "image",
+        category: "upload",
+        folder: providerLabel,
+        diskPath: publicId,
+        sizeKB,
+        createdAt: new Date().toISOString()
+      };
+
+      db.customMedia = [
+        asset,
+        ...(db.customMedia || []).filter((m) => m.url !== publicUrl)
+      ];
+      saveStoreDatabase(db);
+      const mediaLibrary = scanPublicMediaLibrary(db.customMedia);
+
+      return NextResponse.json({
+        success: true,
+        message: `Uploaded ${safeFileName} to Cloudinary!`,
+        asset,
+        mediaLibrary
+      });
+    }
+
+    // 3. Supabase Storage (1 GB Free, Instant GitHub Login, No Card Needed)
+    if (isSupabaseStorageConfigured()) {
+      const { publicUrl, objectKey, providerLabel } =
+        await uploadToSupabaseStorage({
+          fileName: safeFileName,
+          buffer,
+          contentType
+        });
+
+      const asset: MediaAsset = {
+        id: `supabase-${safeFileName}`,
+        url: publicUrl,
+        name: safeFileName,
+        type: isVideo ? "video" : "image",
+        category: "upload",
+        folder: providerLabel,
+        diskPath: objectKey,
+        sizeKB,
+        createdAt: new Date().toISOString()
+      };
+
+      db.customMedia = [
+        asset,
+        ...(db.customMedia || []).filter((m) => m.url !== publicUrl)
+      ];
+      saveStoreDatabase(db);
+      const mediaLibrary = scanPublicMediaLibrary(db.customMedia);
+
+      return NextResponse.json({
+        success: true,
+        message: `Uploaded ${safeFileName} to Supabase Storage!`,
+        asset,
+        mediaLibrary
+      });
+    }
+
+    // 4. Oracle Cloud (OCI) / S3-Compatible Object Storage
+    const ociCfg = getOciStorageConfig();
     if (ociCfg.enabled) {
       const objectKey = `uploads/${safeFileName}`;
-      const contentType =
-        file.type || (isVideo ? "video/mp4" : "image/jpeg");
-
       const { publicUrl } = await uploadToOciObjectStorage({
         objectKey,
         buffer,
@@ -78,7 +190,7 @@ export async function POST(req: Request) {
       });
     }
 
-    // 2. Local Disk Fallback (/public/uploads)
+    // 5. Local Disk Fallback (/public/uploads)
     const uploadsDir = path.join(process.cwd(), "public", "uploads");
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });

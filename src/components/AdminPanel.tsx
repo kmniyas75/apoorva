@@ -3789,32 +3789,64 @@ export default function AdminPanel({
                         </div>
                       </div>
 
-                      {/* Oracle Cloud (OCI) Always Free Object Storage Integration Box */}
-                      <div className="bg-white p-5 rounded-2xl border border-black/12 shadow-xs space-y-3 font-mono">
-                        <div className="flex items-center justify-between gap-2 border-b border-black/10 pb-2.5">
+                      {/* Instant-Approval Free Cloud Storage Providers Box */}
+                      <div className="bg-white p-5 rounded-2xl border border-black/12 shadow-xs space-y-4 font-mono">
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/10 pb-2.5">
                           <div>
                             <span className="text-[10px] uppercase tracking-widest text-amber-800 font-bold block">
-                              CLOUD STORAGE READY • ZERO EXTERNAL SDK NEEDED
+                              NO CREDIT CARD NEEDED • AUTO-DETECTED BY ADMIN UPLOADER
                             </span>
                             <h3 className="text-xs sm:text-sm font-black uppercase text-black">
-                              Oracle Cloud (OCI) Always Free Object Storage (20 GB Free)
+                              Free Cloud Media Storage (Vercel Blob • Cloudinary • Supabase)
                             </h3>
                           </div>
                           <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-950 text-[10px] font-black uppercase">
-                            Built-In S3 v4 Signer
+                            Ready Out of the Box
                           </span>
                         </div>
 
-                        <p className="text-xs text-black/70 leading-relaxed">
-                          Add these 5 environment variables in Vercel (or <code>.env.local</code>) to automatically store and delete uploaded media in your <strong>OCI Always Free Bucket</strong> instead of local disk:
-                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                          <div className="p-3.5 rounded-xl bg-neutral-50 border border-black/10 space-y-1.5">
+                            <span className="text-[10px] font-black uppercase text-black block">
+                              Option A: Vercel Blob (1-Click, No Card)
+                            </span>
+                            <p className="text-[11px] text-black/65">
+                              In Vercel Dashboard → <strong>Storage → Create Database → Blob</strong>. Automatically adds:
+                            </p>
+                            <code className="block text-[10px] bg-white p-2 rounded border border-black/10 text-black">
+                              BLOB_READ_WRITE_TOKEN=...
+                            </code>
+                          </div>
 
-                        <div className="p-3.5 rounded-xl bg-neutral-50 border border-black/10 text-[11px] space-y-1 text-black/85 overflow-x-auto">
-                          <div><code>OCI_NAMESPACE=your_tenancy_namespace</code></div>
-                          <div><code>OCI_REGION=ap-hyderabad-1</code> <span className="text-black/45"># or ap-mumbai-1</span></div>
-                          <div><code>OCI_BUCKET_NAME=apoorva-media</code></div>
-                          <div><code>OCI_ACCESS_KEY_ID=your_customer_secret_key_id</code></div>
-                          <div><code>OCI_SECRET_ACCESS_KEY=your_customer_secret_key_value</code></div>
+                          <div className="p-3.5 rounded-xl bg-neutral-50 border border-black/10 space-y-1.5">
+                            <span className="text-[10px] font-black uppercase text-black block">
+                              Option B: Cloudinary (25 GB Free, No Card)
+                            </span>
+                            <p className="text-[11px] text-black/65">
+                              Sign in with Google/GitHub at <code>cloudinary.com</code> and add in Vercel:
+                            </p>
+                            <code className="block text-[10px] bg-white p-2 rounded border border-black/10 text-black">
+                              CLOUDINARY_CLOUD_NAME=...
+                              <br />
+                              CLOUDINARY_API_KEY=...
+                              <br />
+                              CLOUDINARY_API_SECRET=...
+                            </code>
+                          </div>
+
+                          <div className="p-3.5 rounded-xl bg-neutral-50 border border-black/10 space-y-1.5">
+                            <span className="text-[10px] font-black uppercase text-black block">
+                              Option C: Supabase Storage (1 GB Free, No Card)
+                            </span>
+                            <p className="text-[11px] text-black/65">
+                              Sign in with GitHub at <code>supabase.com</code>, create public bucket <code>apoorva-media</code>:
+                            </p>
+                            <code className="block text-[10px] bg-white p-2 rounded border border-black/10 text-black">
+                              SUPABASE_URL=...
+                              <br />
+                              SUPABASE_SERVICE_ROLE_KEY=...
+                            </code>
+                          </div>
                         </div>
                       </div>
                     </div>

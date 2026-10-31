@@ -17,7 +17,12 @@ import {
   generateTrackingData,
   saveTrackingRecord
 } from "@/lib/shipping/trackingService";
-import { deleteFromOciObjectStorage } from "@/lib/storage/ociStorage";
+import {
+  deleteFromVercelBlob,
+  deleteFromCloudinary,
+  deleteFromSupabaseStorage,
+  deleteFromOciObjectStorage
+} from "@/lib/storage/ociStorage";
 
 export async function GET() {
   try {
@@ -295,8 +300,29 @@ export async function POST(req: Request) {
         }
       }
 
-      // 2. Delete from OCI Object Storage if stored in OCI bucket
-      if (
+      // 2. Delete from Vercel Blob, Cloudinary, Supabase Storage, or OCI Object Storage
+      if (url.includes(".vercel-storage.com")) {
+        try {
+          const removedBlob = await deleteFromVercelBlob(url);
+          if (removedBlob) deletedFromDiskOrCloud = true;
+        } catch (blobErr) {
+          console.warn("[AdminStore] Vercel Blob delete warning:", blobErr);
+        }
+      } else if (url.includes("res.cloudinary.com")) {
+        try {
+          const removedCloudinary = await deleteFromCloudinary(url, diskPath);
+          if (removedCloudinary) deletedFromDiskOrCloud = true;
+        } catch (cldErr) {
+          console.warn("[AdminStore] Cloudinary delete warning:", cldErr);
+        }
+      } else if (url.includes("/storage/v1/object/")) {
+        try {
+          const removedSupa = await deleteFromSupabaseStorage(url, diskPath);
+          if (removedSupa) deletedFromDiskOrCloud = true;
+        } catch (supaErr) {
+          console.warn("[AdminStore] Supabase delete warning:", supaErr);
+        }
+      } else if (
         url.includes(".oraclecloud.com/") ||
         (diskPath && diskPath.startsWith("uploads/"))
       ) {
