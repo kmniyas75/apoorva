@@ -3,6 +3,7 @@ import Script from "next/script";
 import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import SeoStructuredData from "@/components/SeoStructuredData";
+import FirebaseAnalytics from "@/components/FirebaseAnalytics";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -98,6 +99,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-white text-[#141414] overflow-x-hidden selection:bg-black selection:text-white">
         {children}
+        <FirebaseAnalytics />
         <Script
           src="https://checkout.razorpay.com/v1/checkout.js"
           strategy="lazyOnload"

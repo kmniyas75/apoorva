@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.3.3",
+    "firebase": "^13.1.0",
     "lucide-react": "^1.58.0",
     "mongodb": "^7.8.0",
     "next": "16.4.2",
