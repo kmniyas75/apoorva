@@ -55,36 +55,50 @@ export default function HeroShowcase({
 
   // Refs for 60/120fps hardware-accelerated requestAnimationFrame 360° rotation
   const stageRef = useRef<HTMLDivElement>(null);
+  const stageWidthRef = useRef<number>(800);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const floorRingRef = useRef<HTMLDivElement>(null);
-  const degreeBadgeRef = useRef<HTMLSpanElement>(null);
   const frontSetBadgeRef = useRef<HTMLSpanElement>(null);
+  const lastFrontIndexRef = useRef<number>(-1);
   const angleRef = useRef<number>(0);
   const isDraggingRef = useRef<boolean>(false);
-  const lastClientXRef = useRef<number>(0);
+  const lastClientXRef = useState<number>(0)[0] ? useRef<number>(0) : useRef<number>(0);
 
   // Per-product inline size selection for 1-click easy buying
   const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({});
   const [addedId, setAddedId] = useState<string | null>(null);
 
-  // Apply exact 360° trigonometric 3D circular transforms on every frame for all products
+  // Measure stage width only on mount & resize (prevents layout thrashing inside rAF)
+  useEffect(() => {
+    const updateWidth = () => {
+      if (stageRef.current) {
+        stageWidthRef.current = stageRef.current.clientWidth || 800;
+      }
+    };
+    updateWidth();
+    window.addEventListener("resize", updateWidth, { passive: true });
+    return () => window.removeEventListener("resize", updateWidth);
+  }, []);
+
+  // Apply smooth, flicker-free 360° circular transforms on every frame
   useEffect(() => {
     let animationFrameId: number;
     let lastTime = performance.now();
 
     const updatePositions = (now: number) => {
-      const dt = Math.min(64, now - lastTime);
+      const dt = Math.min(48, Math.max(0, now - lastTime));
       lastTime = now;
 
       if (isOrbiting && !isDraggingRef.current) {
-        const speed = Math.max(0.2, Math.min(3, orbitSpeedMultiplier || 1));
+        const speed = Math.max(0.2, Math.min(2, orbitSpeedMultiplier || 1));
+        // Gentle, slow luxury gallery speed (~26 seconds per full 360° rotation)
         angleRef.current =
-          (angleRef.current + dt * 0.00084 * speed) % (Math.PI * 2);
+          (angleRef.current + dt * 0.00024 * speed) % (Math.PI * 2);
       }
 
-      const stageWidth = stageRef.current?.clientWidth || 800;
+      const stageWidth = stageWidthRef.current;
       const radiusX = Math.min(220, Math.max(120, stageWidth * 0.24));
-      const radiusY = 28;
+      const radiusY = 26;
       const count = Math.max(1, products.length);
 
       let frontIndex = 0;
@@ -105,36 +119,33 @@ export default function HeroShowcase({
         const x = cosT * radiusX;
         const y = sinT * radiusY;
         const depthNorm = (sinT + 1) * 0.5; // 0 (back) to 1 (front)
-        const scale = 0.8 + depthNorm * 0.26;
-        const rotY = -cosT * 12;
-        const opacity = 0.76 + depthNorm * 0.24;
-        const zIndex = Math.round(10 + depthNorm * 25);
+        const scale = 0.84 + depthNorm * 0.2;
 
+        // Pure 2D+scale GPU-composited transform (avoids 3D plane Z-fighting & filter re-rasterization flicker)
         el.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(
           2
-        )}px, 0px) perspective(1000px) rotateY(${rotY.toFixed(
-          2
-        )}deg) scale(${scale.toFixed(3)})`;
-        el.style.opacity = opacity.toFixed(3);
-        el.style.zIndex = String(zIndex);
+        )}px, 0px) scale(${scale.toFixed(4)})`;
       }
 
-      const degrees = Math.round(((angleRef.current * 180) / Math.PI) % 360);
+      // Only update z-index & front badge DOM text when the leading item actually swaps
+      if (frontIndex !== lastFrontIndexRef.current) {
+        lastFrontIndexRef.current = frontIndex;
+        for (let i = 0; i < count; i++) {
+          const el = itemRefs.current[i];
+          if (el) {
+            el.style.zIndex = i === frontIndex ? "30" : "20";
+          }
+        }
+        if (frontSetBadgeRef.current && products[frontIndex]) {
+          frontSetBadgeRef.current.textContent = `FRONT STAGE: SET ${products[frontIndex].number}`;
+        }
+      }
+
+      const degrees = ((angleRef.current * 180) / Math.PI) % 360;
       const normalizedDeg = (degrees + 360) % 360;
 
       if (floorRingRef.current) {
-        floorRingRef.current.style.transform = `translate(-50%, -50%) rotateX(75deg) rotateZ(${normalizedDeg}deg)`;
-      }
-
-      if (degreeBadgeRef.current) {
-        degreeBadgeRef.current.textContent = `${String(normalizedDeg).padStart(
-          3,
-          "0"
-        )}°`;
-      }
-
-      if (frontSetBadgeRef.current && products[frontIndex]) {
-        frontSetBadgeRef.current.textContent = `FRONT STAGE: SET ${products[frontIndex].number}`;
+        floorRingRef.current.style.transform = `rotate3d(0, 0, 1, ${normalizedDeg.toFixed(2)}deg)`;
       }
 
       animationFrameId = requestAnimationFrame(updatePositions);
@@ -154,7 +165,7 @@ export default function HeroShowcase({
     if (!isDraggingRef.current) return;
     const deltaX = e.clientX - lastClientXRef.current;
     lastClientXRef.current = e.clientX;
-    angleRef.current = (angleRef.current + deltaX * 0.008) % (Math.PI * 2);
+    angleRef.current = (angleRef.current + deltaX * 0.005) % (Math.PI * 2);
   };
 
   const handlePointerUp = () => {
@@ -287,9 +298,8 @@ export default function HeroShowcase({
             </div>
           </div>
 
-          {/* 3D Rotating Compass Pedestal Ring on the Stage Floor */}
+          {/* 2D-Projected Rotating Compass Pedestal Ring on the Stage Floor (Zero 3D Z-Fighting) */}
           <div
-            ref={floorRingRef}
             aria-hidden="true"
             style={{
               position: "absolute",
@@ -297,36 +307,35 @@ export default function HeroShowcase({
               top: "68%",
               width: "540px",
               height: "540px",
-              borderRadius: "9999px",
-              border: "2px dashed rgba(120, 53, 15, 0.32)",
-              background:
-                "radial-gradient(circle, rgba(180, 130, 70, 0.14) 0%, rgba(120, 53, 15, 0.04) 60%, transparent 75%)",
-              transform: "translate(-50%, -50%) rotateX(75deg) rotateZ(0deg)",
-              pointerEvents: "none"
+              transform: "translate(-50%, -50%) scaleY(0.26)",
+              pointerEvents: "none",
+              zIndex: 1
             }}
             className="hidden sm:flex items-center justify-center"
           >
             <div
+              ref={floorRingRef}
               style={{
-                width: "74%",
-                height: "74%",
+                width: "100%",
+                height: "100%",
                 borderRadius: "9999px",
-                border: "1.5px solid rgba(120, 53, 15, 0.18)"
+                border: "2px dashed rgba(120, 53, 15, 0.28)",
+                background:
+                  "radial-gradient(circle, rgba(180, 130, 70, 0.1) 0%, rgba(120, 53, 15, 0.03) 60%, transparent 75%)",
+                willChange: "transform",
+                backfaceVisibility: "hidden"
               }}
-            />
-            {/* Cardinal Compass Markers on the 3D Turntable */}
-            <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded bg-amber-950 text-amber-200 font-mono text-[9px] font-bold">
-              000° N
-            </span>
-            <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded bg-amber-950 text-amber-200 font-mono text-[9px] font-bold">
-              180° S
-            </span>
-            <span className="absolute top-1/2 -right-4 -translate-y-1/2 px-1.5 py-0.5 rounded bg-amber-900/80 text-white font-mono text-[9px] font-bold">
-              090° E
-            </span>
-            <span className="absolute top-1/2 -left-4 -translate-y-1/2 px-1.5 py-0.5 rounded bg-amber-900/80 text-white font-mono text-[9px] font-bold">
-              270° W
-            </span>
+              className="flex items-center justify-center relative"
+            >
+              <div
+                style={{
+                  width: "74%",
+                  height: "74%",
+                  borderRadius: "9999px",
+                  border: "1.5px solid rgba(120, 53, 15, 0.16)"
+                }}
+              />
+            </div>
           </div>
 
           {/* DYNAMICALLY ORBITING BEACHWEAR CUTOUTS (SUPPORTS 2, 3, 4+ PRODUCTS) */}
@@ -348,8 +357,9 @@ export default function HeroShowcase({
                   height: "285px",
                   transform: `translate3d(${idx % 2 === 0 ? 190 : -190
                     }px, 0px, 0px) scale(0.95)`,
-                  willChange: "transform, opacity",
-                  zIndex: 30 - idx
+                  willChange: "transform",
+                  backfaceVisibility: "hidden",
+                  zIndex: 30 - idx * 10
                 }}
                 className="flex flex-col items-center justify-center cursor-pointer group"
                 title={`Click to Buy Set ${prod.number}: ${prod.name}`}
@@ -392,7 +402,7 @@ export default function HeroShowcase({
                       objectFit: "contain",
                       display: "block",
                       filter:
-                        "drop-shadow(0 18px 22px rgba(28, 16, 6, 0.28)) drop-shadow(0 4px 8px rgba(28, 16, 6, 0.14))"
+                        "drop-shadow(0 14px 18px rgba(28, 16, 6, 0.22))"
                     }}
                     className="transition-transform duration-300 group-hover:scale-105"
                   />
@@ -405,13 +415,13 @@ export default function HeroShowcase({
                     width: "110px",
                     height: "12px",
                     background:
-                      "radial-gradient(ellipse at center, rgba(28,16,6,0.28) 0%, transparent 75%)"
+                      "radial-gradient(ellipse at center, rgba(28,16,6,0.24) 0%, transparent 75%)"
                   }}
                   className="-mt-1 mb-1 rounded-full pointer-events-none"
                 />
 
                 {/* Luxury Dark Espresso & Gold Floating Plinth Pill */}
-                <div className="px-3.5 py-1.5 rounded-full bg-[#141414]/95 text-[#faf8f5] backdrop-blur-md border border-amber-400/35 shadow-lg flex items-center gap-2 whitespace-nowrap group-hover:bg-black group-hover:scale-105 transition-all">
+                <div className="px-3.5 py-1.5 rounded-full bg-[#141414] text-[#faf8f5] border border-amber-400/35 shadow-lg flex items-center gap-2 whitespace-nowrap group-hover:bg-black group-hover:scale-105 transition-transform">
                   <span className="px-1.5 py-0.5 rounded-full bg-amber-400 text-black text-[9px] font-mono font-black">
                     SET {prod.number}
                   </span>
