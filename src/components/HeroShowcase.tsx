@@ -440,67 +440,8 @@ export default function HeroShowcase({
               FRONT STAGE: SET 01
             </span>
             <span className="hidden xl:inline text-black/50">
-              • Drag stage or use controls to spin 360°
+              • Drag stage to spin 360°
             </span>
-          </div>
-
-          {/* Center: Sleek Dark Espresso 360° Orbit Control Console */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#141414] text-white shadow-lg border border-white/10">
-            <button
-              type="button"
-              onClick={() => nudgeOrbitAngle(-Math.PI / 4)}
-              className="p-1.5 rounded-full hover:bg-white/15 text-white/80 hover:text-white transition-colors"
-              title="Rotate Left 45°"
-              aria-label="Rotate 360 stage left"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-            </button>
-
-            <div className="flex items-center gap-2 px-2">
-              <RotateCw
-                className={`w-3.5 h-3.5 text-amber-400 ${isOrbiting ? "animate-spin" : ""
-                  }`}
-              />
-              <span className="text-[10px] font-mono uppercase tracking-[0.16em] font-bold text-white/90">
-                360° ORBIT ({products.length} SETS)
-              </span>
-              <span
-                ref={degreeBadgeRef}
-                className="text-[10px] font-mono font-black text-black bg-amber-400 px-2 py-0.5 rounded-full min-w-[42px] text-center"
-              >
-                000°
-              </span>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setIsOrbiting(!isOrbiting)}
-              className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/12 hover:bg-white/20 text-[10px] font-mono uppercase tracking-wider text-white font-bold transition-colors"
-              aria-pressed={!isOrbiting}
-              title={isOrbiting ? "Pause 360° rotation" : "Resume 360° rotation"}
-            >
-              {isOrbiting ? (
-                <>
-                  <Pause className="w-2.5 h-2.5 text-amber-300" />
-                  <span>PAUSE</span>
-                </>
-              ) : (
-                <>
-                  <Play className="w-2.5 h-2.5 text-emerald-300" />
-                  <span>ROTATE</span>
-                </>
-              )}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => nudgeOrbitAngle(Math.PI / 4)}
-              className="p-1.5 rounded-full hover:bg-white/15 text-white/80 hover:text-white transition-colors"
-              title="Rotate Right 45°"
-              aria-label="Rotate 360 stage right"
-            >
-              <RotateCw className="w-3.5 h-3.5" />
-            </button>
           </div>
 
           {/* Right: 1-Click Bundle Offer CTA */}
