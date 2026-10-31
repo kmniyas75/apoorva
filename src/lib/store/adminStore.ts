@@ -15,6 +15,10 @@ import {
   saveDatabaseToCloudinary,
   loadDatabaseFromCloudinary
 } from "@/lib/storage/ociStorage";
+import {
+  loadStoreFromMongoDB,
+  saveStoreToMongoDB
+} from "@/lib/db/mongodb";
 
 export interface StoreSettings {
   capsuleTitle: string;
@@ -83,6 +87,7 @@ export interface StoreDatabase {
   socialEvents: SocialAutomationEvent[];
   orders: OrderRecord[];
   customMedia: MediaAsset[];
+  deletedMediaUrls?: string[];
   updatedAt: string;
 }
 
@@ -359,8 +364,25 @@ const globalStore = globalThis as unknown as {
   __APOORVA_CLOUD_SYNCED__?: boolean;
 };
 
-export function scanPublicMediaLibrary(customMedia: MediaAsset[] = []): MediaAsset[] {
+export function scanPublicMediaLibrary(
+  customMedia: MediaAsset[] = [],
+  deletedMediaUrls: string[] = []
+): MediaAsset[] {
+  const deletedSet = new Set(deletedMediaUrls);
   const assets: MediaAsset[] = [];
+
+  // 1. Put Cloudinary / Custom Media assets from MongoDB first
+  for (const item of customMedia) {
+    if (deletedSet.has(item.url) || deletedSet.has(item.name)) continue;
+    if (!assets.some((a) => a.url === item.url)) {
+      assets.push({
+        ...item,
+        folder: item.folder || "Cloudinary (oiu0lhfe)",
+        diskPath: item.diskPath || item.url
+      });
+    }
+  }
+
   const publicDir = path.join(process.cwd(), "public");
 
   const scanFolder = (
@@ -379,6 +401,12 @@ export function scanPublicMediaLibrary(customMedia: MediaAsset[] = []): MediaAss
         const isImage = [".png", ".jpg", ".jpeg", ".webp", ".svg", ".gif"].includes(ext);
         if (!isVideo && !isImage) continue;
 
+        const url = `/${subDir}/${file}`;
+        if (deletedSet.has(url) || deletedSet.has(file)) continue;
+
+        // If this file is already in Cloudinary customMedia, prefer the Cloudinary entry
+        if (assets.some((a) => a.name === file || a.url === url)) continue;
+
         const fullFilePath = path.join(dirPath, file);
         let sizeKB = 0;
         try {
@@ -388,7 +416,6 @@ export function scanPublicMediaLibrary(customMedia: MediaAsset[] = []): MediaAss
           // ignore
         }
 
-        const url = `/${subDir}/${file}`;
         assets.push({
           id: `${subDir}-${file}`,
           url,
@@ -413,20 +440,9 @@ export function scanPublicMediaLibrary(customMedia: MediaAsset[] = []): MediaAss
     }
   };
 
+  scanFolder("uploads", "image", "upload");
   scanFolder("images", "image", "cutout");
   scanFolder("videos", "video", "video");
-  scanFolder("uploads", "image", "upload");
-
-  // Merge custom media URLs if not already in scanned assets
-  for (const item of customMedia) {
-    if (!assets.some((a) => a.url === item.url)) {
-      assets.push({
-        ...item,
-        folder: item.folder || "External URL",
-        diskPath: item.diskPath || item.url
-      });
-    }
-  }
 
   return assets;
 }
@@ -474,6 +490,35 @@ export function getStoreDatabase(): StoreDatabase {
 }
 
 export async function ensureStoreDatabaseLoaded(): Promise<StoreDatabase> {
+  // 1. Always try loading latest state from MongoDB (`apoorva` DB in diefuture cluster)
+  try {
+    const mongoDb = await loadStoreFromMongoDB();
+    if (
+      mongoDb &&
+      Array.isArray(mongoDb.products) &&
+      mongoDb.products.length > 0
+    ) {
+      if (!mongoDb.socialAutomation) {
+        mongoDb.socialAutomation = { ...DEFAULT_SOCIAL_CONFIG };
+      }
+      if (!Array.isArray(mongoDb.socialEvents)) {
+        mongoDb.socialEvents = createInitialSocialEvents();
+      }
+      if (!mongoDb.settings.adminPassword) {
+        mongoDb.settings.adminPassword = DEFAULT_SETTINGS.adminPassword;
+      }
+      if (!Array.isArray(mongoDb.deletedMediaUrls)) {
+        mongoDb.deletedMediaUrls = [];
+      }
+      globalStore.__APOORVA_ADMIN_DB__ = mongoDb;
+      globalStore.__APOORVA_CLOUD_SYNCED__ = true;
+      return mongoDb;
+    }
+  } catch (err) {
+    console.warn("[AdminStore] MongoDB load fallback:", err);
+  }
+
+  // 2. Fallback to Cloudinary raw state or local disk
   if (!globalStore.__APOORVA_CLOUD_SYNCED__) {
     globalStore.__APOORVA_CLOUD_SYNCED__ = true;
     try {
@@ -493,24 +538,26 @@ export async function ensureStoreDatabaseLoaded(): Promise<StoreDatabase> {
           cloudDb.settings.adminPassword = DEFAULT_SETTINGS.adminPassword;
         }
         globalStore.__APOORVA_ADMIN_DB__ = cloudDb;
+        await saveStoreToMongoDB(cloudDb);
         return cloudDb;
       }
     } catch {
       // Fallback to local disk
     }
   }
-  return getStoreDatabase();
+  const localDb = getStoreDatabase();
+  await saveStoreToMongoDB(localDb);
+  return localDb;
 }
 
 export async function persistStoreDatabase(
   db: StoreDatabase
 ): Promise<StoreDatabase> {
   const saved = saveStoreDatabase(db);
-  try {
-    await saveDatabaseToCloudinary(saved);
-  } catch (err) {
-    console.warn("[AdminStore] Could not sync store-db.json to Cloudinary:", err);
-  }
+  await Promise.allSettled([
+    saveStoreToMongoDB(saved),
+    saveDatabaseToCloudinary(saved)
+  ]);
   return saved;
 }
 
@@ -526,6 +573,9 @@ export function saveStoreDatabase(db: StoreDatabase): StoreDatabase {
   } catch (err) {
     console.warn("[AdminStore] Could not write store-db.json:", err);
   }
+
+  // Fire-and-forget MongoDB sync for callers that invoke saveStoreDatabase synchronously
+  void saveStoreToMongoDB(db);
 
   return db;
 }

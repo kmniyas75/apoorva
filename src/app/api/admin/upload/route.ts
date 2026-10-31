@@ -71,7 +71,10 @@ export async function POST(req: Request) {
         ...(db.customMedia || []).filter((m) => m.url !== publicUrl)
       ];
       await persistStoreDatabase(db);
-      const mediaLibrary = scanPublicMediaLibrary(db.customMedia);
+      const mediaLibrary = scanPublicMediaLibrary(
+        db.customMedia,
+        db.deletedMediaUrls || []
+      );
 
       return NextResponse.json({
         success: true,
@@ -107,7 +110,10 @@ export async function POST(req: Request) {
         ...(db.customMedia || []).filter((m) => m.url !== publicUrl)
       ];
       await persistStoreDatabase(db);
-      const mediaLibrary = scanPublicMediaLibrary(db.customMedia);
+      const mediaLibrary = scanPublicMediaLibrary(
+        db.customMedia,
+        db.deletedMediaUrls || []
+      );
 
       return NextResponse.json({
         success: true,
@@ -143,7 +149,10 @@ export async function POST(req: Request) {
         ...(db.customMedia || []).filter((m) => m.url !== publicUrl)
       ];
       await persistStoreDatabase(db);
-      const mediaLibrary = scanPublicMediaLibrary(db.customMedia);
+      const mediaLibrary = scanPublicMediaLibrary(
+        db.customMedia,
+        db.deletedMediaUrls || []
+      );
 
       return NextResponse.json({
         success: true,
@@ -180,7 +189,10 @@ export async function POST(req: Request) {
         ...(db.customMedia || []).filter((m) => m.url !== publicUrl)
       ];
       await persistStoreDatabase(db);
-      const mediaLibrary = scanPublicMediaLibrary(db.customMedia);
+      const mediaLibrary = scanPublicMediaLibrary(
+        db.customMedia,
+        db.deletedMediaUrls || []
+      );
 
       return NextResponse.json({
         success: true,
@@ -213,7 +225,10 @@ export async function POST(req: Request) {
       createdAt: new Date().toISOString()
     };
 
-    const mediaLibrary = scanPublicMediaLibrary(db.customMedia || []);
+    const mediaLibrary = scanPublicMediaLibrary(
+      db.customMedia || [],
+      db.deletedMediaUrls || []
+    );
     await persistStoreDatabase(db);
 
     return NextResponse.json({

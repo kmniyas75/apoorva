@@ -1002,6 +1002,7 @@ export default function AdminPanel({
           action: "delete_media",
           assetId: asset.id,
           url: asset.url,
+          name: asset.name,
           diskPath: asset.diskPath
         })
       });
@@ -3480,17 +3481,14 @@ export default function AdminPanel({
                               <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/75 text-white font-mono text-[9px] uppercase font-bold">
                                 {asset.type}
                               </span>
-                              {!asset.url.startsWith("/images/") &&
-                                !asset.url.startsWith("/videos/") && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDeleteMediaAsset(asset)}
-                                    title="Permanently delete media file from storage"
-                                    className="absolute top-2 right-2 p-1.5 rounded-full bg-red-600/90 hover:bg-red-600 text-white shadow-sm transition-colors"
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </button>
-                                )}
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteMediaAsset(asset)}
+                                title="Permanently delete media file from Cloudinary & MongoDB"
+                                className="absolute top-2 right-2 p-1.5 rounded-full bg-red-600/90 hover:bg-red-600 text-white shadow-sm transition-colors"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
                               {asset.sizeKB ? (
                                 <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/75 text-amber-300 font-mono text-[9px]">
                                   {asset.sizeKB} KB

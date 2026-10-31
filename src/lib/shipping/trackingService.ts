@@ -1,4 +1,8 @@
 import { ShipmentTrackingRecord, TrackingMilestone } from "@/lib/types/checkout";
+import {
+  saveTrackingToMongoDB,
+  loadTrackingFromMongoDB
+} from "@/lib/db/mongodb";
 
 // Global tracking records cache across reloads
 const globalTracking = globalThis as unknown as {
@@ -146,12 +150,21 @@ export function generateTrackingData(
 export function saveTrackingRecord(record: ShipmentTrackingRecord): void {
   trackingStore.set(record.orderId, record);
   trackingStore.set(record.trackingNumber, record);
+  void saveTrackingToMongoDB(record);
 }
 
 export async function fetchTrackingInfo(query: string): Promise<ShipmentTrackingRecord> {
   const cleanKey = query.trim().toUpperCase();
 
-  // Check store first
+  // 1. Check MongoDB apoorva.tracking_records first
+  const mongoRecord = await loadTrackingFromMongoDB(cleanKey);
+  if (mongoRecord) {
+    trackingStore.set(mongoRecord.orderId, mongoRecord);
+    trackingStore.set(mongoRecord.trackingNumber, mongoRecord);
+    return mongoRecord;
+  }
+
+  // 2. Check in-memory store
   if (trackingStore.has(cleanKey)) {
     return trackingStore.get(cleanKey)!;
   }

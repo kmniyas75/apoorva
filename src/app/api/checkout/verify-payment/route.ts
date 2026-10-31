@@ -5,7 +5,11 @@ import {
   sendAdminOrderAlertEmail
 } from "@/lib/email/emailService";
 import { createShiprocketOrder } from "@/lib/shipping/shiprocket";
-import { recordOrderInStore } from "@/lib/store/adminStore";
+import {
+  ensureStoreDatabaseLoaded,
+  persistStoreDatabase,
+  recordOrderInStore
+} from "@/lib/store/adminStore";
 import { OrderRecord, CustomerDetails, OrderItemSummary, OrderPricing } from "@/lib/types/checkout";
 
 export async function POST(req: Request) {
@@ -122,8 +126,11 @@ export async function POST(req: Request) {
       }
     };
 
-    // Persist order into Admin Store
+    // Persist order into Admin Store & MongoDB
+    await ensureStoreDatabaseLoaded();
     recordOrderInStore(orderRecord);
+    const currentDb = await ensureStoreDatabaseLoaded();
+    await persistStoreDatabase(currentDb);
 
     // Trigger Email Notification System concurrently
     const [customerEmailResult, adminEmailResult] = await Promise.allSettled([

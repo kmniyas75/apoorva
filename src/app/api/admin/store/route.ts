@@ -28,7 +28,10 @@ import {
 export async function GET() {
   try {
     const db = await ensureStoreDatabaseLoaded();
-    const mediaLibrary = scanPublicMediaLibrary(db.customMedia || []);
+    const mediaLibrary = scanPublicMediaLibrary(
+      db.customMedia || [],
+      db.deletedMediaUrls || []
+    );
     const storagePaths = getStoragePathsInfo();
     return NextResponse.json({
       ...db,
@@ -50,7 +53,10 @@ export async function PUT(req: Request) {
     if (body.action === "reset") {
       const resetDb = resetStoreToDefaults();
       await persistStoreDatabase(resetDb);
-      const mediaLibrary = scanPublicMediaLibrary(resetDb.customMedia || []);
+      const mediaLibrary = scanPublicMediaLibrary(
+        resetDb.customMedia || [],
+        resetDb.deletedMediaUrls || []
+      );
       const storagePaths = getStoragePathsInfo();
       return NextResponse.json({
         success: true,
@@ -81,7 +87,10 @@ export async function PUT(req: Request) {
     }
 
     const saved = await persistStoreDatabase(db);
-    const mediaLibrary = scanPublicMediaLibrary(saved.customMedia || []);
+    const mediaLibrary = scanPublicMediaLibrary(
+      saved.customMedia || [],
+      saved.deletedMediaUrls || []
+    );
     const storagePaths = getStoragePathsInfo();
 
     return NextResponse.json({
@@ -252,8 +261,14 @@ export async function POST(req: Request) {
         createdAt: new Date().toISOString()
       };
       db.customMedia = [newAsset, ...(db.customMedia || [])];
+      db.deletedMediaUrls = (db.deletedMediaUrls || []).filter(
+        (u) => u !== newAsset.url && u !== newAsset.name
+      );
       await persistStoreDatabase(db);
-      const mediaLibrary = scanPublicMediaLibrary(db.customMedia);
+      const mediaLibrary = scanPublicMediaLibrary(
+        db.customMedia,
+        db.deletedMediaUrls || []
+      );
       return NextResponse.json({
         success: true,
         asset: newAsset,
@@ -262,26 +277,16 @@ export async function POST(req: Request) {
     }
 
     if (action === "delete_media") {
-      const { assetId, url, diskPath } = body as {
+      const { assetId, url, name, diskPath } = body as {
         assetId?: string;
         url: string;
+        name?: string;
         diskPath?: string;
       };
 
       if (!url) {
         return NextResponse.json(
           { error: "Media URL is required to delete" },
-          { status: 400 }
-        );
-      }
-
-      // Protect built-in factory default assets in /images/ and /videos/
-      if (url.startsWith("/images/") || url.startsWith("/videos/")) {
-        return NextResponse.json(
-          {
-            error:
-              "Built-in default storefront assets in /public/images and /public/videos are protected. Uploaded files in /public/uploads, OCI bucket files, and custom URLs can be deleted."
-          },
           { status: 400 }
         );
       }
@@ -302,7 +307,7 @@ export async function POST(req: Request) {
         }
       }
 
-      // 2. Delete from Vercel Blob, Cloudinary, Supabase Storage, or OCI Object Storage
+      // 2. Delete from Cloudinary, Vercel Blob, Supabase Storage, or OCI Object Storage
       if (url.includes(".vercel-storage.com")) {
         try {
           const removedBlob = await deleteFromVercelBlob(url);
@@ -310,7 +315,10 @@ export async function POST(req: Request) {
         } catch (blobErr) {
           console.warn("[AdminStore] Vercel Blob delete warning:", blobErr);
         }
-      } else if (url.includes("res.cloudinary.com")) {
+      } else if (
+        url.includes("res.cloudinary.com") ||
+        (diskPath && diskPath.startsWith("apoorva/"))
+      ) {
         try {
           const removedCloudinary = await deleteFromCloudinary(url, diskPath);
           if (removedCloudinary) deletedFromDiskOrCloud = true;
@@ -336,26 +344,40 @@ export async function POST(req: Request) {
         }
       }
 
-      // 3. Remove from db.customMedia
+      // 3. Remove from db.customMedia & record in deletedMediaUrls so it stays deleted
+      const fileBaseName = name || url.split("/").pop() || "";
       db.customMedia = (db.customMedia || []).filter(
-        (m) => m.url !== url && m.id !== assetId
+        (m) => m.url !== url && m.id !== assetId && m.name !== fileBaseName
       );
+      const nextDeleted = new Set(db.deletedMediaUrls || []);
+      nextDeleted.add(url);
+      if (fileBaseName) {
+        nextDeleted.add(fileBaseName);
+        nextDeleted.add(`/images/${fileBaseName}`);
+        nextDeleted.add(`/videos/${fileBaseName}`);
+      }
+      db.deletedMediaUrls = Array.from(nextDeleted);
 
       // 4. Clean up references in product galleries so there are no broken links
       db.products = db.products.map((prod) => ({
         ...prod,
-        gallery: (prod.gallery || []).filter((gUrl) => gUrl !== url)
+        gallery: (prod.gallery || []).filter(
+          (gUrl) => gUrl !== url && !gUrl.endsWith(`/${fileBaseName}`)
+        )
       }));
 
       await persistStoreDatabase(db);
-      const mediaLibrary = scanPublicMediaLibrary(db.customMedia);
+      const mediaLibrary = scanPublicMediaLibrary(
+        db.customMedia,
+        db.deletedMediaUrls
+      );
 
       return NextResponse.json({
         success: true,
         deletedFromDiskOrCloud,
         message: deletedFromDiskOrCloud
-          ? "Media file permanently deleted from storage and removed from library."
-          : "Media removed from library.",
+          ? `Deleted ${fileBaseName || "media"} from Cloudinary & MongoDB!`
+          : `Removed ${fileBaseName || "media"} from library & MongoDB!`,
         mediaLibrary,
         products: db.products
       });

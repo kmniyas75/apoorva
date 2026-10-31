@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { getStoreDatabase, saveStoreDatabase } from "@/lib/store/adminStore";
+import {
+  ensureStoreDatabaseLoaded,
+  persistStoreDatabase
+} from "@/lib/store/adminStore";
 
 const ADMIN_COOKIE_NAME = "apoorva_admin_session";
 const ADMIN_SESSION_VALUE = "apoorva_authenticated_session_v1";
@@ -27,7 +30,7 @@ export async function POST(req: Request) {
       newPassword?: string;
     };
 
-    const db = getStoreDatabase();
+    const db = await ensureStoreDatabaseLoaded();
     const expectedPassword =
       db.settings.adminPassword || process.env.ADMIN_PASSWORD || "apoorva2026";
 
@@ -49,7 +52,7 @@ export async function POST(req: Request) {
         );
       }
       db.settings.adminPassword = newPassword.trim();
-      saveStoreDatabase(db);
+      await persistStoreDatabase(db);
       return NextResponse.json({
         success: true,
         message: "Admin password updated successfully."

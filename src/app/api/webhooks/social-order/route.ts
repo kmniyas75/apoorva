@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import {
   getStoreDatabase,
-  saveStoreDatabase,
+  ensureStoreDatabaseLoaded,
+  persistStoreDatabase,
   recordOrderInStore,
   SocialAutomationEvent
 } from "@/lib/store/adminStore";
@@ -16,7 +17,7 @@ export async function GET(req: Request) {
   const token = searchParams.get("hub.verify_token");
   const challenge = searchParams.get("hub.challenge");
 
-  const db = getStoreDatabase();
+  const db = await ensureStoreDatabaseLoaded();
   const expectedToken =
     db.socialAutomation?.webhookVerifyToken || "apoorva_meta_verify_2026";
 
@@ -39,7 +40,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const db = getStoreDatabase();
+    const db = await ensureStoreDatabaseLoaded();
 
     const {
       channel = "whatsapp",
@@ -197,7 +198,7 @@ export async function POST(req: Request) {
 
     const updatedDb = getStoreDatabase();
     updatedDb.socialEvents = [socialEvent, ...(updatedDb.socialEvents || [])];
-    saveStoreDatabase(updatedDb);
+    await persistStoreDatabase(updatedDb);
 
     return NextResponse.json({
       success: true,
