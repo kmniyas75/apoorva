@@ -158,7 +158,7 @@ export function generateOrderConfirmationHtml(order: OrderRecord): string {
           <tr>
             <td style="background-color: #141414; padding: 24px 32px; text-align: center; color: #9c9589; font-size: 11px; font-family: monospace;">
               <div style="letter-spacing: 2px; color: #ffffff; margin-bottom: 6px;">APOORVA ATELIER &bull; INDIA</div>
-              <div>Bespoke Handcrafted Exotic Innerwear</div>
+              <div>Bespoke Handcrafted Coastal Resortwear</div>
               <div style="margin-top: 8px; color: #706a60;">© ${new Date().getFullYear()} APOORVA. All Rights Reserved.</div>
             </td>
           </tr>

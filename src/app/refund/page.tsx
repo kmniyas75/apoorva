@@ -47,11 +47,11 @@ export default function RefundPage() {
 
       <section className="space-y-2">
         <h2 className="text-sm sm:text-base font-black uppercase text-black">
-          3. Hygiene Guidelines for Intimate Beachwear
+          3. Quality &amp; Seal Guidelines for Coastal Resortwear
         </h2>
         <p>
-          For hygiene and safety reasons, worn, washed, or unsealed intimate
-          beachwear sets with broken hygiene tags cannot be returned unless the
+          To ensure artisanal quality, worn, washed, or unsealed coastal
+          resortwear sets with broken atelier tags cannot be returned unless the
           item arrived damaged or defective.
         </p>
       </section>

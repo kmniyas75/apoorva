@@ -192,7 +192,7 @@ export default function CartDrawer({
           <div className="flex-1 p-8 flex flex-col items-center justify-center text-center font-mono text-black/60">
             <p className="text-sm uppercase tracking-wider mb-3">Your bag is empty</p>
             <p className="text-xs text-black/40 max-w-xs mb-6">
-              Explore the APOORVA Exotic Atelier capsule and select your artisanal piece.
+              Explore the APOORVA Coastal Atelier capsule and select your artisanal piece.
             </p>
             <button
               onClick={onClose}

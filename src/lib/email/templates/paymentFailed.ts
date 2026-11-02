@@ -27,7 +27,7 @@ export function generatePaymentFailedHtml(
                 A P O O R V A
               </div>
               <div style="font-family: monospace; font-size: 10px; letter-spacing: 3px; color: #b89f80; text-transform: uppercase; margin-top: 6px;">
-                EXOTIC APPAREL ATELIER
+                COASTAL RESORTWEAR ATELIER
               </div>
             </td>
           </tr>
