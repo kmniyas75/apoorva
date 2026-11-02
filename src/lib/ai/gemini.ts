@@ -144,8 +144,8 @@ function buildConciergeFallback(
 
   // 2. Sales Agent: Collecting Delivery Address stage
   if (sys.includes("current stage: collecting delivery address")) {
-    const wantsBoth = sys.includes("both sets");
-    const wantsSet2 = sys.includes("set 02");
+    const wantsBoth = sys.includes("the customer wants both sets");
+    const wantsSet2 = sys.includes("the customer wants set 02");
     const productLabel = wantsBoth
       ? "**Complete 2-Set Bundle (Set 01 + Set 02 at ₹7,395 — 15% OFF)**"
       : wantsSet2
