@@ -30,15 +30,24 @@ function detectProductChoice(
   text: string
 ): "set1" | "set2" | "both" | undefined {
   const upper = text.toUpperCase();
+  const isPureComparisonInquiry =
+    /\b(TELL ME|EXPLAIN|DIFFERENCE|COMPARE|WHAT ARE|PRICES|DETAILS|ABOUT)\b/.test(
+      upper
+    ) && !/\b(BUY|ORDER|BOOK|WANT|TAKE|GET|CHOOSE|SELECT)\b/.test(upper);
+
   if (
     upper.includes("BOTH") ||
     upper.includes("BUNDLE") ||
-    upper.includes("ALL") ||
     upper.includes("2 SETS") ||
     upper.includes("TWO SETS") ||
-    (upper.includes("SET 1") && upper.includes("SET 2"))
+    (upper.includes("SET 1") &&
+      upper.includes("SET 2") &&
+      !isPureComparisonInquiry)
   ) {
     return "both";
+  }
+  if (isPureComparisonInquiry && upper.includes("SET 1") && upper.includes("SET 2")) {
+    return undefined;
   }
   if (
     upper.includes("SET 2") ||

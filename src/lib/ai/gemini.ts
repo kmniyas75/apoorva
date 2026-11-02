@@ -112,27 +112,155 @@ export async function generateGeminiReply(params: {
   } catch (err) {
     console.warn("[Gemini] Falling back to built-in concierge response:", err);
     return {
-      text: buildConciergeFallback(params.prompt),
+      text: buildConciergeFallback(
+        params.prompt,
+        params.systemInstruction,
+        params.history
+      ),
       model,
       fromFallback: true
     };
   }
 }
 
-function buildConciergeFallback(prompt: string): string {
-  const q = prompt.toLowerCase();
-  if (q.includes("size") || q.includes("cup") || q.includes("fit")) {
-    return "At our Aluva, Kerala atelier, every APOORVA coconut bra is lined with breathable organic cotton felt and comes in two anatomical cuts: **Style A (Shallow Oval Cap, 12–14 cm)** for a sleek, natural contour on A/B/C cups, and **Style B (Deep Coverage, 16–18 cm)** for fuller C/D+ support. Both feature adjustable hand-braided ties that fit XS to XL effortlessly.";
+function buildConciergeFallback(
+  prompt: string,
+  systemInstruction?: string,
+  history?: GeminiMessage[]
+): string {
+  const q = prompt.toLowerCase().trim();
+  const sys = (systemInstruction || "").toLowerCase();
+
+  // 1. Admin Copywriter mode
+  if (sys.includes("creative director")) {
+    if (q.includes("caption") || q.includes("instagram") || q.includes("reel")) {
+      return "✨ Hand-carved in Aluva, Kerala, worn on the world's finest shores — discover APOORVA's organic cotton-lined coconut shell & kinetic tender coir beachwear sets. Tap to claim yours with Free Express Air Delivery (`https://www.apoorvashells.com`). #ApoorvaShells #KeralaCraft #LuxuryResortwear";
+    }
+    if (q.includes("set 2") || q.includes("jute")) {
+      return "Sculpted from satin-polished Kerala coconut shells and paired with a breathable cotton-lined fine jute A-line wrap skirt — **Set 02 (₹4,500)** blends artisanal coastal heritage with effortless resort tailoring.";
+    }
+    return "Born in our Aluva, Kerala atelier, **APOORVA** transforms natural coconut shells, combed tender coir fringe, and fine-weave jute into biodegradable luxury beachwear — lined with 100% organic cotton felt for cloud-like resort comfort.";
   }
-  if (q.includes("jute") || q.includes("set 2") || q.includes("wrap")) {
-    return "**Set 02 — Coconut & Jute Wrap Beach Set (₹4,500)** pairs our satin-polished coconut shell halter bra with a structured, cotton-lined fine-weave jute A-line wrap skirt featuring a carved coconut ring buckle, 3 shell buttons, and a breezy 15 cm beach walk slit.";
+
+  // 2. Sales Agent: Collecting Delivery Address stage
+  if (sys.includes("current stage: collecting delivery address")) {
+    const wantsBoth = sys.includes("both sets");
+    const wantsSet2 = sys.includes("set 02");
+    const productLabel = wantsBoth
+      ? "**Complete 2-Set Bundle (Set 01 + Set 02 at ₹7,395 — 15% OFF)**"
+      : wantsSet2
+        ? "**Set 02: Coconut & Jute Wrap Beach Set (₹4,500)**"
+        : "**Set 01: Coconut & Coir Fringe Beach Set (₹4,200)**";
+
+    const sizeMatch =
+      q.includes("s/m") || q.includes("style a")
+        ? " in **S/M (Style A Cup)**"
+        : q.includes("m/l") || q.includes("style b")
+          ? " in **M/L (Style B Cup)**"
+          : q.includes("free size")
+            ? " in **FREE SIZE (Adjustable Tie)**"
+            : "";
+
+    const upgradeHint = wantsBoth
+      ? "You've unlocked our **15% Bundle Discount** plus Free Express Air Shipping!"
+      : "💡 *Tip: You can also grab **BOTH Set 01 + Set 02 together for ₹7,395** (Save 15% / ₹1,305 OFF)!*";
+
+    return (
+      `✨ Wonderful choice! I have noted your selection: ${productLabel}${sizeMatch}.\n\n` +
+      `${upgradeHint}\n\n` +
+      `📍 **To generate your instant 1-Click Razorpay Payment Link right here in chat, please reply with:**\n` +
+      `• Your **Full Delivery Address** (House/Villa/Flat, Street, City) & **6-digit PIN code**\n` +
+      `*(Example: "Villa 12, Beach Road, Kochi, Kerala 682001")*`
+    );
   }
-  if (q.includes("coir") || q.includes("set 1") || q.includes("fringe") || q.includes("hula")) {
-    return "**Set 01 — Coconut & Coir Fringe Beach Set (₹4,200)** features our signature cotton-lined coconut shell bra with wooden bead tassels and a kinetic combed Kerala tender coir fringe skirt that sways effortlessly during sunset walks and beach bonfire parties.";
+
+  // 3. Specific customer questions during Pitching stage
+  if (
+    (q.includes("set 1") && q.includes("set 2")) ||
+    q.includes("price") ||
+    q.includes("cost") ||
+    q.includes("how much") ||
+    q.includes("catalog") ||
+    q.includes("collection") ||
+    q.includes("both")
+  ) {
+    return (
+      `🌴 Welcome to **APOORVA Atelier (Aluva, Kerala)**! Here are our handcrafted, cotton-lined biodegradable resortwear sets:\n\n` +
+      `1️⃣ **Set 01 — Coconut & Coir Fringe Beach Set: ₹4,200**\n` +
+      `   • Satin-polished coconut shell halter bra + kinetic combed tender coir fringe skirt.\n` +
+      `2️⃣ **Set 02 — Coconut & Jute Wrap Beach Set: ₹4,500**\n` +
+      `   • Coconut shell bra + cotton-lined fine jute A-line wrap skirt with carved coconut buckle & 3 shell buttons.\n` +
+      `🎁 **2-Set Bundle (Set 01 + Set 02): ₹7,395** *(Save 15% / ₹1,305 OFF)*\n\n` +
+      `✨ **Sizes:** **S/M (Style A Cup)**, **M/L (Style B Cup)**, or **FREE SIZE (Adjustable Tie)**.\n` +
+      `Which set and cup size would you like to order? Reply with your choice + **Delivery Address & 6-digit PIN code** for an instant Razorpay payment link!`
+    );
   }
-  if (q.includes("ship") || q.includes("delivery") || q.includes("track")) {
-    return "All APOORVA orders ship with **Free Express Air Delivery** across India via Blue Dart / Delhivery in discreet luxury resort gift packaging (2–3 business days).";
+
+  if (q.includes("size") || q.includes("cup") || q.includes("fit") || q.includes("measurement")) {
+    return (
+      `👙 **APOORVA Sizing & Comfort Guide:**\n` +
+      `Every coconut shell cup is lined inside with breathable 2mm organic cotton felt and comes in two anatomical cuts:\n` +
+      `• **S/M — Style A (Shallow Oval Cap, 12–14 cm):** Sleek, contoured fit ideal for A/B/C cups (Waist 26"–34").\n` +
+      `• **M/L — Style B (Deep Coverage, 16–18 cm):** Fuller support for C/D+ cups (Waist 30"–38").\n` +
+      `• **FREE SIZE (Adjustable Tie):** Extended hand-braided cotton & coir ties fitting XS to XL effortlessly.\n\n` +
+      `Would you like to order **Set 01 (₹4,200)**, **Set 02 (₹4,500)**, or **Both Sets (₹7,395 — 15% OFF)**? Share your choice and **6-digit PIN code** to get your instant checkout link!`
+    );
   }
-  return "Namaskaram from the **APOORVA Aluva, Kerala Atelier**! We handcraft two signature biodegradable tropical beachwear sets:\n• **Set 01: Coconut & Coir Fringe Beach Set (₹4,200)** — Kinetic combed tender coir fringe skirt + cotton-lined coconut bra.\n• **Set 02: Coconut & Jute Wrap Beach Set (₹4,500)** — Cotton-lined fine jute wrap skirt with coconut buckle & 3 shell buttons.\n\nOrder both sets together for an instant **15% Bundle Discount** and Free Express Shipping!";
+
+  if (q.includes("jute") || q.includes("set 2") || q.includes("set 02") || q.includes("wrap")) {
+    return (
+      `✨ **Set 02 — Coconut & Jute Wrap Beach Set (₹4,500)**\n` +
+      `Pairs our virgin-coconut-oil polished shell halter bra with a structured, cotton-lined fine-weave jute A-line wrap skirt featuring a carved coconut ring buckle, 3 shell buttons, and a 15 cm beach walk slit.\n\n` +
+      `• Available in **S/M (Style A Cup)**, **M/L (Style B Cup)**, or **FREE SIZE**.\n` +
+      `• **Free 2–3 Day Express Air Shipping** across India.\n\n` +
+      `Reply with your preferred size and **Full Delivery Address + 6-digit PIN code** and I'll generate your 1-Click Razorpay Payment Link right here!`
+    );
+  }
+
+  if (q.includes("coir") || q.includes("set 1") || q.includes("set 01") || q.includes("fringe") || q.includes("hula")) {
+    return (
+      `🌊 **Set 01 — Coconut & Coir Fringe Beach Set (₹4,200)**\n` +
+      `Features our organic cotton-lined coconut shell bra with wooden bead tassels and a kinetic combed Kerala tender coir fringe skirt that sways naturally during sunset walks and resort pool parties.\n\n` +
+      `• Available in **S/M (Style A Cup)**, **M/L (Style B Cup)**, or **FREE SIZE**.\n` +
+      `• **Free 2–3 Day Express Air Shipping** across India.\n\n` +
+      `Reply with your preferred size and **Full Delivery Address + 6-digit PIN code** and I'll generate your 1-Click Razorpay Payment Link right here!`
+    );
+  }
+
+  if (q.includes("ship") || q.includes("delivery") || q.includes("track") || q.includes("days") || q.includes("cod")) {
+    return (
+      `🚚 **Shipping & Payment at APOORVA:**\n` +
+      `• **Free Express Air Shipping:** Dispatched from our Aluva, Kerala atelier via Blue Dart / Delhivery Air (2–3 business days to Goa, Mumbai, Bengaluru, Delhi, Chennai, Kochi & across India).\n` +
+      `• **1-Click Instant Checkout:** Pay securely via UPI (GPay, PhonePe, Paytm), Cards, or Netbanking.\n\n` +
+      `Tell me which set you'd like (**Set 01 ₹4,200**, **Set 02 ₹4,500**, or **Both ₹7,395**) along with your **Delivery Address + 6-digit PIN code** to reserve yours now!`
+    );
+  }
+
+  if (q.includes("water") || q.includes("swim") || q.includes("wash") || q.includes("care") || q.includes("material")) {
+    return (
+      `🥥 **100% Ocean & Resort Pool Ready:**\n` +
+      `Our coconut shells are triple-cured and sealed with cold-pressed Kerala virgin coconut oil so they naturally repel saltwater and chlorine. After wearing, simply rinse in fresh water, pat dry, and rub a drop of coconut oil on the exterior shell for a lifelong satin sheen.\n\n` +
+      `Which set caught your eye — **Set 01 (Coir Fringe, ₹4,200)**, **Set 02 (Jute Wrap, ₹4,500)**, or **Both Sets (₹7,395 with 15% OFF)**?`
+    );
+  }
+
+  const isFollowUp = (history?.length || 0) > 0;
+  if (isFollowUp) {
+    return (
+      `🌴 We would love to handcraft your APOORVA piece at our Aluva, Kerala atelier!\n` +
+      `• **Set 01: Coconut & Coir Fringe Beach Set** — ₹4,200\n` +
+      `• **Set 02: Coconut & Jute Wrap Beach Set** — ₹4,500\n` +
+      `• **2-Set Bundle (15% OFF)** — ₹7,395\n\n` +
+      `Simply reply with the set you'd like (**Set 1**, **Set 2**, or **Both**), your cup size (**S/M** or **M/L**), and your **Full Delivery Address + 6-digit PIN code** so I can send your 1-Click Razorpay Payment Link!`
+    );
+  }
+
+  return (
+    `Namaskaram from the **APOORVA Aluva, Kerala Atelier**! 🌴 We handcraft two signature biodegradable tropical beachwear sets:\n\n` +
+    `• **Set 01: Coconut & Coir Fringe Beach Set (₹4,200)** — Kinetic combed tender coir fringe skirt + cotton-lined coconut bra.\n` +
+    `• **Set 02: Coconut & Jute Wrap Beach Set (₹4,500)** — Cotton-lined fine jute wrap skirt with coconut buckle & 3 shell buttons.\n` +
+    `• **2-Set Bundle (₹7,395 — Save 15%)** + **Free Express Air Shipping**.\n\n` +
+    `Which set and size (**S/M** or **M/L**) would you like to order? Reply with your choice or share your **Delivery Address + 6-digit PIN code** for an instant Razorpay payment link!`
+  );
 }
 
