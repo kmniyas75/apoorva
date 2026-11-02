@@ -13,9 +13,10 @@ import {
   MapPin,
   Phone,
   User,
+  Mail,
   Zap,
   ArrowRight,
-  Edit3
+  Loader2
 } from "lucide-react";
 import ApoorvaLogo from "@/components/ApoorvaLogo";
 import { PRODUCTS, Product } from "@/data/products";
@@ -27,23 +28,33 @@ interface SelectedCartItem {
   quantity: number;
 }
 
+const SIZE_OPTIONS = [
+  "FREE SIZE (Adjustable Tie)",
+  "S/M (Style A Cup)",
+  "M/L (Style B Cup)"
+];
+
 function OrderPaymentContent() {
   const params = useParams<{ orderId: string }>();
   const searchParams = useSearchParams();
 
-  const rawOrderId = decodeURIComponent(params?.orderId || "APV-89421").toUpperCase();
+  const rawOrderId = decodeURIComponent(
+    params?.orderId || "APV-89421"
+  ).toUpperCase();
 
-  // Read instant URL prefill parameters so there is 0ms waiting time
+  // Read instant URL prefill parameters
   const paramSet = searchParams.get("set") || "set1";
   const paramSize = searchParams.get("size") || "FREE SIZE (Adjustable Tie)";
   const paramName = searchParams.get("name") || "";
+  const paramEmail = searchParams.get("email") || "";
   const paramPhone = searchParams.get("phone") || "";
   const paramAddr = searchParams.get("addr") || "";
-  const paramCity = searchParams.get("city") || "Kochi";
-  const paramState = searchParams.get("state") || "Kerala";
-  const paramPin = searchParams.get("pin") || "683101";
+  const paramCity = searchParams.get("city") || "";
+  const paramState = searchParams.get("state") || "";
+  const paramPin = searchParams.get("pin") || "";
 
   const [catalog, setCatalog] = useState<Product[]>(PRODUCTS);
+  const [selectedSize, setSelectedSize] = useState<string>(paramSize);
   const [items, setItems] = useState<SelectedCartItem[]>(() => {
     const p1 = PRODUCTS[0];
     const p2 = PRODUCTS[1] || PRODUCTS[0];
@@ -64,27 +75,42 @@ function OrderPaymentContent() {
   );
 
   const [customer, setCustomer] = useState<CustomerDetails>({
-    fullName: paramName || "Valued Guest",
-    email: "",
-    phone: paramPhone || "9847089421",
-    addressLine1: paramAddr || "Coastal Resort Delivery",
+    fullName:
+      paramName &&
+      !paramName.includes("Guest") &&
+      !paramName.includes("Client")
+        ? paramName
+        : "",
+    email: paramEmail && !paramEmail.includes("@social.") ? paramEmail : "",
+    phone: paramPhone || "",
+    addressLine1:
+      paramAddr && paramAddr !== "Pending Checkout Address" ? paramAddr : "",
     addressLine2: "",
-    city: paramCity,
-    state: paramState,
-    pincode: paramPin,
+    city: paramCity || "Kochi",
+    state: paramState || "Kerala",
+    pincode: paramPin || "",
     country: "India",
-    orderNotes: `WhatsApp Instant Payment Link (#${rawOrderId})`
+    orderNotes: `WhatsApp Express Checkout (#${rawOrderId})`
   });
 
-  const [isEditingAddress, setIsEditingAddress] = useState(false);
-  const [step, setStep] = useState<"ready" | "processing" | "success" | "failed">("ready");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [pincodeLoading, setPincodeLoading] = useState(false);
+  const [resolvedDeliveryInfo, setResolvedDeliveryInfo] = useState<
+    string | null
+  >(null);
+
+  const [step, setStep] = useState<
+    "ready" | "processing" | "success" | "failed"
+  >("ready");
   const [processingText, setProcessingText] = useState(
     "Connecting to Razorpay Secure Payment Gateway..."
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [confirmedOrder, setConfirmedOrder] = useState<OrderRecord | null>(null);
+  const [confirmedOrder, setConfirmedOrder] = useState<OrderRecord | null>(
+    null
+  );
 
-  // Also check MongoDB store in background in case user opened /pay/APV-XXXXX without query params
+  // Sync catalog & check if order already exists in MongoDB
   useEffect(() => {
     let active = true;
     fetch("/api/admin/store", { cache: "no-store" })
@@ -102,34 +128,59 @@ function OrderPaymentContent() {
             (o) => o.orderId.toUpperCase() === rawOrderId
           );
           if (matchedOrder) {
-            if (matchedOrder.status === "paid" || matchedOrder.status === "dispatched" || matchedOrder.status === "delivered") {
+            if (
+              matchedOrder.status === "paid" ||
+              matchedOrder.status === "dispatched" ||
+              matchedOrder.status === "delivered"
+            ) {
               setConfirmedOrder(matchedOrder);
               setStep("success");
               return;
             }
-            const mappedItems: SelectedCartItem[] = matchedOrder.items.map((it) => {
-              const prod =
-                loadedProducts.find((p) => p.id === it.productId) ||
-                loadedProducts[0];
-              return {
-                product: prod,
-                size: it.size || "FREE SIZE (Adjustable Tie)",
-                quantity: it.quantity || 1
-              };
-            });
+            const mappedItems: SelectedCartItem[] = matchedOrder.items.map(
+              (it) => {
+                const prod =
+                  loadedProducts.find((p) => p.id === it.productId) ||
+                  loadedProducts[0];
+                return {
+                  product: prod,
+                  size: it.size || "FREE SIZE (Adjustable Tie)",
+                  quantity: it.quantity || 1
+                };
+              }
+            );
             if (mappedItems.length > 0) {
               setItems(mappedItems);
+              setSelectedSize(mappedItems[0].size);
             }
             setDiscountPct(matchedOrder.pricing?.discountPercentage || 0);
             setCustomer((prev) => ({
               ...prev,
-              fullName: matchedOrder.customer?.fullName || prev.fullName,
-              email: matchedOrder.customer?.email || prev.email,
-              phone: matchedOrder.customer?.phone || prev.phone,
-              addressLine1: matchedOrder.customer?.addressLine1 || prev.addressLine1,
+              fullName:
+                prev.fullName ||
+                (matchedOrder.customer?.fullName &&
+                !matchedOrder.customer.fullName.includes("Guest") &&
+                !matchedOrder.customer.fullName.includes("Client")
+                  ? matchedOrder.customer.fullName
+                  : ""),
+              email:
+                prev.email ||
+                (matchedOrder.customer?.email &&
+                !matchedOrder.customer.email.includes("@social.")
+                  ? matchedOrder.customer.email
+                  : ""),
+              phone: prev.phone || matchedOrder.customer?.phone || "",
+              addressLine1:
+                prev.addressLine1 ||
+                (matchedOrder.customer?.addressLine1 &&
+                matchedOrder.customer.addressLine1 !==
+                  "Pending Checkout Address" &&
+                matchedOrder.customer.addressLine1 !== "Coastal Resort Delivery"
+                  ? matchedOrder.customer.addressLine1
+                  : ""),
               city: matchedOrder.customer?.city || prev.city,
               state: matchedOrder.customer?.state || prev.state,
-              pincode: matchedOrder.customer?.pincode || prev.pincode
+              pincode: prev.pincode || matchedOrder.customer?.pincode || ""
             }));
           }
         }
@@ -140,6 +191,52 @@ function OrderPaymentContent() {
     };
   }, [rawOrderId]);
 
+  // Live PIN code lookup -> Auto-detect City, State & Express Courier ETA
+  useEffect(() => {
+    const pin = customer.pincode.replace(/\D/g, "");
+    if (pin.length === 6) {
+      setPincodeLoading(true);
+      fetch(`/api/shipping/pincode?pincode=${pin}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            setCustomer((prev) => ({
+              ...prev,
+              city: data.city,
+              state: data.state
+            }));
+            setResolvedDeliveryInfo(
+              `Free Express Air Delivery by ${data.estimatedDelivery} to ${data.city}, ${data.state} (${data.courier})`
+            );
+          }
+        })
+        .catch(() => {})
+        .finally(() => setPincodeLoading(false));
+    } else {
+      setResolvedDeliveryInfo(null);
+    }
+  }, [customer.pincode]);
+
+  const handleSizeChange = (newSize: string) => {
+    setSelectedSize(newSize);
+    setItems((prev) => prev.map((it) => ({ ...it, size: newSize })));
+  };
+
+  const handleFieldChange = (
+    field: keyof CustomerDetails,
+    value: string
+  ) => {
+    setCustomer((prev) => ({ ...prev, [field]: value }));
+    if (fieldErrors[field]) {
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+    if (errorMessage) setErrorMessage(null);
+  };
+
   const rawSubtotal = items.reduce(
     (sum, i) => sum + i.product.price * i.quantity,
     0
@@ -147,20 +244,51 @@ function OrderPaymentContent() {
   const discountAmount = Math.round((rawSubtotal * discountPct) / 100);
   const total = Math.max(0, rawSubtotal - discountAmount);
 
-  const handlePayNow = async () => {
+  const handlePayNow = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (step === "processing") return;
 
-    if (!customer.fullName.trim() || !customer.addressLine1.trim() || !/^\d{6}$/.test(customer.pincode.trim())) {
-      setIsEditingAddress(true);
-      setErrorMessage("Please verify your Name, Delivery Address, and 6-digit PIN code.");
+    // Validate all required fields before initiating payment
+    const errors: Record<string, string> = {};
+    if (customer.fullName.trim().length < 2) {
+      errors.fullName = "Please enter your full name.";
+    }
+    const emailClean = customer.email.trim();
+    if (!emailClean || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailClean)) {
+      errors.email = "Please enter a valid email ID for your order receipt & tracking.";
+    }
+    const phoneDigits = customer.phone.replace(/\D/g, "");
+    if (phoneDigits.length < 10) {
+      errors.phone = "Please enter a valid 10-digit WhatsApp / mobile number.";
+    }
+    const pinClean = customer.pincode.trim();
+    if (!/^[1-8]\d{5}$/.test(pinClean)) {
+      errors.pincode = "Please enter a valid 6-digit Indian PIN code.";
+    }
+    if (customer.addressLine1.trim().length < 5) {
+      errors.addressLine1 = "Please enter your House/Flat name, Street & Area.";
+    }
+    if (customer.city.trim().length < 2) {
+      errors.city = "Please enter your city.";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setErrorMessage(
+        "Please complete the highlighted delivery details below before paying."
+      );
       return;
     }
 
     const finalCustomer: CustomerDetails = {
       ...customer,
-      email:
-        customer.email.trim() ||
-        `${customer.phone.replace(/\D/g, "").slice(-10) || "guest"}@apoorvashells.com`
+      fullName: customer.fullName.trim(),
+      email: emailClean,
+      phone: phoneDigits.slice(-10),
+      addressLine1: customer.addressLine1.trim(),
+      city: customer.city.trim(),
+      state: customer.state.trim() || "Kerala",
+      pincode: pinClean
     };
 
     setErrorMessage(null);
@@ -214,7 +342,9 @@ function OrderPaymentContent() {
             color: "#141414"
           },
           handler: async (response) => {
-            setProcessingText("Verifying payment & activating Blue Dart Air tracking...");
+            setProcessingText(
+              "Verifying payment & sending WhatsApp + Email confirmation..."
+            );
             const verifyRes = await fetch("/api/checkout/verify-payment", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -232,7 +362,9 @@ function OrderPaymentContent() {
             });
             const verifyResult = await verifyRes.json();
             if (!verifyRes.ok) {
-              setErrorMessage(verifyResult.error || "Payment verification failed");
+              setErrorMessage(
+                verifyResult.error || "Payment verification failed"
+              );
               setStep("failed");
               return;
             }
@@ -250,7 +382,9 @@ function OrderPaymentContent() {
       }
 
       // Instant Gateway Verification
-      setProcessingText("Confirming Razorpay payment & assigning Blue Dart Air AWB...");
+      setProcessingText(
+        "Confirming payment & sending WhatsApp + Email receipt..."
+      );
       await new Promise((r) => setTimeout(r, 700));
 
       const mockPaymentId = `pay_rzp_${Date.now()}_${Math.random()
@@ -290,16 +424,16 @@ function OrderPaymentContent() {
   };
 
   return (
-    <main className="min-h-screen bg-[#faf8f5] text-[#141414] flex flex-col justify-between py-6 px-4 sm:px-6 font-mono">
+    <main className="min-h-screen bg-[#faf8f5] text-[#141414] flex flex-col justify-between py-5 px-3.5 sm:px-6 font-mono">
       <div className="max-w-lg w-full mx-auto space-y-4">
         {/* Top Brand & Verified SSL Strip */}
-        <div className="flex items-center justify-between bg-white px-4 py-3.5 rounded-2xl border border-black/10 shadow-xs">
+        <div className="flex items-center justify-between bg-white px-4 py-3 rounded-2xl border border-black/10 shadow-xs">
           <Link href="/" className="shrink-0">
             <ApoorvaLogo size="sm" showTagline={true} />
           </Link>
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-300 text-emerald-900 text-[10px] font-bold uppercase tracking-wider shrink-0">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-            <span>Razorpay Link</span>
+            <span>Verified Checkout</span>
           </div>
         </div>
 
@@ -308,10 +442,10 @@ function OrderPaymentContent() {
           {/* Dark Banner Header */}
           <div className="bg-[#141414] text-[#faf8f5] px-5 py-4 flex items-center justify-between">
             <div>
-              <div className="text-[10px] uppercase tracking-[0.2em] text-amber-400 font-bold">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-amber-400 font-bold">
                 {step === "success"
-                  ? "PAYMENT COMPLETED"
-                  : "1-CLICK WHATSAPP ORDER CHECKOUT"}
+                  ? "ORDER CONFIRMED & PAID"
+                  : "EXPRESS CHECKOUT & PAYMENT"}
               </div>
               <h1 className="text-base sm:text-lg font-black tracking-wider uppercase mt-0.5">
                 ORDER #{rawOrderId}
@@ -327,21 +461,14 @@ function OrderPaymentContent() {
             </div>
           </div>
 
-          <div className="p-5 space-y-5">
+          <div className="p-4 sm:p-5">
             {step === "ready" || step === "failed" ? (
-              <>
-                {errorMessage && (
-                  <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-900 text-xs flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
-                    <span>{errorMessage}</span>
-                  </div>
-                )}
-
-                {/* Reserved Items Summary */}
+              <form onSubmit={handlePayNow} className="space-y-4" noValidate>
+                {/* 1. Selected Product & Fit Card */}
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-black/60">
-                      Selected Handcrafted Set(s)
+                    <span className="text-[10px] font-black uppercase tracking-wider text-black/70">
+                      1. YOUR SELECTED SET
                     </span>
                     <div className="flex gap-1.5">
                       {catalog.slice(0, 2).map((p, idx) => (
@@ -352,13 +479,13 @@ function OrderPaymentContent() {
                             setItems([
                               {
                                 product: p,
-                                size: items[0]?.size || "FREE SIZE (Adjustable Tie)",
+                                size: selectedSize,
                                 quantity: 1
                               }
                             ]);
                             setDiscountPct(0);
                           }}
-                          className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase border transition-colors ${
+                          className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase border transition-colors ${
                             items.length === 1 && items[0].product.id === p.id
                               ? "bg-black text-white border-black"
                               : "bg-neutral-100 text-black/70 border-black/10"
@@ -374,18 +501,18 @@ function OrderPaymentContent() {
                             setItems([
                               {
                                 product: catalog[0],
-                                size: items[0]?.size || "FREE SIZE (Adjustable Tie)",
+                                size: selectedSize,
                                 quantity: 1
                               },
                               {
                                 product: catalog[1],
-                                size: items[0]?.size || "FREE SIZE (Adjustable Tie)",
+                                size: selectedSize,
                                 quantity: 1
                               }
                             ]);
                             setDiscountPct(15);
                           }}
-                          className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase border transition-colors ${
+                          className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase border transition-colors ${
                             items.length >= 2
                               ? "bg-amber-900 text-white border-amber-950"
                               : "bg-amber-50 text-amber-950 border-amber-300"
@@ -400,7 +527,7 @@ function OrderPaymentContent() {
                   {items.map((item, idx) => (
                     <div
                       key={`${item.product.id}-${idx}`}
-                      className="flex items-center gap-3.5 p-3 rounded-2xl bg-[#faf8f5] border border-black/10"
+                      className="flex items-center gap-3 p-3 rounded-2xl bg-[#faf8f5] border border-black/10"
                     >
                       <div className="w-16 h-16 rounded-xl bg-white border border-black/10 overflow-hidden shrink-0 flex items-center justify-center">
                         <Image
@@ -420,7 +547,7 @@ function OrderPaymentContent() {
                           Fit: {item.size}
                         </div>
                         <div className="text-[10px] text-emerald-800 font-bold uppercase mt-0.5">
-                          ✓ In Stock • Free Express Air Delivery
+                          ✓ Free Express Air Shipping
                         </div>
                       </div>
                       <div className="text-right shrink-0">
@@ -431,6 +558,27 @@ function OrderPaymentContent() {
                     </div>
                   ))}
 
+                  {/* Quick Size Switcher Pills */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                    <span className="text-[9px] font-bold uppercase text-black/55 mr-1">
+                      Size:
+                    </span>
+                    {SIZE_OPTIONS.map((sz) => (
+                      <button
+                        key={sz}
+                        type="button"
+                        onClick={() => handleSizeChange(sz)}
+                        className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase border transition-all ${
+                          selectedSize === sz
+                            ? "bg-[#141414] text-white border-[#141414]"
+                            : "bg-white text-black/70 border-black/15 hover:border-black/40"
+                        }`}
+                      >
+                        {sz}
+                      </button>
+                    ))}
+                  </div>
+
                   {discountAmount > 0 && (
                     <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-950 text-xs font-bold">
                       <span>🎁 2-Set Bundle Discount (15% OFF)</span>
@@ -439,126 +587,244 @@ function OrderPaymentContent() {
                   )}
                 </div>
 
-                {/* Verified Delivery Details Card */}
-                <div className="rounded-2xl border border-black/15 bg-neutral-50/70 p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-black/75 flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-amber-800" />
-                      Delivery Parcel Details
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setIsEditingAddress(!isEditingAddress)}
-                      className="text-[10px] font-bold text-amber-900 hover:underline flex items-center gap-1"
+                {errorMessage && (
+                  <div
+                    role="alert"
+                    className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-900 text-xs flex items-center gap-2 font-bold"
+                  >
+                    <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                    <span>{errorMessage}</span>
+                  </div>
+                )}
+
+                {/* 2. Delivery & Contact Form (With Browser Autofill) */}
+                <fieldset className="rounded-2xl border border-black/15 bg-neutral-50/70 p-3.5 sm:p-4 space-y-3">
+                  <legend className="text-[10px] font-black uppercase tracking-wider text-black/80 px-1.5 flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-amber-800" />
+                    2. DELIVERY &amp; CONTACT DETAILS
+                  </legend>
+
+                  {/* Full Name */}
+                  <div>
+                    <label
+                      htmlFor="pay-fullname"
+                      className="block text-[10px] font-bold uppercase text-black/75 mb-1"
                     >
-                      <Edit3 className="w-3 h-3" />
-                      <span>{isEditingAddress ? "Done" : "Edit"}</span>
-                    </button>
+                      Full Name *
+                    </label>
+                    <div className="relative">
+                      <User className="w-3.5 h-3.5 text-black/40 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        id="pay-fullname"
+                        type="text"
+                        name="name"
+                        autoComplete="name"
+                        enterKeyHint="next"
+                        required
+                        placeholder="e.g. Niyas KM"
+                        value={customer.fullName}
+                        onChange={(e) =>
+                          handleFieldChange("fullName", e.target.value)
+                        }
+                        className={`w-full bg-white border ${
+                          fieldErrors.fullName
+                            ? "border-red-500"
+                            : "border-black/20"
+                        } rounded-xl pl-8 pr-3 py-2.5 text-xs sm:text-sm font-bold focus:outline-none focus:border-black`}
+                      />
+                    </div>
+                    {fieldErrors.fullName && (
+                      <p className="text-[10px] text-red-600 font-bold mt-1">
+                        {fieldErrors.fullName}
+                      </p>
+                    )}
                   </div>
 
-                  {!isEditingAddress ? (
-                    <div className="space-y-1.5 text-xs text-black/85">
-                      <div className="flex items-center gap-2 font-bold text-black">
-                        <User className="w-3.5 h-3.5 text-black/50 shrink-0" />
-                        <span>{customer.fullName}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-black/75">
-                        <Phone className="w-3.5 h-3.5 text-black/50 shrink-0" />
-                        <span>+91 {customer.phone.replace(/\D/g, "").slice(-10)}</span>
-                      </div>
-                      <div className="flex items-start gap-2 text-black/80 pt-0.5">
-                        <MapPin className="w-3.5 h-3.5 text-black/50 shrink-0 mt-0.5" />
-                        <span>
-                          {customer.addressLine1}, {customer.city}, {customer.state} —{" "}
-                          <strong className="text-black">PIN {customer.pincode}</strong>
-                        </span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-2.5 text-xs pt-1">
-                      <div>
-                        <label className="block text-[10px] font-bold uppercase text-black/70 mb-1">
-                          Full Name *
-                        </label>
+                  {/* Email & Phone Row */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label
+                        htmlFor="pay-email"
+                        className="block text-[10px] font-bold uppercase text-black/75 mb-1"
+                      >
+                        Email ID (For Receipt &amp; Tracking) *
+                      </label>
+                      <div className="relative">
+                        <Mail className="w-3.5 h-3.5 text-black/40 absolute left-3 top-1/2 -translate-y-1/2" />
                         <input
-                          type="text"
-                          value={customer.fullName}
-                          onChange={(e) =>
-                            setCustomer((p) => ({ ...p, fullName: e.target.value }))
-                          }
-                          className="w-full bg-white border border-black/20 rounded-xl px-3 py-2 text-xs font-bold"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="block text-[10px] font-bold uppercase text-black/70 mb-1">
-                            Phone Number *
-                          </label>
-                          <input
-                            type="tel"
-                            value={customer.phone}
-                            onChange={(e) =>
-                              setCustomer((p) => ({ ...p, phone: e.target.value }))
-                            }
-                            className="w-full bg-white border border-black/20 rounded-xl px-3 py-2 text-xs"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-bold uppercase text-black/70 mb-1">
-                            6-Digit PIN Code *
-                          </label>
-                          <input
-                            type="text"
-                            maxLength={6}
-                            value={customer.pincode}
-                            onChange={(e) =>
-                              setCustomer((p) => ({
-                                ...p,
-                                pincode: e.target.value.replace(/\D/g, "").slice(0, 6)
-                              }))
-                            }
-                            className="w-full bg-white border border-black/20 rounded-xl px-3 py-2 text-xs font-bold"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold uppercase text-black/70 mb-1">
-                          House / Street / City Address *
-                        </label>
-                        <input
-                          type="text"
-                          value={customer.addressLine1}
-                          onChange={(e) =>
-                            setCustomer((p) => ({
-                              ...p,
-                              addressLine1: e.target.value
-                            }))
-                          }
-                          className="w-full bg-white border border-black/20 rounded-xl px-3 py-2 text-xs"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold uppercase text-black/70 mb-1">
-                          Email (Optional — for Tax Invoice)
-                        </label>
-                        <input
+                          id="pay-email"
                           type="email"
-                          placeholder="you@example.com"
+                          name="email"
+                          autoComplete="email"
+                          enterKeyHint="next"
+                          required
+                          placeholder="you@gmail.com"
                           value={customer.email}
                           onChange={(e) =>
-                            setCustomer((p) => ({ ...p, email: e.target.value }))
+                            handleFieldChange("email", e.target.value)
                           }
-                          className="w-full bg-white border border-black/20 rounded-xl px-3 py-2 text-xs"
+                          className={`w-full bg-white border ${
+                            fieldErrors.email
+                              ? "border-red-500"
+                              : "border-black/20"
+                          } rounded-xl pl-8 pr-3 py-2.5 text-xs sm:text-sm focus:outline-none focus:border-black`}
                         />
                       </div>
+                      {fieldErrors.email && (
+                        <p className="text-[10px] text-red-600 font-bold mt-1">
+                          {fieldErrors.email}
+                        </p>
+                      )}
                     </div>
+
+                    <div>
+                      <label
+                        htmlFor="pay-phone"
+                        className="block text-[10px] font-bold uppercase text-black/75 mb-1"
+                      >
+                        WhatsApp / Mobile Number *
+                      </label>
+                      <div className="relative">
+                        <Phone className="w-3.5 h-3.5 text-black/40 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          id="pay-phone"
+                          type="tel"
+                          name="phone"
+                          inputMode="tel"
+                          autoComplete="tel"
+                          enterKeyHint="next"
+                          required
+                          placeholder="98470 12345"
+                          value={customer.phone}
+                          onChange={(e) =>
+                            handleFieldChange("phone", e.target.value)
+                          }
+                          className={`w-full bg-white border ${
+                            fieldErrors.phone
+                              ? "border-red-500"
+                              : "border-black/20"
+                          } rounded-xl pl-8 pr-3 py-2.5 text-xs sm:text-sm font-bold focus:outline-none focus:border-black`}
+                        />
+                      </div>
+                      {fieldErrors.phone && (
+                        <p className="text-[10px] text-red-600 font-bold mt-1">
+                          {fieldErrors.phone}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* PIN Code & City/State Row */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label
+                          htmlFor="pay-pincode"
+                          className="block text-[10px] font-bold uppercase text-black/75"
+                        >
+                          6-Digit PIN Code *
+                        </label>
+                        {pincodeLoading && (
+                          <Loader2 className="w-3 h-3 animate-spin text-amber-800" />
+                        )}
+                      </div>
+                      <input
+                        id="pay-pincode"
+                        type="text"
+                        name="postal-code"
+                        inputMode="numeric"
+                        maxLength={6}
+                        autoComplete="postal-code"
+                        enterKeyHint="next"
+                        required
+                        placeholder="683101"
+                        value={customer.pincode}
+                        onChange={(e) =>
+                          handleFieldChange(
+                            "pincode",
+                            e.target.value.replace(/\D/g, "").slice(0, 6)
+                          )
+                        }
+                        className={`w-full bg-white border ${
+                          fieldErrors.pincode
+                            ? "border-red-500"
+                            : "border-black/20"
+                        } rounded-xl px-3 py-2.5 text-xs sm:text-sm font-black tracking-wider focus:outline-none focus:border-black`}
+                      />
+                      {fieldErrors.pincode && (
+                        <p className="text-[10px] text-red-600 font-bold mt-1">
+                          {fieldErrors.pincode}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="pay-city"
+                        className="block text-[10px] font-bold uppercase text-black/75 mb-1"
+                      >
+                        City &amp; State *
+                      </label>
+                      <input
+                        id="pay-city"
+                        type="text"
+                        name="address-level2"
+                        autoComplete="address-level2"
+                        enterKeyHint="next"
+                        required
+                        placeholder="Kochi, Kerala"
+                        value={customer.city}
+                        onChange={(e) =>
+                          handleFieldChange("city", e.target.value)
+                        }
+                        className="w-full bg-white border border-black/20 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-bold focus:outline-none focus:border-black"
+                      />
+                    </div>
+                  </div>
+
+                  {resolvedDeliveryInfo && (
+                    <p className="text-[10px] text-emerald-800 font-bold flex items-center gap-1 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200">
+                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                      <span>{resolvedDeliveryInfo}</span>
+                    </p>
                   )}
-                </div>
+
+                  {/* Full Street / House Address */}
+                  <div>
+                    <label
+                      htmlFor="pay-address"
+                      className="block text-[10px] font-bold uppercase text-black/75 mb-1"
+                    >
+                      House / Flat Name, Street &amp; Area *
+                    </label>
+                    <textarea
+                      id="pay-address"
+                      name="street-address"
+                      rows={2}
+                      autoComplete="street-address"
+                      required
+                      placeholder="e.g. Kizhakkan House, Palace Road, Near Metro Station"
+                      value={customer.addressLine1}
+                      onChange={(e) =>
+                        handleFieldChange("addressLine1", e.target.value)
+                      }
+                      className={`w-full bg-white border ${
+                        fieldErrors.addressLine1
+                          ? "border-red-500"
+                          : "border-black/20"
+                      } rounded-xl px-3 py-2 text-xs sm:text-sm focus:outline-none focus:border-black`}
+                    />
+                    {fieldErrors.addressLine1 && (
+                      <p className="text-[10px] text-red-600 font-bold mt-1">
+                        {fieldErrors.addressLine1}
+                      </p>
+                    )}
+                  </div>
+                </fieldset>
 
                 {/* Primary 1-Click Pay Button */}
                 <button
-                  type="button"
-                  onClick={handlePayNow}
+                  type="submit"
                   className="w-full py-4 px-5 rounded-full bg-amber-500 hover:bg-amber-400 active:scale-[0.99] text-black font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer"
                 >
                   <Zap className="w-4 h-4 fill-black shrink-0" />
@@ -570,10 +836,11 @@ function OrderPaymentContent() {
                 <div className="flex items-center justify-center gap-2 text-[10px] text-black/60 text-center">
                   <Lock className="w-3 h-3 text-emerald-700 shrink-0" />
                   <span>
-                    256-Bit Encrypted Razorpay Checkout • Instant WhatsApp &amp; Email Receipt
+                    100% Secure Razorpay Checkout • Instant WhatsApp &amp; Email
+                    Receipt
                   </span>
                 </div>
-              </>
+              </form>
             ) : step === "processing" ? (
               <div className="py-12 flex flex-col items-center justify-center text-center space-y-4">
                 <div className="relative">
@@ -584,7 +851,8 @@ function OrderPaymentContent() {
                   {processingText}
                 </div>
                 <p className="text-[11px] text-black/60 max-w-xs">
-                  Please do not close this window while we confirm your payment...
+                  Please do not close this window while we confirm your
+                  payment...
                 </p>
               </div>
             ) : (
@@ -598,12 +866,17 @@ function OrderPaymentContent() {
                     Payment Verified • Prepaid
                   </span>
                   <h2 className="text-base sm:text-lg font-black uppercase">
-                    Thank You, {confirmedOrder?.customer.fullName || customer.fullName}!
+                    Thank You,{" "}
+                    {confirmedOrder?.customer.fullName || customer.fullName}!
                   </h2>
                   <p className="text-xs text-black/70 max-w-sm">
                     Your handcrafted <strong>APOORVA SHELLS</strong> order{" "}
-                    <strong>#{confirmedOrder?.orderId || rawOrderId}</strong> is confirmed
-                    and queued for dispatch from our Aluva, Kerala Atelier.
+                    <strong>#{confirmedOrder?.orderId || rawOrderId}</strong> is
+                    confirmed! We have sent your receipt &amp; tracking link to{" "}
+                    <strong>
+                      {confirmedOrder?.customer.email || customer.email}
+                    </strong>{" "}
+                    and your WhatsApp.
                   </p>
                 </div>
 
@@ -617,19 +890,32 @@ function OrderPaymentContent() {
                   <div className="flex justify-between">
                     <span className="text-black/60">Amount Paid:</span>
                     <span className="font-black text-emerald-800">
-                      ₹{(confirmedOrder?.pricing.total || total).toLocaleString("en-IN")}
+                      ₹
+                      {(
+                        confirmedOrder?.pricing.total || total
+                      ).toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-black/60">Deliver To:</span>
+                    <span className="font-bold text-right max-w-[220px] truncate">
+                      {confirmedOrder?.customer.addressLine1 ||
+                        customer.addressLine1}
+                      , {confirmedOrder?.customer.pincode || customer.pincode}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-black/60">Express Courier:</span>
                     <span className="font-bold">
-                      {confirmedOrder?.shipping?.courierName || "Blue Dart Express (Air)"}
+                      {confirmedOrder?.shipping?.courierName ||
+                        "Blue Dart Express (Air)"}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-black/60">AWB Tracking #:</span>
                     <span className="font-black text-amber-900">
-                      {confirmedOrder?.shipping?.trackingNumber || "BD-88492019IN"}
+                      {confirmedOrder?.shipping?.trackingNumber ||
+                        "BD-88492019IN"}
                     </span>
                   </div>
                 </div>
@@ -670,7 +956,7 @@ export default function OrderPaymentPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-[#faf8f5] flex items-center justify-center p-6 font-mono text-xs font-bold uppercase tracking-widest">
-          Loading APOORVA SHELLS Secure Payment Link...
+          Loading APOORVA SHELLS Express Checkout...
         </div>
       }
     >
