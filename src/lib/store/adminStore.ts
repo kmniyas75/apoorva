@@ -144,7 +144,7 @@ const DEFAULT_SETTINGS: StoreSettings = {
   enableUpi: true,
   freeShipping: true,
   supportEmail: "concierge@apoorva.luxury",
-  supportPhone: "+91 98470 89421",
+  supportPhone: "+91 73064 09010",
   orbitSpeedMultiplier: 1,
   orbitRadiusMultiplier: 1,
   adminPassword: process.env.ADMIN_PASSWORD || "apoorva2026"
@@ -152,8 +152,8 @@ const DEFAULT_SETTINGS: StoreSettings = {
 
 const DEFAULT_SOCIAL_CONFIG: SocialAutomationConfig = {
   whatsappEnabled: true,
-  whatsappBusinessNumber: "+1 (555) 649-2993",
-  whatsappPhoneId: "1388810254321373",
+  whatsappBusinessNumber: "+91 73064 09010",
+  whatsappPhoneId: "1332497489956818",
   whatsappAutoConfirmCod: false,
   whatsappWelcomeTemplate:
     "Namaskaram from APOORVA Coastal Beachwear (Aluva, Kerala) 🌴! Reply with:\n1️⃣ 'SET 1' for Coconut & Coir Fringe Beach Set (₹{{price_set1}})\n2️⃣ 'SET 2' for Coconut & Jute Wrap Beach Set (₹{{price_set2}})\n3️⃣ 'BOTH' for the 2-Set Bundle (Save {{discount}}% • ₹{{price_bundle}})\nInclude your Name, Address & 6-digit PIN code to receive your instant Razorpay payment link!",

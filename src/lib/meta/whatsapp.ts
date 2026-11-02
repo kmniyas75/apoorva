@@ -14,13 +14,13 @@ export function getMetaWhatsAppConfig() {
     Buffer.from(DEFAULT_META_TOKEN_B64, "base64").toString("utf8");
 
   const phoneNumberId =
-    cleanEnv(process.env.WHATSAPP_PHONE_NUMBER_ID) || "1388810254321373";
+    cleanEnv(process.env.WHATSAPP_PHONE_NUMBER_ID) || "1332497489956818";
 
   const wabaId =
-    cleanEnv(process.env.WHATSAPP_WABA_ID) || "1148169414230154";
+    cleanEnv(process.env.WHATSAPP_WABA_ID) || "1978745913089125";
 
   const testNumber =
-    cleanEnv(process.env.WHATSAPP_TEST_NUMBER) || "+1 (555) 649-2993";
+    cleanEnv(process.env.WHATSAPP_TEST_NUMBER) || "+91 73064 09010";
 
   const graphVersion = cleanEnv(process.env.META_GRAPH_VERSION) || "v25.0";
 
