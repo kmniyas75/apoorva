@@ -14,6 +14,7 @@ import {
 } from "@/lib/store/adminStore";
 import { OrderRecord } from "@/lib/types/checkout";
 import { sendShippingDispatchEmail } from "@/lib/email/emailService";
+import { sendWhatsAppShippingNotification } from "@/lib/meta/whatsapp";
 import {
   generateTrackingData,
   saveTrackingRecord
@@ -209,6 +210,19 @@ export async function POST(req: Request) {
       }
       saveTrackingRecord(trackRec);
 
+      let whatsappResult: { sent: boolean; messageId?: string; error?: string } | undefined;
+      if (updatedOrder.customer?.phone) {
+        whatsappResult = await sendWhatsAppShippingNotification({
+          phone: updatedOrder.customer.phone,
+          customerName: updatedOrder.customer.fullName || "Valued Guest",
+          orderId: updatedOrder.orderId,
+          status: updatedOrder.status,
+          courierName: updatedShipping.courierName,
+          trackingNumber: updatedShipping.trackingNumber,
+          trackingUrl: updatedShipping.trackingUrl
+        });
+      }
+
       if (sendDispatchEmail && updatedOrder.customer?.email) {
         await sendShippingDispatchEmail({
           order: updatedOrder,
@@ -221,9 +235,10 @@ export async function POST(req: Request) {
       return NextResponse.json({
         success: true,
         message: sendDispatchEmail
-          ? `Order ${orderId} updated & dispatch email sent to ${updatedOrder.customer.email}`
-          : `Order ${orderId} updated successfully.`,
+          ? `Order ${orderId} updated & notifications sent via WhatsApp + Email!`
+          : `Order ${orderId} updated & WhatsApp notification sent to ${updatedOrder.customer.phone || "customer"}!`,
         order: updatedOrder,
+        whatsappNotification: whatsappResult,
         orders: db.orders
       });
     }

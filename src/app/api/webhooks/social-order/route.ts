@@ -69,11 +69,15 @@ export async function POST(req: Request) {
     if (
       body?.action === "admin_reply" ||
       body?.action === "send_payment_link" ||
-      body?.action === "toggle_autopilot"
+      body?.action === "toggle_autopilot" ||
+      body?.action === "initiate_conversation"
     ) {
       const result = await handleAdminChatAction({
         sessionId: body.sessionId,
         action: body.action,
+        channel: body.channel,
+        customerName: body.customerName,
+        customerHandleOrPhone: body.customerHandleOrPhone,
         messageText: body.messageText,
         aiAutoPilot: body.aiAutoPilot,
         selectedProduct: body.selectedProduct

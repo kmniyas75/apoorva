@@ -10,7 +10,7 @@ import {
   persistStoreDatabase,
   recordOrderInStore
 } from "@/lib/store/adminStore";
-import { sendWhatsAppTextMessage } from "@/lib/meta/whatsapp";
+import { sendWhatsAppOrderConfirmationNotification } from "@/lib/meta/whatsapp";
 import { OrderRecord, CustomerDetails, OrderItemSummary, OrderPricing } from "@/lib/types/checkout";
 
 export async function POST(req: Request) {
@@ -142,21 +142,27 @@ export async function POST(req: Request) {
     recordOrderInStore(orderRecord, currentDb);
     await persistStoreDatabase(currentDb);
 
-    // Trigger Email Notification System + WhatsApp confirmation concurrently
+    // Trigger Email Notification System + Dual-Mode WhatsApp confirmation (Text + Utility Template) concurrently
+    const itemsSummaryText = items
+      .map((i) => `${i.name} (${i.size})`)
+      .join(" + ");
+
     const [customerEmailResult, adminEmailResult] = await Promise.allSettled([
       sendOrderConfirmationEmail(orderRecord),
       sendAdminOrderAlertEmail(orderRecord),
       ...(customer.phone
         ? [
-            sendWhatsAppTextMessage({
-              to: customer.phone,
-              body:
-                `✅ *Payment Confirmed!* Thank you, *${customer.fullName || "Valued Guest"}*! 🐚\n\n` +
-                `Your *APOORVA SHELLS* order *#${orderRecord.orderId}* (*₹${orderRecord.pricing.total.toLocaleString("en-IN")}*) is confirmed and being prepared at our Aluva, Kerala Atelier.\n\n` +
-                `🚚 *Courier:* ${courierPartner}\n` +
-                `📦 *AWB Tracking:* ${assignedAwb}\n` +
-                `🔗 *Live Tracking:* ${orderRecord.shipping?.trackingUrl || "https://www.apoorvashells.com/track"}`,
-              previewUrl: true
+            sendWhatsAppOrderConfirmationNotification({
+              phone: customer.phone,
+              customerName: customer.fullName || "Valued Guest",
+              orderId: orderRecord.orderId,
+              itemsSummary: itemsSummaryText,
+              totalAmount: orderRecord.pricing.total,
+              courierName: courierPartner,
+              trackingNumber: assignedAwb,
+              trackingUrl:
+                orderRecord.shipping?.trackingUrl ||
+                "https://www.apoorvashells.com/track"
             })
           ]
         : [])

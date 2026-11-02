@@ -493,3 +493,193 @@ export async function sendMetaSocialDirectMessage(params: {
   }
 }
 
+/**
+ * Sends an official Meta WhatsApp Template Message (`apoorva_order_confirmed`, `apoorva_shipping_update`, `apoorva_coastal_welcome`, or `hello_world`).
+ * Works OUTSIDE the 24-hour customer service window (for website-only buyers, cold outbound initiation, or 24h+ follow-ups).
+ */
+export async function sendWhatsAppTemplateMessage(params: {
+  to: string;
+  templateName:
+    | "apoorva_order_confirmed"
+    | "apoorva_shipping_update"
+    | "apoorva_coastal_welcome"
+    | "hello_world";
+  bodyParameters?: string[];
+  languageCode?: string;
+}): Promise<{
+  sent: boolean;
+  messageId?: string;
+  error?: string;
+}> {
+  const { accessToken, phoneNumberId, graphVersion } = getMetaWhatsAppConfig();
+  const recipient = normalizeWhatsAppRecipient(params.to);
+
+  if (!recipient || !accessToken) {
+    return { sent: false, error: "Missing recipient or Meta access token" };
+  }
+
+  const components =
+    params.bodyParameters && params.bodyParameters.length > 0
+      ? [
+          {
+            type: "body",
+            parameters: params.bodyParameters.map((val) => ({
+              type: "text",
+              text: String(val || "-").slice(0, 1000)
+            }))
+          }
+        ]
+      : undefined;
+
+  try {
+    const res = await fetch(
+      `https://graph.facebook.com/${graphVersion}/${phoneNumberId}/messages`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          to: recipient,
+          type: "template",
+          template: {
+            name: params.templateName,
+            language: {
+              code: params.languageCode || "en_US"
+            },
+            ...(components ? { components } : {})
+          }
+        }),
+        cache: "no-store"
+      }
+    );
+
+    const data = (await res.json()) as {
+      messages?: Array<{ id?: string }>;
+      error?: { message?: string };
+    };
+
+    if (!res.ok) {
+      return {
+        sent: false,
+        error:
+          data.error?.message || `WhatsApp Template API HTTP ${res.status}`
+      };
+    }
+
+    return {
+      sent: true,
+      messageId: data.messages?.[0]?.id
+    };
+  } catch (err) {
+    return {
+      sent: false,
+      error:
+        err instanceof Error
+          ? err.message
+          : "WhatsApp template API request failed"
+    };
+  }
+}
+
+/**
+ * Sends a dual-mode WhatsApp Order Confirmation Notification:
+ *   1. Rich text confirmation (delivers immediately if inside a 24h chat window)
+ *   2. Official `apoorva_order_confirmed` Utility Template (delivers even if customer bought directly on the website and never messaged WhatsApp first!)
+ */
+export async function sendWhatsAppOrderConfirmationNotification(params: {
+  phone: string;
+  customerName: string;
+  orderId: string;
+  itemsSummary: string;
+  totalAmount: number;
+  courierName: string;
+  trackingNumber: string;
+  trackingUrl: string;
+}): Promise<{
+  sent: boolean;
+  messageId?: string;
+  error?: string;
+}> {
+  const [textRes, tplRes] = await Promise.all([
+    sendWhatsAppTextMessage({
+      to: params.phone,
+      body:
+        `✅ *Payment Confirmed!* Thank you, *${params.customerName || "Valued Guest"}*! 🐚\n\n` +
+        `Your *APOORVA SHELLS* order *#${params.orderId}* (*${params.itemsSummary}* • *₹${params.totalAmount.toLocaleString("en-IN")}*) is confirmed and being handcrafted at our Aluva, Kerala Atelier.\n\n` +
+        `🚚 *Courier:* ${params.courierName}\n` +
+        `📦 *AWB Tracking:* ${params.trackingNumber}\n` +
+        `🔗 *Live Tracking:* ${params.trackingUrl}`,
+      previewUrl: true
+    }),
+    sendWhatsAppTemplateMessage({
+      to: params.phone,
+      templateName: "apoorva_order_confirmed",
+      bodyParameters: [
+        params.customerName || "Valued Guest",
+        params.orderId,
+        params.itemsSummary || "APOORVA SHELLS Beachwear Set",
+        params.totalAmount.toLocaleString("en-IN")
+      ]
+    })
+  ]);
+
+  return {
+    sent: textRes.sent || tplRes.sent,
+    messageId: tplRes.messageId || textRes.messageId,
+    error: textRes.sent || tplRes.sent ? undefined : tplRes.error || textRes.error
+  };
+}
+
+/**
+ * Sends a dual-mode WhatsApp Shipping / Order Status Update Notification:
+ *   1. Official `apoorva_shipping_update` Utility Template (works anytime, even days after order!)
+ *   2. Rich text shipping update
+ */
+export async function sendWhatsAppShippingNotification(params: {
+  phone: string;
+  customerName: string;
+  orderId: string;
+  status: string;
+  courierName: string;
+  trackingNumber: string;
+  trackingUrl: string;
+}): Promise<{
+  sent: boolean;
+  messageId?: string;
+  error?: string;
+}> {
+  const statusLabel = `${params.status.toUpperCase()} via ${params.courierName}`;
+  const [tplRes, textRes] = await Promise.all([
+    sendWhatsAppTemplateMessage({
+      to: params.phone,
+      templateName: "apoorva_shipping_update",
+      bodyParameters: [
+        params.customerName || "Valued Guest",
+        params.orderId,
+        statusLabel,
+        params.trackingNumber || "Assigned at dispatch"
+      ]
+    }),
+    sendWhatsAppTextMessage({
+      to: params.phone,
+      body:
+        `📦 *APOORVA SHELLS Order Update (#${params.orderId})* 🌴\n\n` +
+        `Hi *${params.customerName || "Valued Guest"}*, your order status is now *${params.status.toUpperCase()}*!\n\n` +
+        `🚚 *Courier:* ${params.courierName}\n` +
+        `🔖 *Tracking AWB:* ${params.trackingNumber}\n` +
+        `🔗 *Track Live:* ${params.trackingUrl}`,
+      previewUrl: true
+    })
+  ]);
+
+  return {
+    sent: tplRes.sent || textRes.sent,
+    messageId: tplRes.messageId || textRes.messageId,
+    error: tplRes.sent || textRes.sent ? undefined : tplRes.error || textRes.error
+  };
+}
+
+

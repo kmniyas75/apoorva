@@ -139,9 +139,9 @@ export default function AdminPanel({
   }>({
     channel: "whatsapp",
     customerName: "Priya Menon",
-    customerHandleOrPhone: "+91 98470 55112",
+    customerHandleOrPhone: "+91 98474 86992",
     initialMessage:
-      "Hi! Tell me about the Coconut & Coir Beach Set and how I can order."
+      "Hi! 🌴 Welcome to APOORVA SHELLS (Aluva, Kerala). Would you like to explore Set 01 Coir Fringe or Set 02 Shell Weave?"
   });
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const [mediaLibrary, setMediaLibrary] = useState<MediaAsset[]>([]);
@@ -1258,21 +1258,37 @@ export default function AdminPanel({
     }
   };
 
-  const handleStartNewChatSession = async (e: React.FormEvent) => {
+  const handleStartNewChatSession = async (
+    e: React.FormEvent,
+    mode: "initiate" | "simulate" = "initiate"
+  ) => {
     e.preventDefault();
-    if (!newChatDraft.initialMessage.trim() || sendingAdminMsg) return;
+    if (!newChatDraft.customerHandleOrPhone.trim() || sendingAdminMsg) return;
     setSendingAdminMsg(true);
     try {
+      const payload =
+        mode === "initiate"
+          ? {
+              action: "initiate_conversation",
+              channel: newChatDraft.channel,
+              customerName: newChatDraft.customerName.trim() || "Coastal Guest",
+              customerHandleOrPhone: newChatDraft.customerHandleOrPhone.trim(),
+              messageText: newChatDraft.initialMessage.trim(),
+              templateName: "apoorva_coastal_welcome"
+            }
+          : {
+              channel: newChatDraft.channel,
+              senderName: newChatDraft.customerName.trim() || "Coastal Guest",
+              senderHandleOrPhone:
+                newChatDraft.customerHandleOrPhone.trim() || "+91 98470 55112",
+              message:
+                newChatDraft.initialMessage.trim() ||
+                "Hi! Tell me about your beachwear sets."
+            };
       const res = await fetch("/api/webhooks/social-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          channel: newChatDraft.channel,
-          senderName: newChatDraft.customerName.trim() || "Coastal Guest",
-          senderHandleOrPhone:
-            newChatDraft.customerHandleOrPhone.trim() || "+91 98470 55112",
-          message: newChatDraft.initialMessage.trim()
-        })
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not start chat");
@@ -1292,7 +1308,9 @@ export default function AdminPanel({
       scrollChatStreamToBottom(true);
       showToastMessage(
         "success",
-        `Started ${newChatDraft.channel.toUpperCase()} chat with ${newChatDraft.customerName}!`
+        mode === "initiate"
+          ? `Initiated outbound ${newChatDraft.channel.toUpperCase()} conversation with ${newChatDraft.customerName}!`
+          : `Simulated incoming ${newChatDraft.channel.toUpperCase()} chat with ${newChatDraft.customerName}!`
       );
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to start chat";
@@ -3254,15 +3272,17 @@ export default function AdminPanel({
                         </div>
                       </div>
 
-                      {/* Optional Collapsible "New Customer Chat" Simulator Form */}
+                      {/* Optional Collapsible "New Customer Chat" Outbound Initiator & Simulator Form */}
                       {showNewChatForm && (
                         <form
-                          onSubmit={handleStartNewChatSession}
+                          onSubmit={(e) =>
+                            handleStartNewChatSession(e, "initiate")
+                          }
                           className="bg-neutral-900 text-white p-4 rounded-2xl border border-amber-400/40 space-y-3"
                         >
                           <div className="flex items-center justify-between">
                             <span className="font-mono text-xs font-black uppercase tracking-wider text-amber-300">
-                              Start or Simulate Incoming Customer Chat (WhatsApp / Instagram / Facebook / Website)
+                              📲 Initiate Outbound WhatsApp / Social Conversation (Sends Welcome Template + Message)
                             </span>
                             <button
                               type="button"
@@ -3272,7 +3292,7 @@ export default function AdminPanel({
                               <X className="w-4 h-4" />
                             </button>
                           </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+                          <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
                             <select
                               value={newChatDraft.channel}
                               onChange={(e) =>
@@ -3327,9 +3347,21 @@ export default function AdminPanel({
                             <button
                               type="submit"
                               disabled={sendingAdminMsg}
-                              className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-mono text-xs font-black uppercase"
+                              className="px-4 py-2 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-black font-mono text-xs font-black uppercase"
                             >
-                              {sendingAdminMsg ? "Starting..." : "Start & Run AI"}
+                              {sendingAdminMsg
+                                ? "Sending..."
+                                : "📲 Initiate Chat"}
+                            </button>
+                            <button
+                              type="button"
+                              disabled={sendingAdminMsg}
+                              onClick={(e) =>
+                                handleStartNewChatSession(e, "simulate")
+                              }
+                              className="px-3 py-2 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/40 text-amber-200 font-mono text-[11px] font-black uppercase"
+                            >
+                              Simulate Reply
                             </button>
                           </div>
                           <input
@@ -3341,7 +3373,7 @@ export default function AdminPanel({
                                 initialMessage: e.target.value
                               }))
                             }
-                            placeholder="Customer's first message..."
+                            placeholder="Outbound greeting message (also sends official apoorva_coastal_welcome template on WhatsApp)..."
                             className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/20 font-mono text-xs text-white"
                           />
                         </form>

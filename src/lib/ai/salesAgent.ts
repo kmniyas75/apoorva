@@ -13,6 +13,7 @@ import {
   sendWhatsAppTextMessage,
   sendWhatsAppImageMessage,
   sendWhatsAppInteractiveButtons,
+  sendWhatsAppTemplateMessage,
   sendMetaSocialDirectMessage
 } from "@/lib/meta/whatsapp";
 
@@ -898,12 +899,19 @@ export async function processIncomingSalesChat(params: {
 }
 
 /**
- * Allows the Admin to manually send a message, send a 1-click payment link,
- * or toggle AI Auto-Pilot on any ChatSession.
+ * Allows the Admin to manually send a message, initiate a brand-new outbound conversation,
+ * send a 1-click payment link, or toggle AI Auto-Pilot on any ChatSession.
  */
 export async function handleAdminChatAction(params: {
-  sessionId: string;
-  action: "admin_reply" | "send_payment_link" | "toggle_autopilot";
+  sessionId?: string;
+  action:
+    | "admin_reply"
+    | "send_payment_link"
+    | "toggle_autopilot"
+    | "initiate_conversation";
+  channel?: "whatsapp" | "instagram" | "facebook" | "website";
+  customerName?: string;
+  customerHandleOrPhone?: string;
   messageText?: string;
   aiAutoPilot?: boolean;
   selectedProduct?: "set1" | "set2" | "both";
@@ -917,7 +925,34 @@ export async function handleAdminChatAction(params: {
     db.chatSessions = [];
   }
 
-  const session = db.chatSessions.find((s) => s.id === params.sessionId);
+  let session = db.chatSessions.find(
+    (s) =>
+      (params.sessionId && s.id === params.sessionId) ||
+      (params.customerHandleOrPhone &&
+        s.channel === (params.channel || "whatsapp") &&
+        s.customerHandleOrPhone.toLowerCase() ===
+          params.customerHandleOrPhone.trim().toLowerCase())
+  );
+
+  if (!session && params.action === "initiate_conversation") {
+    const ch = params.channel || "whatsapp";
+    const handle = (params.customerHandleOrPhone || "+91 98470 55112").trim();
+    const nowIso = new Date().toISOString();
+    session = {
+      id: `chat-${ch}-${handle.replace(/[^a-zA-Z0-9]/g, "").slice(-12) || Date.now()}`,
+      channel: ch,
+      customerHandleOrPhone: handle,
+      customerName: params.customerName?.trim() || "Valued Guest",
+      stage: "pitching",
+      aiAutoPilot: true,
+      aiRepliesCount: 0,
+      handedOverToHuman: false,
+      messages: [],
+      updatedAt: nowIso
+    };
+    db.chatSessions.unshift(session);
+  }
+
   if (!session) {
     return { session: null };
   }
@@ -987,11 +1022,46 @@ export async function handleAdminChatAction(params: {
     { sent: true, messageId: `web-${Date.now()}` };
 
   if (session.channel === "whatsapp") {
-    outboundDelivery = await sendWhatsAppTextMessage({
-      to: session.customerHandleOrPhone,
-      body: textToSend,
-      previewUrl: true
-    });
+    if (params.action === "initiate_conversation") {
+      // Send official `apoorva_coastal_welcome` template (opens 24h window with cold numbers) + custom text message concurrently
+      const [tplRes, txtRes] = await Promise.all([
+        sendWhatsAppTemplateMessage({
+          to: session.customerHandleOrPhone,
+          templateName: "apoorva_coastal_welcome",
+          bodyParameters: [session.customerName || "Valued Guest"]
+        }),
+        sendWhatsAppTextMessage({
+          to: session.customerHandleOrPhone,
+          body: textToSend,
+          previewUrl: true
+        })
+      ]);
+      outboundDelivery = {
+        sent: tplRes.sent || txtRes.sent,
+        messageId: tplRes.messageId || txtRes.messageId,
+        error:
+          tplRes.sent || txtRes.sent
+            ? undefined
+            : tplRes.error || txtRes.error
+      };
+    } else {
+      outboundDelivery = await sendWhatsAppTextMessage({
+        to: session.customerHandleOrPhone,
+        body: textToSend,
+        previewUrl: true
+      });
+      // If outside the 24-hour customer service window, also dispatch the template so the customer gets notified!
+      if (!outboundDelivery.sent) {
+        const tplFallback = await sendWhatsAppTemplateMessage({
+          to: session.customerHandleOrPhone,
+          templateName: "apoorva_coastal_welcome",
+          bodyParameters: [session.customerName || "Valued Guest"]
+        });
+        if (tplFallback.sent) {
+          outboundDelivery = tplFallback;
+        }
+      }
+    }
   } else if (session.channel === "instagram" || session.channel === "facebook") {
     outboundDelivery = await sendMetaSocialDirectMessage({
       channel: session.channel,
