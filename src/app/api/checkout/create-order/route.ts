@@ -2,15 +2,22 @@ import { NextResponse } from "next/server";
 import { PRODUCTS } from "@/data/products";
 import { ensureStoreDatabaseLoaded } from "@/lib/store/adminStore";
 import { createRazorpayOrder, isRazorpayConfigured } from "@/lib/payment/razorpay";
+import { checkShiprocketServiceability } from "@/lib/shipping/shiprocket";
 import { CustomerDetails } from "@/lib/types/checkout";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { items, customer, appliedDiscount = 0 } = body as {
+    const {
+      items,
+      customer,
+      appliedDiscount = 0,
+      shippingFee: clientShippingFee
+    } = body as {
       items: Array<{ productId: string; size: string; quantity: number }>;
       customer?: CustomerDetails;
       appliedDiscount?: number;
+      shippingFee?: number;
     };
 
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -47,9 +54,46 @@ export async function POST(req: Request) {
     const discountPercentage = appliedDiscount > 0 ? appliedDiscount : 0;
     const discountAmount = Math.round((rawSubtotal * discountPercentage) / 100);
     const subtotal = Math.max(0, rawSubtotal - discountAmount);
-    const freeShippingThreshold = 4000;
-    const shippingFee = subtotal >= freeShippingThreshold || subtotal === 0 ? 0 : 250;
-    const total = subtotal + shippingFee;
+
+    const gstPercentage =
+      typeof storeDb.settings?.gstPercent === "number"
+        ? storeDb.settings.gstPercent
+        : 12;
+    const taxableAmount = Number(
+      (subtotal / (1 + gstPercentage / 100)).toFixed(2)
+    );
+    const gstAmount = Number((subtotal - taxableAmount).toFixed(2));
+
+    // Resolve exact PIN-based shipping rate from Shiprocket (or client-resolved PIN rate)
+    let resolvedShippingFee =
+      typeof clientShippingFee === "number" && clientShippingFee > 0
+        ? Number(clientShippingFee.toFixed(2))
+        : 0;
+
+    if (!resolvedShippingFee && customer?.pincode) {
+      const cleanPin = customer.pincode.replace(/\D/g, "");
+      if (cleanPin.length === 6) {
+        try {
+          const sr = await checkShiprocketServiceability(cleanPin);
+          if (sr?.shippingRate && sr.shippingRate > 0) {
+            resolvedShippingFee = Number(sr.shippingRate.toFixed(2));
+          }
+        } catch {
+          // Fallback below
+        }
+        if (!resolvedShippingFee) {
+          resolvedShippingFee = cleanPin.startsWith("67") || cleanPin.startsWith("68") || cleanPin.startsWith("69")
+            ? 95
+            : 185;
+        }
+      }
+    }
+    if (!resolvedShippingFee && subtotal > 0) {
+      resolvedShippingFee = 185;
+    }
+
+    const shippingFee = subtotal === 0 ? 0 : resolvedShippingFee;
+    const total = Number((subtotal + shippingFee).toFixed(2));
 
     const receipt = `APV_${Date.now().toString().slice(-6)}`;
 
@@ -77,6 +121,9 @@ export async function POST(req: Request) {
         discountPercentage,
         discountAmount,
         subtotal,
+        gstPercentage,
+        taxableAmount,
+        gstAmount,
         shippingFee,
         total,
         currency: "INR"

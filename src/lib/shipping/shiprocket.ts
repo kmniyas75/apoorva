@@ -260,6 +260,7 @@ export async function requestShiprocketPickup(
 export interface ShiprocketServiceabilityResult {
   serviceable: boolean;
   courierName?: string;
+  shippingRate?: number;
   city?: string;
   state?: string;
   etd?: string;
@@ -269,7 +270,7 @@ export interface ShiprocketServiceabilityResult {
 }
 
 /**
- * 5. Check real-time Courier Serviceability via Shiprocket API
+ * 5. Check real-time Courier Serviceability & Exact Shipping Rate via Shiprocket API
  */
 export async function checkShiprocketServiceability(
   deliveryPincode: string,
@@ -281,7 +282,7 @@ export async function checkShiprocketServiceability(
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
+    const timeoutId = setTimeout(() => controller.abort(), 4500);
 
     const url = `https://apiv2.shiprocket.in/v1/external/courier/serviceability?pickup_postcode=${encodeURIComponent(
       pickupPincode
@@ -303,9 +304,11 @@ export async function checkShiprocketServiceability(
     const couriers = data?.data?.available_courier_companies;
 
     if (Array.isArray(couriers) && couriers.length > 0) {
-      // Prioritize Blue Dart Air Express if available
       interface SRCompany {
+        courier_company_id?: number;
         courier_name?: string;
+        rate?: number | string;
+        freight_charge?: number | string;
         city?: string;
         state?: string;
         etd?: string;
@@ -313,10 +316,20 @@ export async function checkShiprocketServiceability(
         rating?: number;
       }
 
+      const recommendedId = data?.data?.recommended_courier_company_id;
+      const recommended = recommendedId
+        ? couriers.find(
+            (c: SRCompany) => c.courier_company_id === recommendedId
+          )
+        : undefined;
       const blueDart = couriers.find((c: SRCompany) =>
         c.courier_name?.toLowerCase().includes("blue dart")
       );
-      const chosen: SRCompany = blueDart || couriers[0];
+      const chosen: SRCompany = recommended || blueDart || couriers[0];
+
+      const rawRate = Number(chosen.rate ?? chosen.freight_charge ?? 0);
+      const exactShippingRate =
+        !isNaN(rawRate) && rawRate > 0 ? Number(rawRate.toFixed(2)) : undefined;
 
       let transitDays = 2;
       if (chosen.estimated_delivery_days) {
@@ -331,6 +344,7 @@ export async function checkShiprocketServiceability(
       return {
         serviceable: true,
         courierName: chosen.courier_name || "Blue Dart Air Express",
+        shippingRate: exactShippingRate,
         city: chosen.city || undefined,
         state: chosen.state || undefined,
         etd: chosen.etd || undefined,

@@ -62,6 +62,7 @@ interface CheckoutModalProps {
   items: CartItem[];
   catalogProducts?: Product[];
   appliedDiscount: number;
+  gstPercent?: number;
   onSelectQuickItems?: (newItems: CartItem[], discount?: number) => void;
   onOrderSuccess: (order: OrderRecord) => void;
   onOpenNotificationCenter: () => void;
@@ -77,6 +78,7 @@ export default function CheckoutModal({
   items,
   catalogProducts = PRODUCTS,
   appliedDiscount,
+  gstPercent = 12,
   onSelectQuickItems,
   onOrderSuccess,
   onOpenNotificationCenter,
@@ -109,6 +111,11 @@ export default function CheckoutModal({
   const [resolvedDeliveryInfo, setResolvedDeliveryInfo] = useState<
     string | null
   >(null);
+  const [resolvedShippingRate, setResolvedShippingRate] =
+    useState<number>(95);
+  const [resolvedCourierName, setResolvedCourierName] = useState<string>(
+    "Blue Dart Air Express"
+  );
 
   // Processing & Order State
   const [isProcessing, setIsProcessing] = useState(false);
@@ -139,7 +146,7 @@ export default function CheckoutModal({
     }
   }, [prefilledOrder]);
 
-  // Real-time PIN code auto-fill City, State, & Delivery Date
+  // Real-time PIN code auto-fill City, State, Delivery Date & Exact Shiprocket Rate
   useEffect(() => {
     const pin = customer.pincode?.replace(/\D/g, "");
     if (pin && pin.length === 6) {
@@ -153,8 +160,14 @@ export default function CheckoutModal({
               city: data.city,
               state: data.state
             }));
+            const exactRate =
+              typeof data.shippingRate === "number" && data.shippingRate > 0
+                ? Number(data.shippingRate.toFixed(2))
+                : 185;
+            setResolvedShippingRate(exactRate);
+            setResolvedCourierName(data.courier || "Blue Dart Air Express");
             setResolvedDeliveryInfo(
-              `Express Delivery by ${data.estimatedDelivery} to ${data.city}, ${data.state} (${data.courier})`
+              `Express Delivery by ${data.estimatedDelivery} to ${data.city}, ${data.state} (${data.courier}) • Shipping Rate: ₹${exactRate.toLocaleString("en-IN")}`
             );
           }
         })
@@ -177,7 +190,7 @@ export default function CheckoutModal({
 
   if (!isOpen) return null;
 
-  // Pricing computations
+  // Pricing computations (Product price includes GST; exact PIN shipping rate is added)
   const activeItems: CartItem[] =
     items.length > 0
       ? items
@@ -195,10 +208,12 @@ export default function CheckoutModal({
   );
   const discountAmount = Math.round((rawSubtotal * appliedDiscount) / 100);
   const subtotal = Math.max(0, rawSubtotal - discountAmount);
-  const freeShippingThreshold = 4000;
-  const shippingFee =
-    subtotal >= freeShippingThreshold || subtotal === 0 ? 0 : 250;
-  const total = subtotal + shippingFee;
+  const taxableAmount = Number(
+    (subtotal / (1 + gstPercent / 100)).toFixed(2)
+  );
+  const gstAmount = Number((subtotal - taxableAmount).toFixed(2));
+  const shippingFee = subtotal === 0 ? 0 : resolvedShippingRate;
+  const total = Number((subtotal + shippingFee).toFixed(2));
 
   // Reset field error immediately on input (per modern-web-guidance `forms`)
   const handleInputChange = (
@@ -328,7 +343,8 @@ export default function CheckoutModal({
             quantity: i.quantity
           })),
           customer: finalCustomer,
-          appliedDiscount
+          appliedDiscount,
+          shippingFee
         })
       });
 
@@ -662,10 +678,10 @@ export default function CheckoutModal({
                 </div>
                 <div className="text-right flex-shrink-0 ml-2">
                   <div className="font-black text-sm">
-                    ₹{total.toLocaleString("en-IN")}
+                    ₹{subtotal.toLocaleString("en-IN")}
                   </div>
                   <div className="text-[9px] text-emerald-800 font-bold uppercase">
-                    PREPAID • FREE SHIPPING
+                    INCL. {gstPercent}% GST • + ₹{shippingFee.toLocaleString("en-IN")} SHIP
                   </div>
                 </div>
               </div>
@@ -864,6 +880,48 @@ export default function CheckoutModal({
                   </div>
                 </div>
               </fieldset>
+
+              {/* ITEMIZED BILL BREAKDOWN (Product Rate, GST, PIN Shipping Rate & Total) */}
+              <div className="p-3.5 rounded-2xl bg-white/85 border border-black/15 text-xs space-y-1.5">
+                <div className="text-[10px] font-black uppercase tracking-wider text-black/80 border-b border-black/10 pb-1.5 mb-1">
+                  3. BILL &amp; GST SUMMARY
+                </div>
+                <div className="flex justify-between text-black/75">
+                  <span>Product Rate (Excl. GST):</span>
+                  <span className="font-bold text-black">
+                    ₹{taxableAmount.toLocaleString("en-IN")}
+                  </span>
+                </div>
+                <div className="flex justify-between text-black/75">
+                  <span>GST ({gstPercent}% Included in Product Price):</span>
+                  <span className="font-bold text-black">
+                    ₹{gstAmount.toLocaleString("en-IN")}
+                  </span>
+                </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-emerald-800 font-bold">
+                    <span>Bundle / VIP Discount ({appliedDiscount}%):</span>
+                    <span>-₹{discountAmount.toLocaleString("en-IN")}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-black/85 font-bold">
+                  <span>Product Total (Incl. {gstPercent}% GST):</span>
+                  <span>₹{subtotal.toLocaleString("en-IN")}</span>
+                </div>
+                <div className="flex justify-between text-amber-950 font-bold">
+                  <span>
+                    Shipping Rate (PIN {customer.pincode || "683101"} •{" "}
+                    {resolvedCourierName}):
+                  </span>
+                  <span className="text-black">
+                    + ₹{shippingFee.toLocaleString("en-IN")}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm font-black text-black pt-2 border-t border-black/15">
+                  <span>Total Payable (Incl. GST + Shipping):</span>
+                  <span>₹{total.toLocaleString("en-IN")}</span>
+                </div>
+              </div>
 
               {/* Razorpay Gateway Notice (No Manual Method Selection / No COD) */}
               <div className="px-4 py-2.5 rounded-2xl bg-emerald-950/5 border border-emerald-900/15 flex items-center justify-between text-[11px] text-black/75">

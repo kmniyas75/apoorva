@@ -29,6 +29,9 @@ export interface OrderPricing {
   discountPercentage: number;
   discountAmount: number;
   subtotal: number;
+  gstPercentage?: number;
+  taxableAmount?: number;
+  gstAmount?: number;
   shippingFee: number;
   total: number;
   currency: string;

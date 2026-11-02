@@ -166,8 +166,34 @@ export function generateOrderConfirmationHtml(order: OrderRecord): string {
             <td style="padding: 8px 32px 26px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size: 13px; color: #5c5046;">
                 <tr>
-                  <td style="padding: 5px 0;">Artisanal Subtotal</td>
-                  <td style="padding: 5px 0; text-align: right; color: #1c1613; font-weight: 600;">₹${pricing.rawSubtotal.toLocaleString("en-IN")}</td>
+                  <td style="padding: 5px 0;">Product Rate (Excl. GST)</td>
+                  <td style="padding: 5px 0; text-align: right; color: #1c1613; font-weight: 600;">₹${(
+                    pricing.taxableAmount ??
+                    Number(
+                      (
+                        (pricing.subtotal || pricing.total) /
+                        (1 + (pricing.gstPercentage ?? 12) / 100)
+                      ).toFixed(2)
+                    )
+                  ).toLocaleString("en-IN")}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 5px 0;">GST (${pricing.gstPercentage ?? 12}% Included)</td>
+                  <td style="padding: 5px 0; text-align: right; color: #1c1613; font-weight: 600;">₹${(
+                    pricing.gstAmount ??
+                    Number(
+                      (
+                        (pricing.subtotal || pricing.total) -
+                        (pricing.taxableAmount ??
+                          Number(
+                            (
+                              (pricing.subtotal || pricing.total) /
+                              (1 + (pricing.gstPercentage ?? 12) / 100)
+                            ).toFixed(2)
+                          ))
+                      ).toFixed(2)
+                    )
+                  ).toLocaleString("en-IN")}</td>
                 </tr>
                 ${
                   pricing.discountAmount > 0
@@ -178,14 +204,18 @@ export function generateOrderConfirmationHtml(order: OrderRecord): string {
                     : ""
                 }
                 <tr>
-                  <td style="padding: 5px 0;">✈️ Blue Dart / Delhivery Air Express</td>
-                  <td style="padding: 5px 0; text-align: right; color: #137333; font-weight: 700;">
-                    ${pricing.shippingFee === 0 ? "FREE EXPRESS" : `₹${pricing.shippingFee.toLocaleString("en-IN")}`}
+                  <td style="padding: 5px 0; font-weight: 700; color: #1c1613;">Product Total (Incl. ${pricing.gstPercentage ?? 12}% GST)</td>
+                  <td style="padding: 5px 0; text-align: right; color: #1c1613; font-weight: 700;">₹${(pricing.subtotal || pricing.rawSubtotal).toLocaleString("en-IN")}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 5px 0;">✈️ Courier Shipping Rate (PIN ${customer.pincode})</td>
+                  <td style="padding: 5px 0; text-align: right; color: #8c5a3c; font-weight: 700;">
+                    + ₹${(pricing.shippingFee || 0).toLocaleString("en-IN")}
                   </td>
                 </tr>
                 <tr>
                   <td style="padding: 14px 0 4px; border-top: 2px solid #1c1613; font-family: Georgia, serif; font-size: 17px; font-weight: bold; color: #1c1613;">
-                    Total Paid
+                    Total Paid (Incl. GST + Shipping)
                   </td>
                   <td style="padding: 14px 0 4px; border-top: 2px solid #1c1613; text-align: right; font-family: Georgia, serif; font-size: 19px; font-weight: bold; color: #1c1613;">
                     ₹${pricing.total.toLocaleString("en-IN")}

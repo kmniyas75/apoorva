@@ -151,11 +151,12 @@ export async function GET(req: Request) {
           transitDays,
           estimatedDelivery,
           courier: srResult.courierName || "Blue Dart Air Express",
+          shippingRate: srResult.shippingRate ?? 180,
           availableCouriers: srResult.availableCouriers || ["Blue Dart Air Express"],
           serviceable: true,
           source: "shiprocket_live",
           features: {
-            freeShippingAvailable: true,
+            freeShippingAvailable: false,
             airCargoExpress: true,
             tamperProofWaxSeal: true,
             doorstepDelivery: true
@@ -213,11 +214,13 @@ export async function GET(req: Request) {
 
     let transitDays = fallback.transitDays;
     let courier = fallback.courier;
+    let fallbackShippingRate = 245;
 
     const lowerState = finalState.toLowerCase();
     if (lowerState.includes("kerala")) {
       transitDays = 1;
       courier = "Direct Studio Courier";
+      fallbackShippingRate = 95;
     } else if (
       lowerState.includes("tamil nadu") ||
       lowerState.includes("karnataka") ||
@@ -227,6 +230,7 @@ export async function GET(req: Request) {
     ) {
       transitDays = 1;
       courier = "Blue Dart Air Express";
+      fallbackShippingRate = 165;
     } else if (
       lowerState.includes("maharashtra") ||
       lowerState.includes("gujarat") ||
@@ -235,6 +239,7 @@ export async function GET(req: Request) {
     ) {
       transitDays = 2;
       courier = "Blue Dart Air Express";
+      fallbackShippingRate = 245;
     } else if (
       lowerState.includes("assam") ||
       lowerState.includes("meghalaya") ||
@@ -248,6 +253,7 @@ export async function GET(req: Request) {
     ) {
       transitDays = 3;
       courier = "Blue Dart Air Express";
+      fallbackShippingRate = 295;
     }
 
     const estimatedDelivery = calculateDeliveryDate(transitDays);
@@ -261,10 +267,11 @@ export async function GET(req: Request) {
       transitDays,
       estimatedDelivery,
       courier,
+      shippingRate: fallbackShippingRate,
       serviceable: true,
       source: resolvedCity ? "india_post_official" : "postal_region_engine",
       features: {
-        freeShippingAvailable: true,
+        freeShippingAvailable: false,
         airCargoExpress: true,
         tamperProofWaxSeal: true,
         doorstepDelivery: true

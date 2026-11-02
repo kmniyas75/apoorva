@@ -272,6 +272,7 @@ export default function Home() {
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveItem}
         appliedDiscount={appliedDiscount}
+        gstPercent={storeSettings.gstPercent ?? 12}
         onApplyPromoCode={handleApplyPromoCode}
         onStartCheckout={(pincode) => {
           if (pincode) setActivePincode(pincode);
@@ -287,6 +288,7 @@ export default function Home() {
         items={cartItems}
         catalogProducts={storeProducts}
         appliedDiscount={appliedDiscount}
+        gstPercent={storeSettings.gstPercent ?? 12}
         prefilledOrder={prefilledOrder}
         onSelectQuickItems={(newItems, discount) => {
           setCartItems(newItems);

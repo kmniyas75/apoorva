@@ -24,6 +24,7 @@ import bundledStoreDb from "../../../data/store-db.json";
 export interface StoreSettings {
   capsuleTitle: string;
   bundleDiscountPercent: number;
+  gstPercent?: number;
   enableCod: boolean;
   enableUpi: boolean;
   freeShipping: boolean;
@@ -155,9 +156,10 @@ export function getStoragePathsInfo(): StoragePathsInfo {
 const DEFAULT_SETTINGS: StoreSettings = {
   capsuleTitle: "ALUVA, KERALA // 360° ROUNDING BEACHWEAR SHOWCASE",
   bundleDiscountPercent: 15,
+  gstPercent: 12,
   enableCod: false,
   enableUpi: true,
-  freeShipping: true,
+  freeShipping: false,
   supportEmail: "concierge@apoorva.luxury",
   supportPhone: "+91 73064 09010",
   orbitSpeedMultiplier: 1,

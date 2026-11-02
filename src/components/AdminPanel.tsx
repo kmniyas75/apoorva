@@ -2098,7 +2098,7 @@ export default function AdminPanel({
                                 htmlFor="prod-price"
                                 className="block text-[10px] font-mono uppercase font-bold text-black/70 mb-1"
                               >
-                                Selling Price (₹)
+                                Selling Price (₹ — Incl. GST)
                               </label>
                               <input
                                 id="prod-price"
@@ -2144,40 +2144,112 @@ export default function AdminPanel({
                             </div>
                           </div>
 
-                          <div className="pt-2 border-t border-black/8">
-                            <label
-                              htmlFor="bundle-discount-pct"
-                              className="block text-[10px] font-mono uppercase font-bold text-black/70 mb-1"
-                            >
-                              &ldquo;Buy Both Sets&rdquo; Bundle Discount (%)
-                            </label>
-                            <div className="flex items-center gap-3">
-                              <input
-                                id="bundle-discount-pct"
-                                type="number"
-                                inputMode="numeric"
-                                min={0}
-                                max={75}
-                                value={settings.bundleDiscountPercent}
-                                onChange={(e) =>
-                                  setSettings((prev) => ({
-                                    ...prev,
-                                    bundleDiscountPercent: Math.min(
-                                      75,
-                                      Math.max(0, Number(e.target.value) || 0)
-                                    )
-                                  }))
-                                }
-                                className="w-28 px-3 py-2 rounded-xl bg-neutral-50 border border-black/20 font-mono text-sm font-black text-amber-900"
-                              />
-                              <span className="text-xs font-mono text-black/70">
-                                Combined Bundle:{" "}
-                                <strong className="text-black">
-                                  ₹{bundleCombinedPrice.toLocaleString("en-IN")}
-                                </strong>
-                              </span>
+                          {/* GST Percentage & Bundle Discount Row */}
+                          <div className="pt-2 border-t border-black/8 grid grid-cols-2 gap-3">
+                            <div>
+                              <label
+                                htmlFor="gst-percent-input"
+                                className="block text-[10px] font-mono uppercase font-bold text-black/70 mb-1"
+                              >
+                                GST Percentage (%)
+                              </label>
+                              <div className="flex items-center gap-1.5">
+                                <input
+                                  id="gst-percent-input"
+                                  type="number"
+                                  inputMode="decimal"
+                                  min={0}
+                                  max={28}
+                                  step={1}
+                                  value={settings.gstPercent ?? 12}
+                                  onChange={(e) =>
+                                    setSettings((prev) => ({
+                                      ...prev,
+                                      gstPercent: Math.min(
+                                        28,
+                                        Math.max(0, Number(e.target.value) || 0)
+                                      )
+                                    }))
+                                  }
+                                  className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/20 font-mono text-sm font-black text-emerald-900"
+                                />
+                                <span className="text-xs font-mono font-bold text-black/60">
+                                  %
+                                </span>
+                              </div>
+                            </div>
+
+                            <div>
+                              <label
+                                htmlFor="bundle-discount-pct"
+                                className="block text-[10px] font-mono uppercase font-bold text-black/70 mb-1"
+                              >
+                                2-Set Bundle Discount (%)
+                              </label>
+                              <div className="flex items-center gap-1.5">
+                                <input
+                                  id="bundle-discount-pct"
+                                  type="number"
+                                  inputMode="numeric"
+                                  min={0}
+                                  max={75}
+                                  value={settings.bundleDiscountPercent}
+                                  onChange={(e) =>
+                                    setSettings((prev) => ({
+                                      ...prev,
+                                      bundleDiscountPercent: Math.min(
+                                        75,
+                                        Math.max(0, Number(e.target.value) || 0)
+                                      )
+                                    }))
+                                  }
+                                  className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/20 font-mono text-sm font-black text-amber-900"
+                                />
+                                <span className="text-xs font-mono font-bold text-black/60">
+                                  %
+                                </span>
+                              </div>
                             </div>
                           </div>
+
+                          {/* Live GST & Shipping Breakdown Box in Admin */}
+                          {(() => {
+                            const gstPct = settings.gstPercent ?? 12;
+                            const baseRate = Number(
+                              (activeProduct.price / (1 + gstPct / 100)).toFixed(
+                                2
+                              )
+                            );
+                            const gstVal = Number(
+                              (activeProduct.price - baseRate).toFixed(2)
+                            );
+                            return (
+                              <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-900/15 font-mono text-[11px] space-y-1 text-black/80">
+                                <div className="flex justify-between">
+                                  <span>Product Base Rate (Excl. GST):</span>
+                                  <strong className="text-black">
+                                    ₹{baseRate.toLocaleString("en-IN")}
+                                  </strong>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>GST ({gstPct}% Included):</span>
+                                  <strong className="text-emerald-900">
+                                    + ₹{gstVal.toLocaleString("en-IN")}
+                                  </strong>
+                                </div>
+                                <div className="flex justify-between pt-1 border-t border-emerald-900/15 text-black font-black">
+                                  <span>Total Product Price (Incl. GST):</span>
+                                  <span>
+                                    ₹{activeProduct.price.toLocaleString("en-IN")}
+                                  </span>
+                                </div>
+                                <div className="text-[10px] text-amber-900 pt-0.5">
+                                  ✈️ + Exact Shiprocket Courier Rate based on
+                                  customer&apos;s PIN is added at checkout.
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </div>
 
                         {/* Product Titles & Copy Card */}
@@ -3061,6 +3133,62 @@ export default function AdminPanel({
                                     </div>
                                   </div>
                                 ))}
+
+                                {/* Itemized Order Bill Breakdown (Product Rate, GST, Shipping & Total) */}
+                                {(() => {
+                                  const ordGstPct =
+                                    order.pricing?.gstPercentage ??
+                                    settings.gstPercent ??
+                                    12;
+                                  const prodSubtotal =
+                                    order.pricing?.subtotal ||
+                                    order.pricing?.rawSubtotal ||
+                                    order.pricing?.total ||
+                                    0;
+                                  const ordTaxable =
+                                    order.pricing?.taxableAmount ??
+                                    Number(
+                                      (
+                                        prodSubtotal /
+                                        (1 + ordGstPct / 100)
+                                      ).toFixed(2)
+                                    );
+                                  const ordGstAmt =
+                                    order.pricing?.gstAmount ??
+                                    Number(
+                                      (prodSubtotal - ordTaxable).toFixed(2)
+                                    );
+                                  const ordShipFee =
+                                    order.pricing?.shippingFee ?? 0;
+                                  return (
+                                    <div className="p-2.5 rounded-xl bg-amber-50/60 border border-amber-900/15 font-mono text-[10px] flex flex-wrap items-center justify-between gap-2 text-black/80">
+                                      <span>
+                                        Product Rate:{" "}
+                                        <strong className="text-black">
+                                          ₹{ordTaxable.toLocaleString("en-IN")}
+                                        </strong>
+                                      </span>
+                                      <span>
+                                        GST ({ordGstPct}% Incl.):{" "}
+                                        <strong className="text-emerald-900">
+                                          ₹{ordGstAmt.toLocaleString("en-IN")}
+                                        </strong>
+                                      </span>
+                                      <span>
+                                        Shipping (PIN {order.customer.pincode}):{" "}
+                                        <strong className="text-amber-950">
+                                          ₹{ordShipFee.toLocaleString("en-IN")}
+                                        </strong>
+                                      </span>
+                                      <span className="font-black text-black">
+                                        Total (Incl. GST + Ship): ₹
+                                        {(
+                                          order.pricing?.total || 0
+                                        ).toLocaleString("en-IN")}
+                                      </span>
+                                    </div>
+                                  );
+                                })()}
                               </div>
                             </div>
 

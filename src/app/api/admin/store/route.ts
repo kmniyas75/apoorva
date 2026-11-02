@@ -15,7 +15,10 @@ import {
 import { OrderRecord } from "@/lib/types/checkout";
 import { sendShippingDispatchEmail } from "@/lib/email/emailService";
 import { sendWhatsAppShippingNotification } from "@/lib/meta/whatsapp";
-import { createShiprocketOrder } from "@/lib/shipping/shiprocket";
+import {
+  createShiprocketOrder,
+  checkShiprocketServiceability
+} from "@/lib/shipping/shiprocket";
 import {
   generateTrackingData,
   saveTrackingRecord
@@ -120,6 +123,29 @@ export async function POST(req: Request) {
       if (!order || !order.orderId) {
         return NextResponse.json({ error: "Invalid order payload" }, { status: 400 });
       }
+      const gstPercentage =
+        typeof db.settings?.gstPercent === "number" ? db.settings.gstPercent : 12;
+      const subtotal = order.pricing?.subtotal || order.pricing?.rawSubtotal || 2499;
+      const taxableAmount = Number(
+        (subtotal / (1 + gstPercentage / 100)).toFixed(2)
+      );
+      const gstAmount = Number((subtotal - taxableAmount).toFixed(2));
+      let shippingFee = order.pricing?.shippingFee || 0;
+      if (!shippingFee && order.customer?.pincode) {
+        const srCheck = await checkShiprocketServiceability(
+          order.customer.pincode.replace(/\D/g, "")
+        );
+        shippingFee = srCheck?.shippingRate ?? 95;
+      }
+      order.pricing = {
+        ...order.pricing,
+        gstPercentage,
+        taxableAmount,
+        gstAmount,
+        shippingFee,
+        total: Number((subtotal + shippingFee).toFixed(2))
+      };
+
       // Push to Shiprocket automatically on manual order creation
       const srRes = await createShiprocketOrder({
         order_id: order.orderId,

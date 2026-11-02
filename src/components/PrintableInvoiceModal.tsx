@@ -21,13 +21,18 @@ export default function PrintableInvoiceModal({
 
   const { customer, items, pricing, orderId, payment, shipping } = order;
 
-  // Indian GST computation (5% for artisanal apparel under ₹1000, 12% for ₹1000+)
-  const gstRate = 0.12;
+  // Indian GST computation (Product price includes GST; Shipping rate is added)
+  const gstPct = pricing.gstPercentage ?? 12;
+  const gstRate = gstPct / 100;
   const isInterState = customer.state?.toLowerCase() !== "kerala";
-  const taxableAmount = Math.round(pricing.total / (1 + gstRate));
-  const totalGst = pricing.total - taxableAmount;
-  const cgst = isInterState ? 0 : Math.round(totalGst / 2);
-  const sgst = isInterState ? 0 : totalGst - cgst;
+  const productSubtotal = pricing.subtotal || pricing.total;
+  const taxableAmount =
+    pricing.taxableAmount ??
+    Number((productSubtotal / (1 + gstRate)).toFixed(2));
+  const totalGst =
+    pricing.gstAmount ?? Number((productSubtotal - taxableAmount).toFixed(2));
+  const cgst = isInterState ? 0 : Number((totalGst / 2).toFixed(2));
+  const sgst = isInterState ? 0 : Number((totalGst - cgst).toFixed(2));
   const igst = isInterState ? totalGst : 0;
 
   const handlePrint = () => {
@@ -227,7 +232,7 @@ export default function PrintableInvoiceModal({
                     <td className="py-3 text-black/70">6212</td>
                     <td className="py-3 text-center font-bold">{item.quantity}</td>
                     <td className="py-3 text-right">₹{item.unitPrice.toLocaleString("en-IN")}</td>
-                    <td className="py-3 text-right">₹{Math.round(item.totalPrice / 1.12).toLocaleString("en-IN")}</td>
+                    <td className="py-3 text-right">₹{Number((item.totalPrice / (1 + gstRate)).toFixed(2)).toLocaleString("en-IN")}</td>
                     <td className="py-3 text-right font-bold">₹{item.totalPrice.toLocaleString("en-IN")}</td>
                   </tr>
                 ))}
@@ -236,24 +241,24 @@ export default function PrintableInvoiceModal({
 
             {/* Calculations & GST Breakdown */}
             <div className="flex justify-end pt-2">
-              <div className="w-64 space-y-1.5 text-xs text-black/80">
+              <div className="w-72 space-y-1.5 text-xs text-black/80">
                 <div className="flex justify-between">
-                  <span>Net Taxable Amount:</span>
+                  <span>Product Rate (Excl. GST):</span>
                   <span>₹{taxableAmount.toLocaleString("en-IN")}</span>
                 </div>
                 {isInterState ? (
                   <div className="flex justify-between text-black/70">
-                    <span>IGST (12%):</span>
+                    <span>IGST ({gstPct}%):</span>
                     <span>₹{igst.toLocaleString("en-IN")}</span>
                   </div>
                 ) : (
                   <>
                     <div className="flex justify-between text-black/70">
-                      <span>CGST (6%):</span>
+                      <span>CGST ({gstPct / 2}%):</span>
                       <span>₹{cgst.toLocaleString("en-IN")}</span>
                     </div>
                     <div className="flex justify-between text-black/70">
-                      <span>SGST (6%):</span>
+                      <span>SGST ({gstPct / 2}%):</span>
                       <span>₹{sgst.toLocaleString("en-IN")}</span>
                     </div>
                   </>
@@ -264,12 +269,20 @@ export default function PrintableInvoiceModal({
                     <span>-₹{pricing.discountAmount.toLocaleString("en-IN")}</span>
                   </div>
                 )}
-                <div className="flex justify-between">
-                  <span>Air Express Shipping:</span>
-                  <span>{pricing.shippingFee === 0 ? "FREE" : `₹${pricing.shippingFee}`}</span>
+                <div className="flex justify-between font-bold text-black">
+                  <span>Product Total (Incl. {gstPct}% GST):</span>
+                  <span>₹{productSubtotal.toLocaleString("en-IN")}</span>
+                </div>
+                <div className="flex justify-between text-amber-950 font-bold">
+                  <span>Shipping Rate (PIN {customer.pincode}):</span>
+                  <span>
+                    {pricing.shippingFee === 0
+                      ? "₹0"
+                      : `+ ₹${pricing.shippingFee.toLocaleString("en-IN")}`}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm font-bold text-black pt-2 border-t-2 border-black">
-                  <span>Grand Total:</span>
+                  <span>Grand Total (Incl. GST + Shipping):</span>
                   <span>₹{pricing.total.toLocaleString("en-IN")}</span>
                 </div>
               </div>

@@ -16,6 +16,7 @@ interface CartDrawerProps {
   onUpdateQuantity: (productId: string, size: string, delta: number) => void;
   onRemoveItem: (productId: string, size: string) => void;
   appliedDiscount: number;
+  gstPercent?: number;
   onApplyPromoCode: (code: string) => boolean;
   onStartCheckout?: (initialPincode?: string) => void;
 }
@@ -27,6 +28,7 @@ export default function CartDrawer({
   onUpdateQuantity,
   onRemoveItem,
   appliedDiscount,
+  gstPercent = 12,
   onApplyPromoCode,
   onStartCheckout
 }: CartDrawerProps) {
@@ -34,7 +36,7 @@ export default function CartDrawer({
   const [promoMessage, setPromoMessage] = useState<string | null>(null);
   const [checkoutStep, setCheckoutStep] = useState<"cart" | "success">("cart");
 
-  // PIN Code Delivery Calculator
+  // PIN Code Delivery & Live Shipping Rate Calculator
   const [pincodeInput, setPincodeInput] = useState("");
   const [pincodeLoading, setPincodeLoading] = useState(false);
   const [pincodeResult, setPincodeResult] = useState<{
@@ -42,6 +44,7 @@ export default function CartDrawer({
     state: string;
     estimatedDelivery: string;
     courier: string;
+    shippingRate?: number;
   } | null>(null);
   const [pincodeError, setPincodeError] = useState<string | null>(null);
 
@@ -51,22 +54,29 @@ export default function CartDrawer({
     (sum, item) => sum + item.product.price * item.quantity,
     0
   );
-  const discountAmount = (rawSubtotal * appliedDiscount) / 100;
+  const discountAmount = Math.round((rawSubtotal * appliedDiscount) / 100);
   const subtotal = Math.max(0, rawSubtotal - discountAmount);
-  const freeShippingThreshold = 4000;
-  const shipping = subtotal >= freeShippingThreshold || subtotal === 0 ? 0 : 250;
-  const total = subtotal + shipping;
+  const taxableAmount = Number(
+    (subtotal / (1 + gstPercent / 100)).toFixed(2)
+  );
+  const gstAmount = Number((subtotal - taxableAmount).toFixed(2));
+  const shipping =
+    subtotal === 0
+      ? 0
+      : typeof pincodeResult?.shippingRate === "number"
+        ? Number(pincodeResult.shippingRate.toFixed(2))
+        : 185;
+  const total = Number((subtotal + shipping).toFixed(2));
 
-  const handleCheckPincode = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!/^\d{6}$/.test(pincodeInput.trim())) {
+  const lookupPincodeRate = async (pin: string) => {
+    if (!/^\d{6}$/.test(pin)) {
       setPincodeError("Enter a valid 6-digit Indian PIN code");
       return;
     }
     setPincodeLoading(true);
     setPincodeError(null);
     try {
-      const res = await fetch(`/api/shipping/pincode?pincode=${pincodeInput.trim()}`);
+      const res = await fetch(`/api/shipping/pincode?pincode=${pin}`);
       const data = await res.json();
       if (res.ok && data.success) {
         setPincodeResult(data);
@@ -78,6 +88,11 @@ export default function CartDrawer({
     } finally {
       setPincodeLoading(false);
     }
+  };
+
+  const handleCheckPincode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await lookupPincodeRate(pincodeInput.trim());
   };
 
   const handlePromoSubmit = (e: React.FormEvent) => {
@@ -127,31 +142,23 @@ export default function CartDrawer({
           </button>
         </div>
 
-        {/* Free Shipping Milestone Indicator */}
+        {/* Live PIN-Based Shipping Rate Banner */}
         <div className="px-6 py-3 bg-neutral-100 border-b border-black/5 text-[11px] font-mono">
-          {subtotal >= freeShippingThreshold ? (
-            <p className="text-emerald-800 font-semibold flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              You qualify for Free Express Delivery across India!
+          {pincodeResult ? (
+            <p className="text-emerald-900 font-semibold flex items-center justify-between gap-1.5">
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+                PIN {pincodeInput}: {pincodeResult.city} ({pincodeResult.courier})
+              </span>
+              <span className="font-black text-black">
+                Shipping: ₹{shipping.toLocaleString("en-IN")}
+              </span>
             </p>
           ) : (
-            <div>
-              <p className="text-black/80 mb-1">
-                Add{" "}
-                <span className="font-bold text-black">
-                  ₹{(freeShippingThreshold - subtotal).toLocaleString("en-IN")}
-                </span>{" "}
-                more to unlock Free Express Shipping.
-              </p>
-              <div className="w-full h-1.5 bg-black/10 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-black transition-all duration-500"
-                  style={{
-                    width: `${Math.min(100, (subtotal / freeShippingThreshold) * 100)}%`
-                  }}
-                />
-              </div>
-            </div>
+            <p className="text-black/80">
+              Enter your 6-digit PIN code below to calculate your exact{" "}
+              <span className="font-bold text-black">Shiprocket Courier Rate</span>.
+            </p>
           )}
         </div>
 
@@ -297,7 +304,13 @@ export default function CartDrawer({
                     maxLength={6}
                     placeholder="Enter 6-digit PIN code"
                     value={pincodeInput}
-                    onChange={(e) => setPincodeInput(e.target.value.replace(/\D/g, ""))}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "");
+                      setPincodeInput(val);
+                      if (val.length === 6) {
+                        void lookupPincodeRate(val);
+                      }
+                    }}
                     className="w-full bg-white border border-black/15 rounded-xl pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:border-black"
                   />
                 </div>
@@ -306,19 +319,29 @@ export default function CartDrawer({
                   disabled={pincodeLoading}
                   className="px-3.5 py-1.5 bg-black text-white text-[11px] font-bold uppercase rounded-xl hover:bg-black/80 transition-all disabled:opacity-50"
                 >
-                  {pincodeLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Check"}
+                  {pincodeLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Check Rate"}
                 </button>
               </form>
 
               {pincodeResult && (
-                <div className="p-2 bg-emerald-50 border border-emerald-200/80 rounded-xl text-[11px] text-emerald-950 flex items-start gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0 mt-0.5" />
-                  <div>
+                <div className="p-2 bg-emerald-50 border border-emerald-200/80 rounded-xl text-[11px] text-emerald-950 flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0 mt-0.5" />
                     <div>
-                      Delivery to <strong className="text-black">{pincodeResult.city}, {pincodeResult.state}</strong> by:
+                      <div>
+                        Delivery to <strong className="text-black">{pincodeResult.city}, {pincodeResult.state}</strong>:
+                      </div>
+                      <div className="font-bold text-emerald-900 mt-0.5">
+                        {pincodeResult.estimatedDelivery} ({pincodeResult.courier})
+                      </div>
                     </div>
-                    <div className="font-bold text-emerald-900 mt-0.5">
-                      {pincodeResult.estimatedDelivery} ({pincodeResult.courier})
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="text-[9px] uppercase text-black/60 font-bold">
+                      Exact Rate
+                    </div>
+                    <div className="text-xs font-black text-black">
+                      ₹{shipping.toLocaleString("en-IN")}
                     </div>
                   </div>
                 </div>
@@ -351,12 +374,18 @@ export default function CartDrawer({
               </p>
             )}
 
-            {/* Price Calculations in INR */}
-            <div className="space-y-1.5 text-xs text-black/70 pt-2 border-t border-black/10">
+            {/* Price Calculations in INR (Product Rate, GST, Shipping Rate & Total) */}
+            <div className="space-y-1.5 text-xs text-black/75 pt-2 border-t border-black/10">
               <div className="flex justify-between">
-                <span>Subtotal:</span>
+                <span>Product Rate (Excl. GST):</span>
                 <span className="font-semibold text-black">
-                  ₹{rawSubtotal.toLocaleString("en-IN")}
+                  ₹{taxableAmount.toLocaleString("en-IN")}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>GST ({gstPercent}% Included):</span>
+                <span className="font-semibold text-black">
+                  ₹{gstAmount.toLocaleString("en-IN")}
                 </span>
               </div>
               {appliedDiscount > 0 && (
@@ -366,13 +395,25 @@ export default function CartDrawer({
                 </div>
               )}
               <div className="flex justify-between">
-                <span>Shipping:</span>
-                <span>
-                  {shipping === 0 ? "FREE" : `₹${shipping.toLocaleString("en-IN")}`}
+                <span>Product Subtotal (Incl. GST):</span>
+                <span className="font-bold text-black">
+                  ₹{subtotal.toLocaleString("en-IN")}
                 </span>
               </div>
-              <div className="flex justify-between text-sm font-bold text-black pt-2 border-t border-black/10">
-                <span>Total:</span>
+              <div className="flex justify-between text-amber-950 font-semibold">
+                <span>
+                  Shipping Rate{" "}
+                  {pincodeResult
+                    ? `(PIN ${pincodeInput})`
+                    : "(Est. — Enter PIN above)"}
+                  :
+                </span>
+                <span className="font-bold text-black">
+                  + ₹{shipping.toLocaleString("en-IN")}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm font-black text-black pt-2 border-t border-black/15">
+                <span>Total Payable (Incl. GST + Shipping):</span>
                 <span>₹{total.toLocaleString("en-IN")}</span>
               </div>
             </div>

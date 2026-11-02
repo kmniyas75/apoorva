@@ -98,6 +98,11 @@ function OrderPaymentContent() {
   const [resolvedDeliveryInfo, setResolvedDeliveryInfo] = useState<
     string | null
   >(null);
+  const [gstPercent, setGstPercent] = useState<number>(12);
+  const [shippingFee, setShippingFee] = useState<number>(95);
+  const [courierName, setCourierName] = useState<string>(
+    "Blue Dart Air Express"
+  );
 
   const [step, setStep] = useState<
     "ready" | "processing" | "success" | "failed"
@@ -122,6 +127,9 @@ function OrderPaymentContent() {
             ? data.products
             : PRODUCTS;
         setCatalog(loadedProducts);
+        if (typeof data.settings?.gstPercent === "number") {
+          setGstPercent(data.settings.gstPercent);
+        }
 
         if (Array.isArray(data.orders)) {
           const matchedOrder = (data.orders as OrderRecord[]).find(
@@ -191,7 +199,7 @@ function OrderPaymentContent() {
     };
   }, [rawOrderId]);
 
-  // Live PIN code lookup -> Auto-detect City, State & Express Courier ETA
+  // Live PIN code lookup -> Auto-detect City, State, Express Courier ETA & Exact Shipping Rate
   useEffect(() => {
     const pin = customer.pincode.replace(/\D/g, "");
     if (pin.length === 6) {
@@ -205,8 +213,14 @@ function OrderPaymentContent() {
               city: data.city,
               state: data.state
             }));
+            const exactRate =
+              typeof data.shippingRate === "number" && data.shippingRate > 0
+                ? Number(data.shippingRate.toFixed(2))
+                : 185;
+            setShippingFee(exactRate);
+            setCourierName(data.courier || "Blue Dart Air Express");
             setResolvedDeliveryInfo(
-              `Free Express Air Delivery by ${data.estimatedDelivery} to ${data.city}, ${data.state} (${data.courier})`
+              `Express Air Delivery by ${data.estimatedDelivery} to ${data.city}, ${data.state} (${data.courier}) • Shipping Rate: ₹${exactRate.toLocaleString("en-IN")}`
             );
           }
         })
@@ -242,7 +256,12 @@ function OrderPaymentContent() {
     0
   );
   const discountAmount = Math.round((rawSubtotal * discountPct) / 100);
-  const total = Math.max(0, rawSubtotal - discountAmount);
+  const subtotal = Math.max(0, rawSubtotal - discountAmount);
+  const taxableAmount = Number(
+    (subtotal / (1 + gstPercent / 100)).toFixed(2)
+  );
+  const gstAmount = Number((subtotal - taxableAmount).toFixed(2));
+  const total = Number((subtotal + shippingFee).toFixed(2));
 
   const handlePayNow = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -306,7 +325,8 @@ function OrderPaymentContent() {
             quantity: i.quantity
           })),
           customer: finalCustomer,
-          appliedDiscount: discountPct
+          appliedDiscount: discountPct,
+          shippingFee
         })
       });
 
@@ -547,7 +567,7 @@ function OrderPaymentContent() {
                           Fit: {item.size}
                         </div>
                         <div className="text-[10px] text-emerald-800 font-bold uppercase mt-0.5">
-                          ✓ Free Express Air Shipping
+                          ✓ Incl. {gstPercent}% GST • + ₹{shippingFee.toLocaleString("en-IN")} Shipping
                         </div>
                       </div>
                       <div className="text-right shrink-0">
@@ -821,6 +841,51 @@ function OrderPaymentContent() {
                     )}
                   </div>
                 </fieldset>
+
+                {/* 3. Itemized Bill & GST Summary Card */}
+                <div className="rounded-2xl border border-black/15 bg-white p-3.5 sm:p-4 text-xs space-y-1.5">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-black/80 border-b border-black/10 pb-1.5 mb-1">
+                    3. BILL &amp; GST SUMMARY
+                  </div>
+                  <div className="flex justify-between text-black/75">
+                    <span>Product Rate (Excl. GST):</span>
+                    <span className="font-bold text-black">
+                      ₹{taxableAmount.toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-black/75">
+                    <span>GST ({gstPercent}% Included in Product Price):</span>
+                    <span className="font-bold text-black">
+                      ₹{gstAmount.toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-emerald-800 font-bold">
+                      <span>2-Set Bundle Discount ({discountPct}%):</span>
+                      <span>-₹{discountAmount.toLocaleString("en-IN")}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-black/85 font-bold">
+                    <span>Product Total (Incl. {gstPercent}% GST):</span>
+                    <span>₹{subtotal.toLocaleString("en-IN")}</span>
+                  </div>
+                  <div className="flex justify-between text-amber-950 font-bold">
+                    <span>
+                      Shipping Rate (
+                      {customer.pincode.length === 6
+                        ? `PIN ${customer.pincode} • ${courierName}`
+                        : "Enter 6-digit PIN above"}
+                      ):
+                    </span>
+                    <span className="text-black">
+                      + ₹{shippingFee.toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm font-black text-black pt-2 border-t border-black/15">
+                    <span>Total Payable (Incl. GST + Shipping):</span>
+                    <span>₹{total.toLocaleString("en-IN")}</span>
+                  </div>
+                </div>
 
                 {/* Primary 1-Click Pay Button */}
                 <button
