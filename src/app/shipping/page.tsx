@@ -42,13 +42,17 @@ export default function ShippingPage() {
 
       <section className="space-y-2">
         <h2 className="text-sm sm:text-base font-black uppercase text-black">
-          3. Complimentary Express Shipping
+          3. Transparent PIN-Based Express Shipping &amp; GST
         </h2>
         <p>
-          We offer <strong>Free Express Shipping</strong> across India on all
-          beachwear sets above ₹4,000. As soon as your package is handed over to
-          the courier, you will receive an email and WhatsApp message with your
-          live Airway Bill (AWB) tracking number.
+          All product prices on <strong>APOORVA SHELLS</strong> are inclusive of
+          GST (with the full Product Base Rate + GST % breakdown displayed on your
+          bill and at checkout). Exact Express Air shipping charges are
+          calculated dynamically in real time based on your 6-digit delivery PIN
+          code via Shiprocket (Blue Dart Air / Delhivery Express) and displayed
+          before you complete your Razorpay payment. As soon as your package is
+          handed over to the courier, you will receive an email and WhatsApp
+          message with your live Airway Bill (AWB) tracking number.
         </p>
       </section>
     </LegalPageShell>

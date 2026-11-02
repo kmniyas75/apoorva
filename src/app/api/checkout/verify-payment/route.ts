@@ -86,7 +86,8 @@ export async function POST(req: Request) {
         selling_price: i.unitPrice
       })),
       payment_method: "Prepaid",
-      sub_total: pricing.total,
+      sub_total: pricing.subtotal || pricing.total,
+      shipping_charges: pricing.shippingFee || 0,
       length: 22,
       breadth: 18,
       height: 12,

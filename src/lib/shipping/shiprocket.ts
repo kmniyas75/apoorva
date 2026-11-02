@@ -35,6 +35,7 @@ interface ShiprocketOrderPayload {
   order_items: ShiprocketOrderItem[];
   payment_method: "Prepaid" | "COD";
   sub_total: number;
+  shipping_charges?: number;
   length: number; // in cm
   breadth: number; // in cm
   height: number; // in cm

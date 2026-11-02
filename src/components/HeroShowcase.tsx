@@ -262,7 +262,7 @@ export default function HeroShowcase({
 
           <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-white/85 border border-amber-950/15 text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-950 shadow-2xs whitespace-nowrap">
             <Lock className="w-3 h-3 text-emerald-700 shrink-0" />
-            <span>100% Prepaid via Razorpay • Free Air Shipping</span>
+            <span>100% Prepaid via Razorpay • Incl. GST + Live PIN Air Shipping</span>
           </div>
         </div>
 
@@ -803,7 +803,7 @@ export default function HeroShowcase({
             </span>
             <span className="flex items-center gap-1.5 font-semibold">
               <Truck className="w-4 h-4 text-amber-900" />
-              Free Express Dispatch from Aluva, Kerala
+              Express Air Dispatch from Aluva, Kerala (Live PIN Rates)
             </span>
             <span className="flex items-center gap-1.5 font-semibold">
               <Lock className="w-3.5 h-3.5 text-emerald-800" />

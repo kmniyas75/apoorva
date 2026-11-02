@@ -256,7 +256,7 @@ async function buildPersuasiveDoubtAnswer(params: {
   ) {
     return (
       `🌴 *Artisanal Value & Instant ${discountPct}% Savings:*\n` +
-      `Each piece takes 3 days of hand-carving, organic cotton lining, and weaving by master artisans in Aluva, Kerala. While Set 01 is *₹${prod1Price.toLocaleString("en-IN")}* and Set 02 is *₹${prod2Price.toLocaleString("en-IN")}*, you can get *Both Sets together for ₹${bundlePrice.toLocaleString("en-IN")} (${discountPct}% OFF)* + *Free Express Air Shipping*!`
+      `Each piece takes 3 days of hand-carving, organic cotton lining, and weaving by master artisans in Aluva, Kerala. While Set 01 is *₹${prod1Price.toLocaleString("en-IN")}* and Set 02 is *₹${prod2Price.toLocaleString("en-IN")}* (inclusive of GST), you can get *Both Sets together for ₹${bundlePrice.toLocaleString("en-IN")} (${discountPct}% OFF)* + live PIN-based Express Air Shipping!`
     );
   }
 
@@ -267,8 +267,8 @@ async function buildPersuasiveDoubtAnswer(params: {
     )
   ) {
     return (
-      `✈️ *Free Express Air Shipping (24–72 Hours):*\n` +
-      `We dispatch directly from our Aluva, Kerala atelier via *Blue Dart Air Express*! Deliveries to Kochi & Kerala arrive in *24–48 hours*, and Goa, Mumbai, Bengaluru, Delhi & pan-India arrive in *2–3 business days* with live AWB tracking.`
+      `✈️ *Express Air Shipping (24–72 Hours):*\n` +
+      `We dispatch directly from our Aluva, Kerala atelier via *Blue Dart Air Express* (exact PIN-based courier rate calculated live at checkout)! Deliveries to Kochi & Kerala arrive in *24–48 hours*, and Goa, Mumbai, Bengaluru, Delhi & pan-India arrive in *2–3 business days* with live AWB tracking.`
     );
   }
 
@@ -303,8 +303,8 @@ Key facts to convince them:
 - Lined inside with 2mm soft organic malmal cotton felt (zero itch, super comfortable).
 - Triple-cured in virgin coconut oil (100% ocean & pool safe).
 - Signature "cut a cap, don't split in half" flattering anatomical curve + adjustable braided ties (fits XS to XL).
-- Set 01 (Coir Fringe Set): ₹${prod1Price.toLocaleString("en-IN")} | Set 02 (Jute Wrap Set): ₹${prod2Price.toLocaleString("en-IN")} | Both Sets Bundle: ₹${bundlePrice.toLocaleString("en-IN")} (15% OFF).
-- Free 2-3 day Blue Dart Air Express shipping across India.
+- Set 01 (Coir Fringe Set): ₹${prod1Price.toLocaleString("en-IN")} | Set 02 (Jute Wrap Set): ₹${prod2Price.toLocaleString("en-IN")} | Both Sets Bundle: ₹${bundlePrice.toLocaleString("en-IN")} (15% OFF), all inclusive of GST.
+- Fast 2-3 day Blue Dart Air Express shipping across India (exact PIN-based rate calculated at checkout).
 Do NOT ask for their address in chat (we use a 2-tap button flow). Keep it under 55 words.`
   });
 
@@ -313,7 +313,7 @@ Do NOT ask for their address in chat (we use a 2-tap button flow). Keep it under
   }
 
   return (
-    `🌴 Handcrafted at our Aluva, Kerala atelier, every *APOORVA SHELLS* set is lined with soft organic cotton, 100% ocean-safe, and ships free via *Blue Dart Air Express* (2–3 days across India)!`
+    `🌴 Handcrafted at our Aluva, Kerala atelier, every *APOORVA SHELLS* set is lined with soft organic cotton, 100% ocean-safe, and ships via *Blue Dart Air Express* (2–3 days across India)!`
   );
 }
 
@@ -406,7 +406,13 @@ export function createOrderForChatSession(
   const totalQty = selectedItems.reduce((sum, i) => sum + i.quantity, 0);
   const discountPct = totalQty >= 2 ? db.settings.bundleDiscountPercent : 0;
   const discountAmount = Math.round((rawSubtotal * discountPct) / 100);
-  const total = rawSubtotal - discountAmount;
+  const subtotalInclGst = rawSubtotal - discountAmount;
+  const gstPercentage = db.settings.gstPercent ?? 12;
+  const taxableAmount = Math.round(
+    (subtotalInclGst * 100) / (100 + gstPercentage)
+  );
+  const gstAmount = subtotalInclGst - taxableAmount;
+  const total = subtotalInclGst;
 
   const orderNum = Math.floor(10000 + Math.random() * 90000);
   const orderId = session.orderId || `APV-${orderNum}`;
@@ -451,7 +457,10 @@ export function createOrderForChatSession(
       rawSubtotal,
       discountPercentage: discountPct,
       discountAmount,
-      subtotal: total,
+      subtotal: subtotalInclGst,
+      gstPercentage,
+      taxableAmount,
+      gstAmount,
       shippingFee: 0,
       total,
       currency: "INR"
@@ -795,9 +804,9 @@ export async function processIncomingSalesChat(params: {
     aiReplyText =
       `🎉 Awesome! I've reserved your *APOORVA SHELLS* piece from our Aluva, Kerala Atelier:\n\n` +
       `🛍️ *Set:* ${itemSummary}\n` +
-      `💰 *Total:* ₹${createdOrder.pricing.total.toLocaleString("en-IN")} (Free Express Air Shipping)\n` +
+      `💰 *Product Total:* ₹${createdOrder.pricing.total.toLocaleString("en-IN")} (Incl. ${createdOrder.pricing.gstPercentage ?? 12}% GST + PIN Shipping at Checkout)\n` +
       `📦 *Order ID:* #${createdOrder.orderId}\n\n` +
-      `👇 *Tap below to enter your delivery address & pay securely via Razorpay (UPI / GPay / Cards):*\n` +
+      `👇 *Tap below to enter your delivery PIN code & pay securely via Razorpay (UPI / GPay / Cards):*\n` +
       `${paymentLink}`;
   }
 
@@ -993,7 +1002,7 @@ export async function handleAdminChatAction(params: {
 
     textToSend =
       textToSend ||
-      `🌴 Hi *${session.customerName}*! Here is your direct 1-Click Razorpay Checkout Link for Order *#${createdOrder.orderId}* (${itemSummary} • *₹${createdOrder.pricing.total.toLocaleString("en-IN")}* Free Express Shipping):\n\n💳 Tap to enter delivery address & pay:\n${paymentLink}`;
+      `🌴 Hi *${session.customerName}*! Here is your direct 1-Click Razorpay Checkout Link for Order *#${createdOrder.orderId}* (${itemSummary} • *₹${createdOrder.pricing.total.toLocaleString("en-IN")}* Incl. GST + Live PIN Shipping):\n\n💳 Tap to enter delivery PIN code & pay:\n${paymentLink}`;
   }
 
   if (!textToSend) {

@@ -192,7 +192,7 @@ export default function ProductQuickView({
                 </span>
               )}
               <span className="text-[10px] font-mono font-semibold bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded-full ml-auto">
-                FREE EXPRESS DELIVERY
+                INCL. GST • EXPRESS AIR DELIVERY
               </span>
             </div>
 
