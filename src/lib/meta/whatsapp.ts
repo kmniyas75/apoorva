@@ -288,8 +288,11 @@ export async function sendWhatsAppInteractiveButtons(params: {
 }
 
 /**
- * Sends an Instagram DM or Facebook Messenger message via Meta Graph API (`/{version}/me/messages`).
- * Supports product image attachments and interactive `quick_replies` tap buttons!
+ * Sends an Instagram DM or Facebook Messenger message via Meta Graph API.
+ * Supports both:
+ *   - Instagram Login tokens (`IG...` -> `https://graph.instagram.com/v22.0/me/messages`)
+ *   - Unified / Facebook Login tokens (`EAA...` -> `https://graph.facebook.com/v25.0/me/messages`)
+ *   - Product image attachments and interactive `quick_replies` tap buttons!
  */
 export async function sendMetaSocialDirectMessage(params: {
   channel: "instagram" | "facebook";
@@ -302,36 +305,48 @@ export async function sendMetaSocialDirectMessage(params: {
   messageId?: string;
   error?: string;
 }> {
-  const { accessToken, graphVersion } = getMetaWhatsAppConfig();
+  const { accessToken: defaultMetaToken, graphVersion } = getMetaWhatsAppConfig();
+  const channelToken =
+    params.channel === "instagram"
+      ? cleanEnv(process.env.INSTAGRAM_ACCESS_TOKEN) || defaultMetaToken
+      : cleanEnv(process.env.FACEBOOK_PAGE_ACCESS_TOKEN) || defaultMetaToken;
+
   const cleanRecipientId = params.recipientId
     .replace(/^@ig_/, "")
     .replace(/^fb\.me\//, "")
     .replace(/^@/, "")
     .trim();
 
-  if (!cleanRecipientId || !accessToken) {
-    return { sent: false, error: "Missing recipientId or Meta access token" };
+  if (!cleanRecipientId || !channelToken) {
+    return { sent: false, error: "Missing recipientId or access token" };
   }
+
+  // Instagram tokens starting with "IG" use graph.instagram.com; "EAA" tokens use graph.facebook.com
+  const isIgDirectToken =
+    params.channel === "instagram" && channelToken.startsWith("IG");
+  const baseEndpoint = isIgDirectToken
+    ? "https://graph.instagram.com/v22.0/me/messages"
+    : `https://graph.facebook.com/${graphVersion}/me/messages`;
 
   try {
     // 1. Send product images first if provided
     if (params.images && params.images.length > 0) {
       for (const img of params.images) {
-        await fetch(`https://graph.facebook.com/${graphVersion}/me/messages`, {
+        await fetch(baseEndpoint, {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${channelToken}`,
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
             recipient: { id: cleanRecipientId },
-            messaging_type: "RESPONSE",
+            ...(isIgDirectToken ? {} : { messaging_type: "RESPONSE" }),
             message: {
               attachment: {
                 type: "image",
                 payload: {
                   url: img.url,
-                  is_reusable: true
+                  ...(isIgDirectToken ? {} : { is_reusable: true })
                 }
               }
             }
@@ -351,25 +366,22 @@ export async function sendMetaSocialDirectMessage(params: {
           }))
         : undefined;
 
-    const res = await fetch(
-      `https://graph.facebook.com/${graphVersion}/me/messages`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          recipient: { id: cleanRecipientId },
-          messaging_type: "RESPONSE",
-          message: {
-            text: formatWhatsAppMarkdown(params.body),
-            ...(quickReplies ? { quick_replies: quickReplies } : {})
-          }
-        }),
-        cache: "no-store"
-      }
-    );
+    const res = await fetch(baseEndpoint, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${channelToken}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        recipient: { id: cleanRecipientId },
+        ...(isIgDirectToken ? {} : { messaging_type: "RESPONSE" }),
+        message: {
+          text: formatWhatsAppMarkdown(params.body),
+          ...(quickReplies ? { quick_replies: quickReplies } : {})
+        }
+      }),
+      cache: "no-store"
+    });
 
     const data = (await res.json()) as {
       message_id?: string;
