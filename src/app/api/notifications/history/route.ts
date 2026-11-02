@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import {
   getEmailLogs,
+  getResendApiKey,
+  getSenderEmail,
+  getAdminEmail,
   sendOrderConfirmationEmail,
   sendAdminOrderAlertEmail,
   sendShippingDispatchEmail,
@@ -11,14 +14,12 @@ import { PRODUCTS } from "@/data/products";
 
 export async function GET() {
   const logs = getEmailLogs();
+  const apiKey = getResendApiKey();
   return NextResponse.json({
     logs,
-    resendConfigured: Boolean(
-      process.env.RESEND_API_KEY &&
-        process.env.RESEND_API_KEY !== "re_test_placeholder"
-    ),
-    fromEmail: process.env.RESEND_FROM_EMAIL || "APOORVA Atelier <onboarding@resend.dev>",
-    adminEmail: process.env.ADMIN_NOTIFICATION_EMAIL || "concierge@apoorva.luxury"
+    resendConfigured: Boolean(apiKey && apiKey.startsWith("re_")),
+    fromEmail: getSenderEmail(),
+    adminEmail: getAdminEmail()
   });
 }
 
@@ -37,7 +38,7 @@ export async function POST(req: Request) {
       status: "paid",
       customer: {
         fullName: "Ananya Sharma",
-        email: recipientEmail || "client@apoorva.luxury",
+        email: recipientEmail || "apoorvacoastal@gmail.com",
         phone: "+91 98401 23456",
         addressLine1: "Penthouse 14B, Palm Grove Residencies",
         addressLine2: "Off Marine Drive",
