@@ -14,14 +14,17 @@ import {
   sendMetaSocialDirectMessage
 } from "@/lib/meta/whatsapp";
 
-const SITE_URL =
-  (
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.SITE_URL ||
-    "https://www.apoorvashells.com"
-  )
-    .trim()
-    .replace(/\/+$/, "");
+const rawSiteUrl = (
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  process.env.SITE_URL ||
+  "https://www.apoorvashells.com"
+)
+  .trim()
+  .replace(/\/+$/, "");
+
+const SITE_URL = rawSiteUrl.includes("apoorva-eight.vercel.app")
+  ? "https://www.apoorvashells.com"
+  : rawSiteUrl;
 
 function detectProductChoice(
   text: string
