@@ -2,21 +2,24 @@
 
 import React, { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Sparkles, X, Send, Loader2 } from "lucide-react";
+import { Sparkles, X, Send, Loader2, CreditCard } from "lucide-react";
 import {
   initFirebaseAnalytics,
   trackApoorvaEvent
 } from "@/lib/firebase/client";
 
 interface ChatTurn {
-  role: "user" | "model";
+  id?: string;
+  sender: "customer" | "ai" | "admin";
   text: string;
+  paymentLink?: string;
+  orderId?: string;
 }
 
 const QUICK_PROMPTS = [
+  "Buy BOTH sets (15% OFF)",
   "Style A vs Style B cup fit?",
-  "Set 01 Coir vs Set 02 Jute?",
-  "How fast is delivery?"
+  "Book Set 01 — send payment link"
 ];
 
 export default function FirebaseAnalytics() {
@@ -24,10 +27,11 @@ export default function FirebaseAnalytics() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sessionId, setSessionId] = useState<string>("");
   const [messages, setMessages] = useState<ChatTurn[]>([
     {
-      role: "model",
-      text: "Namaskaram! I’m your APOORVA AI Coastal Stylist (powered by Gemini). Ask me about Style A vs Style B coconut cup contours, Coir vs Jute skirts, or sizing!"
+      sender: "ai",
+      text: "Namaskaram! 🌴 I’m your APOORVA AI Sales Concierge (Aluva, Kerala). Tell me which beachwear set you love (Set 01 Coir ₹4,200, Set 02 Jute ₹4,500, or Both at ₹7,395 with 15% OFF) and share your delivery address + PIN code to get your instant 1-Click Razorpay payment link right here!"
     }
   ]);
 
@@ -37,7 +41,44 @@ export default function FirebaseAnalytics() {
         page_path: pathname || "/"
       });
     });
+
+    if (typeof window !== "undefined") {
+      let storedId = window.localStorage.getItem("apoorva_web_chat_session_id");
+      if (!storedId) {
+        storedId = `chat-website-${Math.floor(100000 + Math.random() * 900000)}`;
+        window.localStorage.setItem("apoorva_web_chat_session_id", storedId);
+      }
+      setSessionId(storedId);
+    }
   }, [pathname]);
+
+  // Poll for live Admin replies when chat window is open
+  useEffect(() => {
+    if (!open || !sessionId) return;
+    const loadSession = async () => {
+      try {
+        const res = await fetch(
+          `/api/ai/concierge?sessionId=${encodeURIComponent(sessionId)}`,
+          { cache: "no-store" }
+        );
+        const data = await res.json();
+        if (
+          data?.session?.messages &&
+          Array.isArray(data.session.messages) &&
+          data.session.messages.length > 0
+        ) {
+          setMessages(data.session.messages);
+        }
+      } catch {
+        // ignore background poll errors
+      }
+    };
+    void loadSession();
+    const interval = setInterval(() => {
+      void loadSession();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [open, sessionId]);
 
   // Hide floating AI stylist bubble on /admin so admin controls stay unobstructed
   if (pathname?.startsWith("/admin")) {
@@ -50,7 +91,7 @@ export default function FirebaseAnalytics() {
 
     const nextHistory: ChatTurn[] = [
       ...messages,
-      { role: "user", text: trimmed }
+      { sender: "customer", text: trimmed }
     ];
     setMessages(nextHistory);
     setInput("");
@@ -63,24 +104,36 @@ export default function FirebaseAnalytics() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: trimmed,
-          history: messages
+          sessionId,
+          visitorHandle: sessionId,
+          visitorName: `Website Visitor #${sessionId.slice(-4)}`
         })
       });
       const data = await res.json();
-      setMessages([
-        ...nextHistory,
-        {
-          role: "model",
-          text:
-            data.reply ||
-            "Our Aluva atelier team recommends Set 01 (Coir Fringe) for beach bonfire parties and Set 02 (Jute Wrap) for resort poolside lounging."
-        }
-      ]);
+      if (
+        data?.session?.messages &&
+        Array.isArray(data.session.messages) &&
+        data.session.messages.length > 0
+      ) {
+        setMessages(data.session.messages);
+      } else {
+        setMessages([
+          ...nextHistory,
+          {
+            sender: "ai",
+            text:
+              data.reply ||
+              "Share your preferred set (Set 01, Set 02, or Both) and your delivery address + 6-digit PIN code for an instant Razorpay payment link!",
+            paymentLink: data.paymentLink,
+            orderId: data.order?.orderId
+          }
+        ]);
+      }
     } catch {
       setMessages([
         ...nextHistory,
         {
-          role: "model",
+          sender: "ai",
           text: "Both Set 01 (₹4,200) and Set 02 (₹4,500) include cotton-lined coconut cups and adjustable XS–XL waist ties with Free Express Delivery."
         }
       ]);
@@ -95,7 +148,7 @@ export default function FirebaseAnalytics() {
       style={{ bottom: "max(0.85rem, env(safe-area-inset-bottom))" }}
     >
       {open ? (
-        <div className="w-[calc(100vw-1.5rem)] max-w-[350px] bg-white border border-black/15 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+        <div className="w-[calc(100vw-1.5rem)] max-w-[365px] bg-white border border-black/15 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
           <div className="bg-[#141414] text-white px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-amber-400 text-black flex items-center justify-center">
@@ -103,10 +156,10 @@ export default function FirebaseAnalytics() {
               </span>
               <div>
                 <p className="text-xs font-bold tracking-wider uppercase">
-                  APOORVA AI Stylist
+                  APOORVA AI Sales Agent
                 </p>
                 <p className="text-[10px] text-white/65 font-mono">
-                  Gemini Flash • Kerala Atelier
+                  Order & Pay in Chat • Live Concierge
                 </p>
               </div>
             </div>
@@ -120,23 +173,39 @@ export default function FirebaseAnalytics() {
             </button>
           </div>
 
-          <div className="p-3 space-y-2.5 max-h-[260px] overflow-y-auto bg-[#FAF8F5] text-xs leading-relaxed">
+          <div className="p-3 space-y-2.5 max-h-[290px] overflow-y-auto bg-[#FAF8F5] text-xs leading-relaxed">
             {messages.map((m, idx) => (
               <div
-                key={idx}
-                className={`p-2.5 rounded-xl ${
-                  m.role === "user"
+                key={m.id || idx}
+                className={`p-2.5 rounded-xl whitespace-pre-wrap ${
+                  m.sender === "customer"
                     ? "bg-[#141414] text-white ml-6"
-                    : "bg-white border border-black/10 text-[#141414] mr-4 shadow-xs"
+                    : m.sender === "admin"
+                      ? "bg-emerald-950 text-white border border-emerald-500/40 mr-4 shadow-xs"
+                      : "bg-white border border-black/10 text-[#141414] mr-4 shadow-xs"
                 }`}
               >
-                {m.text}
+                {m.sender === "admin" && (
+                  <div className="text-[9px] font-mono uppercase tracking-wider text-emerald-300 mb-1">
+                    ● Apoorva Atelier Team (Live)
+                  </div>
+                )}
+                <div>{m.text}</div>
+                {m.paymentLink && (
+                  <a
+                    href={m.paymentLink}
+                    className="mt-2.5 w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-black font-bold text-[11px] uppercase tracking-wider transition shadow-sm"
+                  >
+                    <CreditCard className="w-3.5 h-3.5" />
+                    Pay Now via Razorpay {m.orderId ? `(#${m.orderId})` : ""}
+                  </a>
+                )}
               </div>
             ))}
             {loading && (
               <div className="flex items-center gap-2 text-[11px] text-neutral-500 px-2 py-1">
                 <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-600" />
-                Consulting Aluva Atelier...
+                Preparing your beachwear recommendation...
               </div>
             )}
           </div>
@@ -165,7 +234,7 @@ export default function FirebaseAnalytics() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about cup style, sizing, or sets..."
+              placeholder="Reply with set, address & PIN code..."
               className="flex-1 text-xs px-3 py-2 rounded-xl border border-black/15 focus:outline-none focus:border-black"
             />
             <button
@@ -188,7 +257,7 @@ export default function FirebaseAnalytics() {
           className="flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-[#141414] text-white border border-white/15 shadow-xl hover:bg-neutral-800 transition text-xs font-mono tracking-wider uppercase"
         >
           <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-          <span>AI Stylist</span>
+          <span>AI Sales Chat</span>
         </button>
       )}
     </div>

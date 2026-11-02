@@ -623,5 +623,114 @@
     }
   ],
   "updatedAt": "2026-10-31T08:34:01.172Z",
-  "deletedMediaUrls": []
+  "deletedMediaUrls": [],
+  "chatSessions": [
+    {
+      "id": "chat-wa-9820144501",
+      "channel": "whatsapp",
+      "customerHandleOrPhone": "+91 98201 44501",
+      "customerName": "Ananya Deshmukh",
+      "stage": "paid",
+      "aiAutoPilot": true,
+      "selectedProduct": "both",
+      "selectedSize": "FREE SIZE (Adjustable Tie)",
+      "collectedAddress": {
+        "addressLine1": "Villa 14, Candolim Beach Road",
+        "city": "North Goa",
+        "state": "Goa",
+        "pincode": "403515"
+      },
+      "orderId": "APV-89421",
+      "paymentLink": "https://apoorva-eight.vercel.app/?payOrder=APV-89421",
+      "updatedAt": "2026-11-02T03:27:33.181Z",
+      "messages": [
+        {
+          "id": "msg-1",
+          "sender": "customer",
+          "text": "Hi! I saw your Coconut beachwear sets on Instagram. Can I wear them in the ocean water in Goa?",
+          "timestamp": "2026-11-02T03:09:33.181Z"
+        },
+        {
+          "id": "msg-2",
+          "sender": "ai",
+          "text": "Namaskaram Ananya! 🌴 Yes, both our handcrafted sets from Aluva, Kerala are treated with natural virgin coconut oil and lined with organic malmal cotton — 100% saltwater & resort pool safe!\n\n✨ Set 01: Coconut & Coir Fringe Set (₹4,200)\n✨ Set 02: Coconut & Jute Wrap Set (₹4,500)\n🔥 Complete 2-Set Resort Bundle: ₹7,395 (Save 15% — ₹1,305 OFF!)\n\nWhich set would you love for your Goa trip?",
+          "timestamp": "2026-11-02T03:12:33.181Z"
+        },
+        {
+          "id": "msg-3",
+          "sender": "customer",
+          "text": "I would love BOTH sets in Free Size! Deliver to Ananya Deshmukh, Villa 14, Candolim Beach Road, North Goa, PIN 403515",
+          "timestamp": "2026-11-02T03:21:33.181Z"
+        },
+        {
+          "id": "msg-4",
+          "sender": "ai",
+          "text": "🎉 Wonderful choice, Ananya! I have reserved the 2-Set Resort Bundle (15% OFF • ₹7,395) for delivery to Villa 14, Candolim Beach Road (PIN 403515).\n\n💳 Tap your 1-Click Razorpay Payment Link below to complete your order (#APV-89421):\nhttps://apoorva-eight.vercel.app/?payOrder=APV-89421",
+          "timestamp": "2026-11-02T03:24:33.181Z",
+          "paymentLink": "https://apoorva-eight.vercel.app/?payOrder=APV-89421",
+          "orderId": "APV-89421"
+        }
+      ]
+    },
+    {
+      "id": "chat-ig-rhea",
+      "channel": "instagram",
+      "customerHandleOrPhone": "@rhea.kapoor.style",
+      "customerName": "Rhea Kapoor",
+      "stage": "collecting_address",
+      "aiAutoPilot": true,
+      "selectedProduct": "set2",
+      "selectedSize": "S/M (Style A Cup)",
+      "updatedAt": "2026-11-02T05:02:33.181Z",
+      "messages": [
+        {
+          "id": "msg-ig-1",
+          "sender": "customer",
+          "text": "Hey! How much is the Coconut & Jute Wrap Skirt set? Does it fit S/M?",
+          "timestamp": "2026-11-02T04:57:33.181Z"
+        },
+        {
+          "id": "msg-ig-2",
+          "sender": "ai",
+          "text": "Hey Rhea! 🌊 The Coconut & Jute Wrap Beach Set (Product 02) is ₹4,500 with complimentary express shipping from our Aluva, Kerala atelier. And yes — S/M (Style A Cup) is in stock and features adjustable braided jute ties for a custom resort fit!\n\nWould you like me to book S/M for you? Just reply with your full delivery address & 6-digit PIN code and I will send your instant Razorpay payment link right here in DM! ✨",
+          "timestamp": "2026-11-02T04:58:33.181Z"
+        },
+        {
+          "id": "msg-ig-3",
+          "sender": "customer",
+          "text": "Yes please! Book Set 2 in S/M for me.",
+          "timestamp": "2026-11-02T05:01:33.181Z"
+        },
+        {
+          "id": "msg-ig-4",
+          "sender": "ai",
+          "text": "Locked in Set 02 (Coconut & Jute Wrap Set • S/M • ₹4,500) for you, Rhea! 🌴 Please share your Full Delivery Address, Phone Number, and 6-digit PIN code so I can generate your instant Razorpay checkout link.",
+          "timestamp": "2026-11-02T05:02:33.181Z"
+        }
+      ]
+    },
+    {
+      "id": "chat-fb-kavya",
+      "channel": "facebook",
+      "customerHandleOrPhone": "fb.me/kavya.menon.kochi",
+      "customerName": "Kavya Menon",
+      "stage": "pitching",
+      "aiAutoPilot": true,
+      "updatedAt": "2026-11-02T05:17:33.181Z",
+      "messages": [
+        {
+          "id": "msg-fb-1",
+          "sender": "customer",
+          "text": "Hello! Do you ship to Kochi within 2 days? Need beachwear for a Varkala shoot.",
+          "timestamp": "2026-11-02T05:16:33.181Z"
+        },
+        {
+          "id": "msg-fb-2",
+          "sender": "ai",
+          "text": "Namaskaram Kavya! 🌴 Since our atelier is right here in Aluva, Kochi deliveries arrive within 24 hours via Blue Dart Express!\n\nFor a Varkala cliff & beach shoot, our most photographed pieces are:\n1️⃣ Set 01: Coconut & Coir Fringe Set (₹4,200) — dramatic kinetic movement\n2️⃣ Set 02: Coconut & Jute Wrap Set (₹4,500) — sculpted resort silhouette\n✨ Or grab BOTH sets for ₹7,395 (15% Bundle Discount)!\n\nWhich look would you like for your shoot? Share your preferred set & delivery address with PIN code to get your instant payment link!",
+          "timestamp": "2026-11-02T05:17:33.181Z"
+        }
+      ]
+    }
+  ]
 }

@@ -109,3 +109,63 @@ export async function sendWhatsAppTextMessage(params: {
     };
   }
 }
+
+/**
+ * Sends an Instagram DM or Facebook Messenger message via Meta Graph API (`/{version}/me/messages`).
+ */
+export async function sendMetaSocialDirectMessage(params: {
+  channel: "instagram" | "facebook";
+  recipientId: string;
+  body: string;
+}): Promise<{
+  sent: boolean;
+  messageId?: string;
+  error?: string;
+}> {
+  const { accessToken, graphVersion } = getMetaWhatsAppConfig();
+  if (!params.recipientId || !accessToken) {
+    return { sent: false, error: "Missing recipientId or Meta access token" };
+  }
+
+  try {
+    const res = await fetch(
+      `https://graph.facebook.com/${graphVersion}/me/messages`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          recipient: { id: params.recipientId },
+          messaging_type: "RESPONSE",
+          message: { text: params.body }
+        }),
+        cache: "no-store"
+      }
+    );
+
+    const data = (await res.json()) as {
+      message_id?: string;
+      error?: { message?: string };
+    };
+
+    if (!res.ok) {
+      return {
+        sent: false,
+        error: data.error?.message || `Meta ${params.channel} API HTTP ${res.status}`
+      };
+    }
+
+    return {
+      sent: true,
+      messageId: data.message_id
+    };
+  } catch (err) {
+    return {
+      sent: false,
+      error: err instanceof Error ? err.message : "Social DM API request failed"
+    };
+  }
+}
+

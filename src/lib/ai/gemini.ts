@@ -135,3 +135,4 @@ function buildConciergeFallback(prompt: string): string {
   }
   return "Namaskaram from the **APOORVA Aluva, Kerala Atelier**! We handcraft two signature biodegradable tropical beachwear sets:\n• **Set 01: Coconut & Coir Fringe Beach Set (₹4,200)** — Kinetic combed tender coir fringe skirt + cotton-lined coconut bra.\n• **Set 02: Coconut & Jute Wrap Beach Set (₹4,500)** — Cotton-lined fine jute wrap skirt with coconut buckle & 3 shell buttons.\n\nOrder both sets together for an instant **15% Bundle Discount** and Free Express Shipping!";
 }
+

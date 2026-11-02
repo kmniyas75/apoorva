@@ -45,14 +45,26 @@ export default function Home() {
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [appliedDiscount, setAppliedDiscount] = useState(0);
   const [lastConfirmedOrder, setLastConfirmedOrder] = useState<OrderRecord | null>(null);
+  const [prefilledOrder, setPrefilledOrder] = useState<OrderRecord | null>(null);
 
   // Sync live catalog, pricing & media from Admin Store on mount
   useEffect(() => {
     let active = true;
+    const urlParams =
+      typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search)
+        : null;
+    const payOrderId = urlParams?.get("payOrder");
+
     fetch("/api/admin/store", { cache: "no-store" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!active || !data) return;
+        const loadedProducts: Product[] =
+          Array.isArray(data.products) && data.products.length > 0
+            ? data.products
+            : PRODUCTS;
+
         if (Array.isArray(data.products) && data.products.length > 0) {
           setStoreProducts(data.products);
           setCartItems((prev) =>
@@ -69,6 +81,37 @@ export default function Home() {
         }
         if (data.settings) {
           setStoreSettings(data.settings);
+        }
+
+        // If customer arrived via 1-Click Payment Link (?payOrder=APV-XXXXX), prefill & open Razorpay Checkout!
+        if (payOrderId && Array.isArray(data.orders)) {
+          const targetOrder = (data.orders as OrderRecord[]).find(
+            (o) => o.orderId.toUpperCase() === payOrderId.trim().toUpperCase()
+          );
+          if (targetOrder) {
+            const matchedCart: CartItem[] = targetOrder.items.map((item) => {
+              const matchedProd =
+                loadedProducts.find((p) => p.id === item.productId) ||
+                loadedProducts[0];
+              return {
+                product: matchedProd,
+                size: item.size || "FREE SIZE (Adjustable Tie)",
+                quantity: item.quantity || 1
+              };
+            });
+            if (matchedCart.length > 0) {
+              setCartItems(matchedCart);
+            }
+            setAppliedDiscount(targetOrder.pricing?.discountPercentage || 0);
+            if (targetOrder.customer?.pincode) {
+              setActivePincode(targetOrder.customer.pincode);
+            }
+            setPrefilledOrder(targetOrder);
+            setIsCheckoutOpen(true);
+          } else {
+            // Even if order wasn't found yet, open fast checkout
+            setIsCheckoutOpen(true);
+          }
         }
       })
       .catch(() => {
@@ -237,6 +280,7 @@ export default function Home() {
         items={cartItems}
         catalogProducts={storeProducts}
         appliedDiscount={appliedDiscount}
+        prefilledOrder={prefilledOrder}
         onSelectQuickItems={(newItems, discount) => {
           setCartItems(newItems);
           if (typeof discount === "number") setAppliedDiscount(discount);

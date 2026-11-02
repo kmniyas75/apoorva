@@ -20,3 +20,4 @@ export async function GET() {
     instructionsUrl: "https://apoorva-eight.vercel.app/data-deletion"
   });
 }
+

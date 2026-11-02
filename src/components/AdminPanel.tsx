@@ -9,6 +9,7 @@ import {
   MediaAsset,
   SocialAutomationConfig,
   SocialAutomationEvent,
+  ChatSession,
   StoragePathsInfo
 } from "@/lib/store/adminStore";
 import ApoorvaLogo from "./ApoorvaLogo";
@@ -79,9 +80,9 @@ export default function AdminPanel({
   const [productSubTab, setProductSubTab] = useState<
     "pricing" | "media" | "stock"
   >("pricing");
-  const [socialSubTab, setSocialSubTab] = useState<"bots" | "simulator">(
-    "bots"
-  );
+  const [socialSubTab, setSocialSubTab] = useState<
+    "inbox" | "bots" | "simulator"
+  >("inbox");
   const [mediaSubTab, setMediaSubTab] = useState<
     "library" | "lookbook" | "paths"
   >("library");
@@ -121,6 +122,27 @@ export default function AdminPanel({
       webhookVerifyToken: "apoorva_meta_verify_2026"
     });
   const [socialEvents, setSocialEvents] = useState<SocialAutomationEvent[]>([]);
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
+  const [selectedChatId, setSelectedChatId] = useState<string>("");
+  const [chatChannelFilter, setChatChannelFilter] = useState<
+    "all" | "whatsapp" | "instagram" | "facebook" | "website"
+  >("all");
+  const [adminReplyText, setAdminReplyText] = useState<string>("");
+  const [simCustomerChatText, setSimCustomerChatText] = useState<string>("");
+  const [sendingAdminMsg, setSendingAdminMsg] = useState<boolean>(false);
+  const [showNewChatForm, setShowNewChatForm] = useState<boolean>(false);
+  const [newChatDraft, setNewChatDraft] = useState<{
+    channel: "whatsapp" | "instagram" | "facebook" | "website";
+    customerName: string;
+    customerHandleOrPhone: string;
+    initialMessage: string;
+  }>({
+    channel: "whatsapp",
+    customerName: "Priya Menon",
+    customerHandleOrPhone: "+91 98470 55112",
+    initialMessage:
+      "Hi! Tell me about the Coconut & Coir Beach Set and how I can order."
+  });
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const [mediaLibrary, setMediaLibrary] = useState<MediaAsset[]>([]);
   const [storagePaths, setStoragePaths] = useState<StoragePathsInfo>({
@@ -245,6 +267,12 @@ export default function AdminPanel({
       if (data.settings) setSettings(data.settings);
       if (data.socialAutomation) setSocialAutomation(data.socialAutomation);
       if (Array.isArray(data.socialEvents)) setSocialEvents(data.socialEvents);
+      if (Array.isArray(data.chatSessions)) {
+        setChatSessions(data.chatSessions);
+        setSelectedChatId((prev) =>
+          prev || (data.chatSessions[0]?.id ?? "")
+        );
+      }
       if (Array.isArray(data.orders)) setOrders(data.orders);
       if (Array.isArray(data.mediaLibrary)) setMediaLibrary(data.mediaLibrary);
       if (data.storagePaths) setStoragePaths(data.storagePaths);
@@ -261,6 +289,34 @@ export default function AdminPanel({
       fetchStoreData();
     }
   }, [isOpen, isAuthenticated]);
+
+  // Live poll chatSessions every 6 seconds when viewing the WA / IG tab
+  useEffect(() => {
+    if (!isOpen || !isAuthenticated || activeTab !== "social") return;
+    const pollChats = async () => {
+      try {
+        const res = await fetch("/api/webhooks/social-order", {
+          cache: "no-store"
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (Array.isArray(data.chatSessions)) {
+          setChatSessions(data.chatSessions);
+          setSelectedChatId((prev) =>
+            prev || (data.chatSessions[0]?.id ?? "")
+          );
+        }
+        if (Array.isArray(data.orders)) setOrders(data.orders);
+        if (Array.isArray(data.socialEvents)) setSocialEvents(data.socialEvents);
+      } catch {
+        // ignore background poll errors
+      }
+    };
+    const interval = setInterval(() => {
+      void pollChats();
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [isOpen, isAuthenticated, activeTab]);
 
   if (!isOpen) return null;
 
@@ -956,6 +1012,10 @@ export default function AdminPanel({
 
       if (Array.isArray(data.orders)) setOrders(data.orders);
       if (Array.isArray(data.socialEvents)) setSocialEvents(data.socialEvents);
+      if (Array.isArray(data.chatSessions)) {
+        setChatSessions(data.chatSessions);
+        if (data.session?.id) setSelectedChatId(data.session.id);
+      }
       showToastMessage(
         "success",
         data.message || "Social automated order completed!"
@@ -965,6 +1025,174 @@ export default function AdminPanel({
       showToastMessage("error", msg);
     } finally {
       setSimRunning(false);
+    }
+  };
+
+  const handleSendAdminChatReply = async (
+    e: React.FormEvent,
+    customText?: string
+  ) => {
+    e.preventDefault();
+    const activeChat =
+      chatSessions.find((c) => c.id === selectedChatId) || chatSessions[0];
+    const textToSend = (customText ?? adminReplyText).trim();
+    if (!activeChat || !textToSend || sendingAdminMsg) return;
+
+    setSendingAdminMsg(true);
+    try {
+      const res = await fetch("/api/webhooks/social-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "admin_reply",
+          sessionId: activeChat.id,
+          messageText: textToSend
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not send reply");
+      if (Array.isArray(data.chatSessions)) setChatSessions(data.chatSessions);
+      setAdminReplyText("");
+      showToastMessage(
+        "success",
+        `Sent reply to ${activeChat.customerName} on ${activeChat.channel.toUpperCase()}!`
+      );
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to send message";
+      showToastMessage("error", msg);
+    } finally {
+      setSendingAdminMsg(false);
+    }
+  };
+
+  const handleSendPaymentLinkInChat = async (
+    session: ChatSession,
+    selectedProduct?: "set1" | "set2" | "both"
+  ) => {
+    if (sendingAdminMsg) return;
+    setSendingAdminMsg(true);
+    try {
+      const res = await fetch("/api/webhooks/social-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "send_payment_link",
+          sessionId: session.id,
+          selectedProduct: selectedProduct || session.selectedProduct || "set1"
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not send payment link");
+      if (Array.isArray(data.chatSessions)) setChatSessions(data.chatSessions);
+      if (Array.isArray(data.orders)) setOrders(data.orders);
+      showToastMessage(
+        "success",
+        `1-Click Razorpay Payment Link (${data.order?.orderId || "Order"}) sent to ${session.customerName}!`
+      );
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Failed to send payment link";
+      showToastMessage("error", msg);
+    } finally {
+      setSendingAdminMsg(false);
+    }
+  };
+
+  const handleToggleChatAutoPilot = async (session: ChatSession) => {
+    try {
+      const res = await fetch("/api/webhooks/social-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "toggle_autopilot",
+          sessionId: session.id,
+          aiAutoPilot: !session.aiAutoPilot
+        })
+      });
+      const data = await res.json();
+      if (Array.isArray(data.chatSessions)) setChatSessions(data.chatSessions);
+      showToastMessage(
+        "success",
+        `AI Sales Agent Auto-Pilot ${!session.aiAutoPilot ? "ENABLED" : "PAUSED (Manual Mode)"} for ${session.customerName}`
+      );
+    } catch {
+      showToastMessage("error", "Could not toggle AI Auto-Pilot");
+    }
+  };
+
+  const handleSimulateCustomerChatTurn = async (
+    e: React.FormEvent,
+    session: ChatSession,
+    presetText?: string
+  ) => {
+    e.preventDefault();
+    const text = (presetText ?? simCustomerChatText).trim();
+    if (!text || sendingAdminMsg) return;
+    setSendingAdminMsg(true);
+    try {
+      const res = await fetch("/api/webhooks/social-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channel: session.channel,
+          senderName: session.customerName,
+          senderHandleOrPhone: session.customerHandleOrPhone,
+          sessionId: session.id,
+          message: text
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Chat simulation failed");
+      if (Array.isArray(data.chatSessions)) setChatSessions(data.chatSessions);
+      if (Array.isArray(data.orders)) setOrders(data.orders);
+      if (Array.isArray(data.socialEvents)) setSocialEvents(data.socialEvents);
+      setSimCustomerChatText("");
+      showToastMessage(
+        "success",
+        data.order
+          ? `Order #${data.order.orderId} created & Razorpay Link sent by AI!`
+          : `AI Sales Agent replied to ${session.customerName}!`
+      );
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to process chat";
+      showToastMessage("error", msg);
+    } finally {
+      setSendingAdminMsg(false);
+    }
+  };
+
+  const handleStartNewChatSession = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newChatDraft.initialMessage.trim() || sendingAdminMsg) return;
+    setSendingAdminMsg(true);
+    try {
+      const res = await fetch("/api/webhooks/social-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channel: newChatDraft.channel,
+          senderName: newChatDraft.customerName.trim() || "Coastal Guest",
+          senderHandleOrPhone:
+            newChatDraft.customerHandleOrPhone.trim() || "+91 98470 55112",
+          message: newChatDraft.initialMessage.trim()
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not start chat");
+      if (Array.isArray(data.chatSessions)) setChatSessions(data.chatSessions);
+      if (Array.isArray(data.orders)) setOrders(data.orders);
+      if (Array.isArray(data.socialEvents)) setSocialEvents(data.socialEvents);
+      if (data.session?.id) setSelectedChatId(data.session.id);
+      setShowNewChatForm(false);
+      showToastMessage(
+        "success",
+        `Started ${newChatDraft.channel.toUpperCase()} chat with ${newChatDraft.customerName}!`
+      );
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to start chat";
+      showToastMessage("error", msg);
+    } finally {
+      setSendingAdminMsg(false);
     }
   };
 
@@ -2822,13 +3050,25 @@ export default function AdminPanel({
               )}
 
               {/* =============================================================
-                  TAB 3: WHATSAPP & INSTAGRAM DM ORDER AUTOMATION HUB
+                  TAB 3: WHATSAPP, INSTAGRAM, FACEBOOK & WEBSITE AI SALES AGENT
                  ============================================================= */}
               {activeTab === "social" && (
                 <div className="space-y-5">
-                  {/* Sub-Navigation for WA / IG Automation */}
+                  {/* Sub-Navigation for WA / IG / FB AI Sales Agent */}
                   <div className="bg-white p-2 rounded-2xl border border-black/10 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
-                    <div className="grid grid-cols-2 gap-1.5 flex-1">
+                    <div className="grid grid-cols-3 gap-1.5 flex-1">
+                      <button
+                        type="button"
+                        onClick={() => setSocialSubTab("inbox")}
+                        className={`py-2.5 px-3 rounded-xl font-mono text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                          socialSubTab === "inbox"
+                            ? "bg-[#141414] text-white shadow-xs"
+                            : "bg-neutral-50 text-black/65 hover:text-black hover:bg-black/5"
+                        }`}
+                      >
+                        <MessageCircle className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
+                        <span>1. Live Sales Chats ({chatSessions.length})</span>
+                      </button>
                       <button
                         type="button"
                         onClick={() => setSocialSubTab("bots")}
@@ -2839,7 +3079,7 @@ export default function AdminPanel({
                         }`}
                       >
                         <Bot className="w-3.5 h-3.5 shrink-0 text-amber-400" />
-                        <span>1. Bot Auto-Replies</span>
+                        <span>2. Bot Auto-Replies</span>
                       </button>
                       <button
                         type="button"
@@ -2851,10 +3091,540 @@ export default function AdminPanel({
                         }`}
                       >
                         <Zap className="w-3.5 h-3.5 shrink-0 text-amber-400" />
-                        <span>2. Webhook &amp; Simulator ({socialEvents.length})</span>
+                        <span>3. Webhook &amp; Log ({socialEvents.length})</span>
                       </button>
                     </div>
                   </div>
+
+                  {/* SUB-TAB 1: LIVE OMNICHANNEL AI SALES CHAT INBOX */}
+                  {socialSubTab === "inbox" && (
+                    <div className="space-y-4">
+                      {/* Top Channel Filter Bar + New Test Chat Button */}
+                      <div className="bg-white p-3.5 rounded-2xl border border-black/10 flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {(
+                            [
+                              { id: "all", label: "All Channels" },
+                              { id: "whatsapp", label: "WhatsApp" },
+                              { id: "instagram", label: "Instagram DM" },
+                              { id: "facebook", label: "Facebook" },
+                              { id: "website", label: "Website Chat" }
+                            ] as const
+                          ).map((ch) => (
+                            <button
+                              key={ch.id}
+                              type="button"
+                              onClick={() => setChatChannelFilter(ch.id)}
+                              className={`px-3 py-1.5 rounded-xl font-mono text-[11px] font-bold uppercase transition ${
+                                chatChannelFilter === ch.id
+                                  ? "bg-[#141414] text-white"
+                                  : "bg-neutral-100 text-black/70 hover:bg-neutral-200"
+                              }`}
+                            >
+                              {ch.label}
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setShowNewChatForm((prev) => !prev)
+                            }
+                            className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-mono text-[11px] font-black uppercase flex items-center gap-1"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>New Customer Chat</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void fetchStoreData()}
+                            className="px-3 py-1.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-black font-mono text-[11px] font-bold uppercase flex items-center gap-1"
+                          >
+                            <RefreshCw className="w-3.5 h-3.5" />
+                            <span>Refresh</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Optional Collapsible "New Customer Chat" Simulator Form */}
+                      {showNewChatForm && (
+                        <form
+                          onSubmit={handleStartNewChatSession}
+                          className="bg-neutral-900 text-white p-4 rounded-2xl border border-amber-400/40 space-y-3"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-xs font-black uppercase tracking-wider text-amber-300">
+                              Start or Simulate Incoming Customer Chat (WhatsApp / Instagram / Facebook / Website)
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setShowNewChatForm(false)}
+                              className="text-white/60 hover:text-white"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+                            <select
+                              value={newChatDraft.channel}
+                              onChange={(e) =>
+                                setNewChatDraft((p) => ({
+                                  ...p,
+                                  channel: e.target.value as
+                                    | "whatsapp"
+                                    | "instagram"
+                                    | "facebook"
+                                    | "website"
+                                }))
+                              }
+                              className="px-3 py-2 rounded-xl bg-white/10 border border-white/20 font-mono text-xs font-bold uppercase text-white"
+                            >
+                              <option value="whatsapp" className="text-black">
+                                WhatsApp
+                              </option>
+                              <option value="instagram" className="text-black">
+                                Instagram DM
+                              </option>
+                              <option value="facebook" className="text-black">
+                                Facebook Messenger
+                              </option>
+                              <option value="website" className="text-black">
+                                Website Chat
+                              </option>
+                            </select>
+                            <input
+                              type="text"
+                              value={newChatDraft.customerName}
+                              onChange={(e) =>
+                                setNewChatDraft((p) => ({
+                                  ...p,
+                                  customerName: e.target.value
+                                }))
+                              }
+                              placeholder="Customer Name"
+                              className="px-3 py-2 rounded-xl bg-white/10 border border-white/20 font-mono text-xs text-white"
+                            />
+                            <input
+                              type="text"
+                              value={newChatDraft.customerHandleOrPhone}
+                              onChange={(e) =>
+                                setNewChatDraft((p) => ({
+                                  ...p,
+                                  customerHandleOrPhone: e.target.value
+                                }))
+                              }
+                              placeholder="+91 Phone or @handle"
+                              className="px-3 py-2 rounded-xl bg-white/10 border border-white/20 font-mono text-xs text-white"
+                            />
+                            <button
+                              type="submit"
+                              disabled={sendingAdminMsg}
+                              className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-mono text-xs font-black uppercase"
+                            >
+                              {sendingAdminMsg ? "Starting..." : "Start & Run AI"}
+                            </button>
+                          </div>
+                          <input
+                            type="text"
+                            value={newChatDraft.initialMessage}
+                            onChange={(e) =>
+                              setNewChatDraft((p) => ({
+                                ...p,
+                                initialMessage: e.target.value
+                              }))
+                            }
+                            placeholder="Customer's first message..."
+                            className="w-full px-3 py-2 rounded-xl bg-white/10 border border-white/20 font-mono text-xs text-white"
+                          />
+                        </form>
+                      )}
+
+                      {/* Main 2-Pane Chat Inbox */}
+                      {(() => {
+                        const visibleChats = chatSessions.filter(
+                          (c) =>
+                            chatChannelFilter === "all" ||
+                            c.channel === chatChannelFilter
+                        );
+                        const activeChat =
+                          visibleChats.find((c) => c.id === selectedChatId) ||
+                          visibleChats[0] ||
+                          null;
+
+                        return (
+                          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                            {/* Left Pane (4 cols): Thread List */}
+                            <div className="lg:col-span-4 bg-white rounded-2xl border border-black/12 p-3 space-y-2 max-h-[600px] overflow-y-auto">
+                              <div className="px-1 py-1 flex items-center justify-between border-b border-black/10 pb-2">
+                                <span className="font-mono text-[11px] font-black uppercase tracking-wider text-black">
+                                  Active Conversations ({visibleChats.length})
+                                </span>
+                                <span className="text-[10px] font-mono text-emerald-700 font-bold">
+                                  ● Live Sync
+                                </span>
+                              </div>
+
+                              {visibleChats.length === 0 ? (
+                                <div className="p-8 text-center font-mono text-xs text-black/50">
+                                  No chats in this channel yet. Click &ldquo;New Customer Chat&rdquo; above to test!
+                                </div>
+                              ) : (
+                                visibleChats.map((chat) => {
+                                  const isSelected =
+                                    activeChat?.id === chat.id;
+                                  const lastMsg =
+                                    chat.messages[chat.messages.length - 1];
+                                  return (
+                                    <button
+                                      key={chat.id}
+                                      type="button"
+                                      onClick={() => setSelectedChatId(chat.id)}
+                                      className={`w-full text-left p-3 rounded-xl border transition-all space-y-1.5 ${
+                                        isSelected
+                                          ? "bg-[#141414] text-white border-[#141414] shadow-md"
+                                          : "bg-neutral-50 hover:bg-neutral-100 text-black border-black/10"
+                                      }`}
+                                    >
+                                      <div className="flex items-center justify-between gap-1.5">
+                                        <span
+                                          className={`px-2 py-0.5 rounded-full font-mono text-[9px] font-black uppercase ${
+                                            chat.channel === "whatsapp"
+                                              ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                                              : chat.channel === "instagram"
+                                                ? "bg-pink-500/20 text-pink-400 border border-pink-500/30"
+                                                : chat.channel === "facebook"
+                                                  ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                                                  : "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                                          }`}
+                                        >
+                                          {chat.channel}
+                                        </span>
+
+                                        <span
+                                          className={`px-2 py-0.5 rounded font-mono text-[9px] font-bold uppercase ${
+                                            chat.stage === "paid"
+                                              ? "bg-emerald-600 text-white"
+                                              : chat.stage === "awaiting_payment"
+                                                ? "bg-amber-400 text-black"
+                                                : chat.stage ===
+                                                    "collecting_address"
+                                                  ? "bg-blue-600 text-white"
+                                                  : isSelected
+                                                    ? "bg-white/15 text-white/80"
+                                                    : "bg-black/10 text-black/70"
+                                          }`}
+                                        >
+                                          {chat.stage === "paid"
+                                            ? "✓ PAID"
+                                            : chat.stage === "awaiting_payment"
+                                              ? "💳 LINK SENT"
+                                              : chat.stage ===
+                                                  "collecting_address"
+                                                ? "📍 ASKING ADDRESS"
+                                                : "🎯 PITCHING"}
+                                        </span>
+                                      </div>
+
+                                      <div className="font-mono">
+                                        <div className="text-xs font-black truncate">
+                                          {chat.customerName}
+                                        </div>
+                                        <div
+                                          className={`text-[10px] truncate ${
+                                            isSelected
+                                              ? "text-white/65"
+                                              : "text-black/55"
+                                          }`}
+                                        >
+                                          {chat.customerHandleOrPhone}
+                                        </div>
+                                      </div>
+
+                                      {lastMsg && (
+                                        <p
+                                          className={`text-[11px] font-mono line-clamp-2 ${
+                                            isSelected
+                                              ? "text-white/80"
+                                              : "text-black/70"
+                                          }`}
+                                        >
+                                          {lastMsg.sender === "ai"
+                                            ? "🤖 AI: "
+                                            : lastMsg.sender === "admin"
+                                              ? "👤 You: "
+                                              : ""}
+                                          {lastMsg.text}
+                                        </p>
+                                      )}
+                                    </button>
+                                  );
+                                })
+                              )}
+                            </div>
+
+                            {/* Right Pane (8 cols): Active Conversation & Controls */}
+                            <div className="lg:col-span-8 bg-white rounded-2xl border border-black/12 flex flex-col overflow-hidden">
+                              {!activeChat ? (
+                                <div className="p-12 text-center font-mono text-xs text-black/50">
+                                  Select a conversation on the left to view messages and interact.
+                                </div>
+                              ) : (
+                                <>
+                                  {/* Chat Header with AI Auto-Pilot Toggle & 1-Click Send Payment Link */}
+                                  <div className="bg-[#141414] text-white p-4 flex flex-wrap items-center justify-between gap-3">
+                                    <div className="space-y-0.5">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="font-mono text-sm font-black uppercase">
+                                          {activeChat.customerName}
+                                        </span>
+                                        <span className="text-xs font-mono text-amber-300">
+                                          ({activeChat.customerHandleOrPhone})
+                                        </span>
+                                        <span className="px-2 py-0.5 rounded bg-white/15 font-mono text-[10px] uppercase">
+                                          {activeChat.channel}
+                                        </span>
+                                      </div>
+                                      <div className="text-[11px] font-mono text-white/70 flex flex-wrap items-center gap-3">
+                                        <span>
+                                          Stage:{" "}
+                                          <strong className="text-amber-300 uppercase">
+                                            {activeChat.stage.replace(/_/g, " ")}
+                                          </strong>
+                                        </span>
+                                        {activeChat.selectedProduct && (
+                                          <span>
+                                            • Choice:{" "}
+                                            <strong className="text-white uppercase">
+                                              {activeChat.selectedProduct ===
+                                              "both"
+                                                ? "Both Sets Bundle (₹7,395)"
+                                                : activeChat.selectedProduct ===
+                                                    "set2"
+                                                  ? "Set 02 Jute Wrap (₹4,500)"
+                                                  : "Set 01 Coir Fringe (₹4,200)"}
+                                            </strong>
+                                          </span>
+                                        )}
+                                        {activeChat.collectedAddress && (
+                                          <span>
+                                            • PIN:{" "}
+                                            <strong className="text-emerald-300">
+                                              {
+                                                activeChat.collectedAddress
+                                                  .pincode
+                                              }
+                                            </strong>
+                                          </span>
+                                        )}
+                                        {activeChat.orderId && (
+                                          <span>
+                                            • Order:{" "}
+                                            <strong className="text-emerald-300">
+                                              #{activeChat.orderId}
+                                            </strong>
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          void handleToggleChatAutoPilot(
+                                            activeChat
+                                          )
+                                        }
+                                        className={`px-3 py-1.5 rounded-xl font-mono text-[10px] font-black uppercase flex items-center gap-1.5 border transition ${
+                                          activeChat.aiAutoPilot
+                                            ? "bg-emerald-600/25 border-emerald-400 text-emerald-200"
+                                            : "bg-white/10 border-white/20 text-white/70"
+                                        }`}
+                                      >
+                                        <Bot className="w-3.5 h-3.5" />
+                                        <span>
+                                          AI Auto-Pilot:{" "}
+                                          {activeChat.aiAutoPilot
+                                            ? "ON"
+                                            : "OFF (Manual)"}
+                                        </span>
+                                      </button>
+
+                                      <button
+                                        type="button"
+                                        disabled={sendingAdminMsg}
+                                        onClick={() =>
+                                          void handleSendPaymentLinkInChat(
+                                            activeChat
+                                          )
+                                        }
+                                        className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-mono text-[10px] font-black uppercase flex items-center gap-1.5 shadow-sm"
+                                      >
+                                        <IndianRupee className="w-3.5 h-3.5" />
+                                        <span>Send 1-Click Payment Link</span>
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {/* Messages Stream */}
+                                  <div className="p-4 space-y-3 bg-[#FAF8F5] max-h-[380px] min-h-[280px] overflow-y-auto">
+                                    {activeChat.messages.map((msg) => (
+                                      <div
+                                        key={msg.id}
+                                        className={`flex flex-col ${
+                                          msg.sender === "customer"
+                                            ? "items-start"
+                                            : "items-end"
+                                        }`}
+                                      >
+                                        <div
+                                          className={`max-w-[85%] p-3 rounded-2xl font-mono text-xs whitespace-pre-wrap leading-relaxed ${
+                                            msg.sender === "customer"
+                                              ? "bg-white border border-black/12 text-black"
+                                              : msg.sender === "admin"
+                                                ? "bg-emerald-900 text-white"
+                                                : "bg-[#141414] text-white"
+                                          }`}
+                                        >
+                                          <div className="flex items-center justify-between gap-3 mb-1 text-[10px] opacity-75">
+                                            <span className="font-bold uppercase">
+                                              {msg.sender === "customer"
+                                                ? `👤 ${activeChat.customerName}`
+                                                : msg.sender === "admin"
+                                                  ? "✨ You (Admin Manual Reply)"
+                                                  : "🤖 APOORVA AI Sales Agent"}
+                                            </span>
+                                            <span>
+                                              {new Date(
+                                                msg.timestamp
+                                              ).toLocaleTimeString("en-IN", {
+                                                hour: "2-digit",
+                                                minute: "2-digit"
+                                              })}
+                                            </span>
+                                          </div>
+                                          <div>{msg.text}</div>
+                                          {msg.paymentLink && (
+                                            <div className="mt-2 pt-2 border-t border-white/15 flex items-center justify-between gap-2">
+                                              <a
+                                                href={msg.paymentLink}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-400 text-black font-bold text-[10px] uppercase"
+                                              >
+                                                <ExternalLink className="w-3 h-3" />
+                                                Open Razorpay Payment Link
+                                              </a>
+                                              {msg.orderId && (
+                                                <span className="text-[10px] text-amber-300 font-bold">
+                                                  Order #{msg.orderId}
+                                                </span>
+                                              )}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+
+                                  {/* Quick Sales Prompts for Admin */}
+                                  <div className="px-4 py-2 bg-neutral-100 border-t border-black/10 flex items-center gap-1.5 overflow-x-auto">
+                                    <span className="text-[10px] font-mono font-bold uppercase text-black/50 shrink-0">
+                                      Quick Send:
+                                    </span>
+                                    {[
+                                      "Please share your Full Delivery Address & 6-digit PIN code so I can generate your Razorpay payment link!",
+                                      "Special Offer: Upgrade to BOTH sets (Set 01 Coir + Set 02 Jute) for ₹7,395 (Save 15% + Free Air Shipping)!",
+                                      "Your handcrafted APOORVA set is packed in our Aluva atelier and ready for Blue Dart Air Express dispatch!"
+                                    ].map((preset, idx) => (
+                                      <button
+                                        key={idx}
+                                        type="button"
+                                        onClick={(e) =>
+                                          void handleSendAdminChatReply(
+                                            e,
+                                            preset
+                                          )
+                                        }
+                                        className="shrink-0 px-2.5 py-1 rounded-full bg-white hover:bg-amber-50 border border-black/15 font-mono text-[10px] text-black transition"
+                                      >
+                                        {preset.slice(0, 48)}...
+                                      </button>
+                                    ))}
+                                  </div>
+
+                                  {/* Admin Manual Message Composer */}
+                                  <form
+                                    onSubmit={(e) =>
+                                      void handleSendAdminChatReply(e)
+                                    }
+                                    className="p-3 bg-white border-t border-black/10 flex items-center gap-2"
+                                  >
+                                    <input
+                                      type="text"
+                                      value={adminReplyText}
+                                      onChange={(e) =>
+                                        setAdminReplyText(e.target.value)
+                                      }
+                                      placeholder={`Type a message to ${activeChat.customerName} on ${activeChat.channel.toUpperCase()}...`}
+                                      className="flex-1 px-3.5 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-xs focus:outline-none focus:border-black"
+                                    />
+                                    <button
+                                      type="submit"
+                                      disabled={
+                                        sendingAdminMsg ||
+                                        !adminReplyText.trim()
+                                      }
+                                      className="px-4 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 disabled:opacity-40 text-white font-mono text-xs font-black uppercase flex items-center gap-1.5 shrink-0"
+                                    >
+                                      <Send className="w-3.5 h-3.5" />
+                                      <span>Send as Admin</span>
+                                    </button>
+                                  </form>
+
+                                  {/* Customer Reply Simulator Bar (to test AI Sales Agent live in this thread) */}
+                                  <form
+                                    onSubmit={(e) =>
+                                      void handleSimulateCustomerChatTurn(
+                                        e,
+                                        activeChat
+                                      )
+                                    }
+                                    className="px-3 py-2.5 bg-neutral-900 text-white flex flex-wrap sm:flex-nowrap items-center gap-2"
+                                  >
+                                    <span className="font-mono text-[10px] uppercase tracking-wider text-amber-300 font-bold shrink-0">
+                                      ⚡ Test Customer Reply:
+                                    </span>
+                                    <input
+                                      type="text"
+                                      value={simCustomerChatText}
+                                      onChange={(e) =>
+                                        setSimCustomerChatText(e.target.value)
+                                      }
+                                      placeholder="e.g. 'I want BOTH sets! Deliver to 14 Beach Road, Goa 403515'"
+                                      className="flex-1 px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 font-mono text-xs text-white placeholder:text-white/40 focus:outline-none"
+                                    />
+                                    <button
+                                      type="submit"
+                                      disabled={
+                                        sendingAdminMsg ||
+                                        !simCustomerChatText.trim()
+                                      }
+                                      className="px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-black font-mono text-[10px] font-black uppercase shrink-0"
+                                    >
+                                      Simulate &amp; Trigger AI
+                                    </button>
+                                  </form>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
 
                   {/* SUB-TAB 1: Bot Configuration (WhatsApp & Instagram) */}
                   {socialSubTab === "bots" && (

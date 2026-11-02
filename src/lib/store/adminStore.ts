@@ -49,7 +49,7 @@ export interface SocialAutomationConfig {
 
 export interface SocialAutomationEvent {
   id: string;
-  channel: "whatsapp" | "instagram";
+  channel: "whatsapp" | "instagram" | "facebook" | "website";
   senderHandleOrPhone: string;
   senderName: string;
   incomingMessage: string;
@@ -58,6 +58,36 @@ export interface SocialAutomationEvent {
   orderId?: string;
   amount?: number;
   timestamp: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  sender: "customer" | "ai" | "admin";
+  text: string;
+  timestamp: string;
+  paymentLink?: string;
+  orderId?: string;
+}
+
+export interface ChatSession {
+  id: string;
+  channel: "whatsapp" | "instagram" | "facebook" | "website";
+  customerHandleOrPhone: string;
+  customerName: string;
+  stage: "pitching" | "collecting_address" | "awaiting_payment" | "paid";
+  aiAutoPilot: boolean;
+  selectedProduct?: "set1" | "set2" | "both";
+  selectedSize?: string;
+  collectedAddress?: {
+    addressLine1: string;
+    city: string;
+    state: string;
+    pincode: string;
+  };
+  orderId?: string;
+  paymentLink?: string;
+  messages: ChatMessage[];
+  updatedAt: string;
 }
 
 export interface MediaAsset {
@@ -86,6 +116,7 @@ export interface StoreDatabase {
   settings: StoreSettings;
   socialAutomation: SocialAutomationConfig;
   socialEvents: SocialAutomationEvent[];
+  chatSessions?: ChatSession[];
   orders: OrderRecord[];
   customMedia: MediaAsset[];
   deletedMediaUrls?: string[];
@@ -164,6 +195,119 @@ function createInitialSocialEvents(): SocialAutomationEvent[] {
       orderId: "APV-89314",
       amount: 4500,
       timestamp: new Date(now - 46 * 3600 * 1000).toISOString()
+    }
+  ];
+}
+
+export function createInitialChatSessions(): ChatSession[] {
+  const now = Date.now();
+  return [
+    {
+      id: "chat-wa-9820144501",
+      channel: "whatsapp",
+      customerHandleOrPhone: "+91 98201 44501",
+      customerName: "Ananya Deshmukh",
+      stage: "paid",
+      aiAutoPilot: true,
+      selectedProduct: "both",
+      selectedSize: "FREE SIZE (Adjustable Tie)",
+      collectedAddress: {
+        addressLine1: "Villa 14, Candolim Beach Road",
+        city: "North Goa",
+        state: "Goa",
+        pincode: "403515"
+      },
+      orderId: "APV-89421",
+      paymentLink: "https://apoorva-eight.vercel.app/?payOrder=APV-89421",
+      updatedAt: new Date(now - 2 * 3600 * 1000).toISOString(),
+      messages: [
+        {
+          id: "msg-1",
+          sender: "customer",
+          text: "Hi! I saw your Coconut beachwear sets on Instagram. Can I wear them in the ocean water in Goa?",
+          timestamp: new Date(now - 2.3 * 3600 * 1000).toISOString()
+        },
+        {
+          id: "msg-2",
+          sender: "ai",
+          text: "Namaskaram Ananya! 🌴 Yes, both our handcrafted sets from Aluva, Kerala are treated with natural virgin coconut oil and lined with organic malmal cotton — 100% saltwater & resort pool safe!\n\n✨ Set 01: Coconut & Coir Fringe Set (₹4,200)\n✨ Set 02: Coconut & Jute Wrap Set (₹4,500)\n🔥 Complete 2-Set Resort Bundle: ₹7,395 (Save 15% — ₹1,305 OFF!)\n\nWhich set would you love for your Goa trip?",
+          timestamp: new Date(now - 2.25 * 3600 * 1000).toISOString()
+        },
+        {
+          id: "msg-3",
+          sender: "customer",
+          text: "I'd love BOTH sets in Free Size! Deliver to Ananya Deshmukh, Villa 14, Candolim Beach Road, North Goa, PIN 403515",
+          timestamp: new Date(now - 2.1 * 3600 * 1000).toISOString()
+        },
+        {
+          id: "msg-4",
+          sender: "ai",
+          text: "🎉 Wonderful choice, Ananya! I've reserved the 2-Set Resort Bundle (15% OFF • ₹7,395) for delivery to Villa 14, Candolim Beach Road (PIN 403515).\n\n💳 Tap your 1-Click Razorpay Payment Link below to complete your order (#APV-89421):\nhttps://apoorva-eight.vercel.app/?payOrder=APV-89421",
+          timestamp: new Date(now - 2.05 * 3600 * 1000).toISOString(),
+          paymentLink: "https://apoorva-eight.vercel.app/?payOrder=APV-89421",
+          orderId: "APV-89421"
+        }
+      ]
+    },
+    {
+      id: "chat-ig-rhea",
+      channel: "instagram",
+      customerHandleOrPhone: "@rhea.kapoor.style",
+      customerName: "Rhea Kapoor",
+      stage: "collecting_address",
+      aiAutoPilot: true,
+      selectedProduct: "set2",
+      selectedSize: "S/M (Style A Cup)",
+      updatedAt: new Date(now - 25 * 60 * 1000).toISOString(),
+      messages: [
+        {
+          id: "msg-ig-1",
+          sender: "customer",
+          text: "Hey! How much is the Coconut & Jute Wrap Skirt set? Does it fit S/M?",
+          timestamp: new Date(now - 30 * 60 * 1000).toISOString()
+        },
+        {
+          id: "msg-ig-2",
+          sender: "ai",
+          text: "Hey Rhea! 🌊 The Coconut & Jute Wrap Beach Set (Product 02) is ₹4,500 with complimentary express shipping from our Aluva, Kerala atelier. And yes — S/M (Style A Cup) is in stock and features adjustable braided jute ties for a custom resort fit!\n\nWould you like me to book S/M for you? Just reply with your full delivery address & 6-digit PIN code and I'll send your instant Razorpay payment link right here in DM! ✨",
+          timestamp: new Date(now - 29 * 60 * 1000).toISOString()
+        },
+        {
+          id: "msg-ig-3",
+          sender: "customer",
+          text: "Yes please! Book Set 2 in S/M for me.",
+          timestamp: new Date(now - 26 * 60 * 1000).toISOString()
+        },
+        {
+          id: "msg-ig-4",
+          sender: "ai",
+          text: "Locked in Set 02 (Coconut & Jute Wrap Set • S/M • ₹4,500) for you, Rhea! 🌴 Please share your Full Delivery Address, Phone Number, and 6-digit PIN code so I can generate your instant Razorpay checkout link.",
+          timestamp: new Date(now - 25 * 60 * 1000).toISOString()
+        }
+      ]
+    },
+    {
+      id: "chat-fb-kavya",
+      channel: "facebook",
+      customerHandleOrPhone: "fb.me/kavya.menon.kochi",
+      customerName: "Kavya Menon",
+      stage: "pitching",
+      aiAutoPilot: true,
+      updatedAt: new Date(now - 10 * 60 * 1000).toISOString(),
+      messages: [
+        {
+          id: "msg-fb-1",
+          sender: "customer",
+          text: "Hello! Do you ship to Kochi within 2 days? Need beachwear for a Varkala shoot.",
+          timestamp: new Date(now - 11 * 60 * 1000).toISOString()
+        },
+        {
+          id: "msg-fb-2",
+          sender: "ai",
+          text: "Namaskaram Kavya! 🌴 Since our atelier is right here in Aluva, Kochi deliveries arrive within 24 hours via Blue Dart Express!\n\nFor a Varkala cliff & beach shoot, our most photographed pieces are:\n1️⃣ Set 01: Coconut & Coir Fringe Set (₹4,200) — dramatic kinetic movement\n2️⃣ Set 02: Coconut & Jute Wrap Set (₹4,500) — sculpted resort silhouette\n✨ Or grab BOTH sets for ₹7,395 (15% Bundle Discount)!\n\nWhich look would you like for your shoot? Share your preferred set & delivery address with PIN code to get your instant payment link!",
+          timestamp: new Date(now - 10 * 60 * 1000).toISOString()
+        }
+      ]
     }
   ];
 }
@@ -464,6 +608,9 @@ export function getStoreDatabase(): StoreDatabase {
         if (!Array.isArray(parsed.socialEvents)) {
           parsed.socialEvents = createInitialSocialEvents();
         }
+        if (!Array.isArray(parsed.chatSessions)) {
+          parsed.chatSessions = createInitialChatSessions();
+        }
         if (!parsed.settings.adminPassword) {
           parsed.settings.adminPassword = DEFAULT_SETTINGS.adminPassword;
         }
@@ -477,6 +624,9 @@ export function getStoreDatabase(): StoreDatabase {
 
   const bundled = JSON.parse(JSON.stringify(bundledStoreDb)) as StoreDatabase;
   if (bundled && Array.isArray(bundled.products) && bundled.products.length > 0) {
+    if (!Array.isArray(bundled.chatSessions)) {
+      bundled.chatSessions = createInitialChatSessions();
+    }
     globalStore.__APOORVA_ADMIN_DB__ = bundled;
     return bundled;
   }
@@ -487,6 +637,7 @@ export function getStoreDatabase(): StoreDatabase {
     settings: { ...DEFAULT_SETTINGS },
     socialAutomation: { ...DEFAULT_SOCIAL_CONFIG },
     socialEvents: createInitialSocialEvents(),
+    chatSessions: createInitialChatSessions(),
     orders: createInitialOrders(),
     customMedia: [],
     updatedAt: new Date().toISOString()
@@ -510,6 +661,9 @@ export async function ensureStoreDatabaseLoaded(): Promise<StoreDatabase> {
       }
       if (!Array.isArray(mongoDb.socialEvents)) {
         mongoDb.socialEvents = createInitialSocialEvents();
+      }
+      if (!Array.isArray(mongoDb.chatSessions) || mongoDb.chatSessions.length === 0) {
+        mongoDb.chatSessions = createInitialChatSessions();
       }
       if (!mongoDb.settings.adminPassword) {
         mongoDb.settings.adminPassword = DEFAULT_SETTINGS.adminPassword;
@@ -538,6 +692,9 @@ export async function ensureStoreDatabaseLoaded(): Promise<StoreDatabase> {
       }
       if (!Array.isArray(cloudDb.socialEvents)) {
         cloudDb.socialEvents = createInitialSocialEvents();
+      }
+      if (!Array.isArray(cloudDb.chatSessions) || cloudDb.chatSessions.length === 0) {
+        cloudDb.chatSessions = createInitialChatSessions();
       }
       if (!cloudDb.settings.adminPassword) {
         cloudDb.settings.adminPassword = DEFAULT_SETTINGS.adminPassword;
@@ -598,6 +755,22 @@ export function recordOrderInStore(order: OrderRecord): OrderRecord {
     db.orders.unshift(order);
   }
 
+  // If this order is linked to a chat session and is now paid, update the chat session stage
+  if (Array.isArray(db.chatSessions) && order.status === "paid") {
+    const linkedChat = db.chatSessions.find((c) => c.orderId === order.orderId);
+    if (linkedChat && linkedChat.stage !== "paid") {
+      linkedChat.stage = "paid";
+      linkedChat.messages.push({
+        id: `msg-paid-${Date.now()}`,
+        sender: "ai",
+        text: `✅ Payment received via Razorpay for Order #${order.orderId} (₹${order.pricing.total.toLocaleString("en-IN")})! Your handcrafted APOORVA Beachwear is now queued for express dispatch from Aluva, Kerala. Tracking details will follow shortly.`,
+        timestamp: new Date().toISOString(),
+        orderId: order.orderId
+      });
+      linkedChat.updatedAt = new Date().toISOString();
+    }
+  }
+
   // Decrement stock for ordered items if matching
   for (const item of order.items) {
     const prod = db.products.find((p) => p.id === item.productId);
@@ -636,6 +809,7 @@ export function resetStoreToDefaults(): StoreDatabase {
     settings: { ...DEFAULT_SETTINGS },
     socialAutomation: { ...DEFAULT_SOCIAL_CONFIG },
     socialEvents: createInitialSocialEvents(),
+    chatSessions: createInitialChatSessions(),
     orders: createInitialOrders(),
     customMedia: [],
     updatedAt: new Date().toISOString()

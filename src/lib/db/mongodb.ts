@@ -197,6 +197,21 @@ export async function saveStoreToMongoDB(
             }))
           );
         }
+      })(),
+      (async () => {
+        const col = db.collection("chat_sessions");
+        await col.deleteMany({});
+        if (
+          Array.isArray(store.chatSessions) &&
+          store.chatSessions.length > 0
+        ) {
+          await col.insertMany(
+            store.chatSessions.map((c) => ({
+              ...c,
+              _id: c.id as unknown as never
+            }))
+          );
+        }
       })()
     ]);
 

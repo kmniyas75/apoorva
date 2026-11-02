@@ -68,6 +68,7 @@ interface CheckoutModalProps {
   onOpenTracking?: (orderId: string) => void;
   onOpenInvoice?: (order: OrderRecord) => void;
   initialPincode?: string;
+  prefilledOrder?: OrderRecord | null;
 }
 
 export default function CheckoutModal({
@@ -81,7 +82,8 @@ export default function CheckoutModal({
   onOpenNotificationCenter,
   onOpenTracking,
   onOpenInvoice,
-  initialPincode
+  initialPincode,
+  prefilledOrder
 }: CheckoutModalProps) {
   const [step, setStep] = useState<
     "express" | "processing" | "success" | "failed"
@@ -127,6 +129,15 @@ export default function CheckoutModal({
       setCustomer((prev) => ({ ...prev, pincode: initialPincode }));
     }
   }, [initialPincode]);
+
+  useEffect(() => {
+    if (prefilledOrder?.customer) {
+      setCustomer((prev) => ({
+        ...prev,
+        ...prefilledOrder.customer
+      }));
+    }
+  }, [prefilledOrder]);
 
   // Real-time PIN code auto-fill City, State, & Delivery Date
   useEffect(() => {
