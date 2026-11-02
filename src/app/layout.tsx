@@ -87,6 +87,9 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: "https://www.apoorvashells.com"
+  },
+  facebook: {
+    appId: "1063008853460924"
   }
 };
 
@@ -101,6 +104,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
       <head>
+        <meta property="fb:app_id" content="1063008853460924" />
         <SeoStructuredData />
       </head>
       <body className="min-h-full flex flex-col bg-white text-[#141414] overflow-x-hidden selection:bg-black selection:text-white">
