@@ -29,13 +29,14 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.SITE_URL || "https://apoorva-eight.vercel.app"
+    process.env.SITE_URL || "https://www.apoorvashells.com"
   ),
   title: "APOORVA™ — Handcrafted Coconut & Coir Tropical Beachwear (Aluva, Kerala)",
   description:
     "Discover APOORVA's signature handcrafted beachwear sets from our Aluva, Kerala Atelier: the Coconut & Coir Fringe Beach Set and the Coconut & Fine Jute Wrap Beach Set.",
   keywords: [
     "APOORVA",
+    "apoorvashells",
     "tropical beachwear",
     "coconut shell bra",
     "coir fringe beach skirt",
@@ -60,7 +61,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://apoorva-eight.vercel.app",
+    url: "https://www.apoorvashells.com",
     siteName: "APOORVA Atelier",
     title: "APOORVA™ // Exotic Innerwear Atelier",
     description:
@@ -84,7 +85,7 @@ export const metadata: Metadata = {
     ]
   },
   alternates: {
-    canonical: "https://apoorva-eight.vercel.app"
+    canonical: "https://www.apoorvashells.com"
   }
 };
 

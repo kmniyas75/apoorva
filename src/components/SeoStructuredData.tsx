@@ -1,7 +1,7 @@
 import { PRODUCTS } from "@/data/products";
 
 export default function SeoStructuredData() {
-  const siteUrl = "https://apoorva-eight.vercel.app";
+  const siteUrl = "https://www.apoorvashells.com";
   const jsonLdData = {
     "@context": "https://schema.org",
     "@graph": [

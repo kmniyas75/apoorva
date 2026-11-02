@@ -3,7 +3,7 @@ import { OrderRecord } from "@/lib/types/checkout";
 export function generatePaymentFailedHtml(
   order: OrderRecord,
   failureReason: string = "Transaction declined by issuing bank or canceled by user",
-  retryCheckoutUrl: string = "http://localhost:3000?resumeCheckout=true"
+  retryCheckoutUrl: string = "https://www.apoorvashells.com?resumeCheckout=true"
 ): string {
   const { customer, items, pricing, orderId } = order;
 

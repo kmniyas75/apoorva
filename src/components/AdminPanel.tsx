@@ -862,7 +862,7 @@ export default function AdminPanel({
             trackingNumber: o.shipping?.trackingNumber || "BD-88492019IN",
             trackingUrl:
               o.shipping?.trackingUrl ||
-              `http://localhost:3000/track?orderId=${o.orderId}`,
+              `https://www.apoorvashells.com/track?orderId=${o.orderId}`,
             estimatedDelivery:
               o.shipping?.estimatedDelivery || "2-3 Business Days",
             [field]: value
@@ -956,7 +956,7 @@ export default function AdminPanel({
       shipping: {
         courierName: "Blue Dart Express",
         trackingNumber: `BD-${Math.floor(10000000 + Math.random() * 90000000)}IN`,
-        trackingUrl: `http://localhost:3000/track?orderId=${orderId}`,
+        trackingUrl: `https://www.apoorvashells.com/track?orderId=${orderId}`,
         estimatedDelivery: "2-3 Business Days"
       }
     };
@@ -2767,7 +2767,7 @@ export default function AdminPanel({
                           }?text=${encodeURIComponent(
                             `Namaskaram ${order.customer.fullName}! Your APOORVA Beachwear Order #${order.orderId} is ${order.status.toUpperCase()}. Courier: ${order.shipping?.courierName || "Blue Dart"
                             } | AWB: ${order.shipping?.trackingNumber || "Assigned"
-                            }. Track live: http://localhost:3000/track?orderId=${order.orderId
+                            }. Track live: https://www.apoorvashells.com/track?orderId=${order.orderId
                             }`
                           )}`;
 

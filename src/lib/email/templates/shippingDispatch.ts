@@ -7,7 +7,7 @@ export function generateShippingDispatchHtml(
   trackingUrl?: string
 ): string {
   const { customer, items, orderId } = order;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.apoorvashells.com";
   const finalTrackingUrl = trackingUrl || `${siteUrl}/track?orderId=${orderId}`;
 
   return `

@@ -218,7 +218,7 @@ export function createInitialChatSessions(): ChatSession[] {
         pincode: "403515"
       },
       orderId: "APV-89421",
-      paymentLink: "https://apoorva-eight.vercel.app/?payOrder=APV-89421",
+      paymentLink: "https://www.apoorvashells.com/?payOrder=APV-89421",
       updatedAt: new Date(now - 2 * 3600 * 1000).toISOString(),
       messages: [
         {
@@ -242,9 +242,9 @@ export function createInitialChatSessions(): ChatSession[] {
         {
           id: "msg-4",
           sender: "ai",
-          text: "🎉 Wonderful choice, Ananya! I've reserved the 2-Set Resort Bundle (15% OFF • ₹7,395) for delivery to Villa 14, Candolim Beach Road (PIN 403515).\n\n💳 Tap your 1-Click Razorpay Payment Link below to complete your order (#APV-89421):\nhttps://apoorva-eight.vercel.app/?payOrder=APV-89421",
+          text: "🎉 Wonderful choice, Ananya! I've reserved the 2-Set Resort Bundle (15% OFF • ₹7,395) for delivery to Villa 14, Candolim Beach Road (PIN 403515).\n\n💳 Tap your 1-Click Razorpay Payment Link below to complete your order (#APV-89421):\nhttps://www.apoorvashells.com/?payOrder=APV-89421",
           timestamp: new Date(now - 2.05 * 3600 * 1000).toISOString(),
-          paymentLink: "https://apoorva-eight.vercel.app/?payOrder=APV-89421",
+          paymentLink: "https://www.apoorvashells.com/?payOrder=APV-89421",
           orderId: "APV-89421"
         }
       ]
@@ -384,7 +384,7 @@ function createInitialOrders(): OrderRecord[] {
       shipping: {
         courierName: "Blue Dart Express (Air Cargo)",
         trackingNumber: "BD-88492019IN",
-        trackingUrl: "http://localhost:3000/track?orderId=APV-89421",
+        trackingUrl: "https://www.apoorvashells.com/track?orderId=APV-89421",
         estimatedDelivery: "2-3 Business Days",
         dispatchedAt: o1Date
       }
@@ -440,7 +440,7 @@ function createInitialOrders(): OrderRecord[] {
       shipping: {
         courierName: "Blue Dart Express",
         trackingNumber: "BD-77319042IN",
-        trackingUrl: "http://localhost:3000/track?orderId=APV-89390",
+        trackingUrl: "https://www.apoorvashells.com/track?orderId=APV-89390",
         estimatedDelivery: "1-2 Business Days"
       }
     },
@@ -496,7 +496,7 @@ function createInitialOrders(): OrderRecord[] {
       shipping: {
         courierName: "Delhivery Air Express",
         trackingNumber: "DLV-99104281IN",
-        trackingUrl: "http://localhost:3000/track?orderId=APV-89314",
+        trackingUrl: "https://www.apoorvashells.com/track?orderId=APV-89314",
         estimatedDelivery: "Delivered",
         dispatchedAt: o3Date
       }

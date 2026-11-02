@@ -15,7 +15,11 @@ import {
 } from "@/lib/meta/whatsapp";
 
 const SITE_URL =
-  (process.env.NEXT_PUBLIC_SITE_URL || "https://apoorva-eight.vercel.app")
+  (
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.SITE_URL ||
+    "https://www.apoorvashells.com"
+  )
     .trim()
     .replace(/\/+$/, "");
 

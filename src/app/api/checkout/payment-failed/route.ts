@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     const result = await sendPaymentFailedEmail({
       order,
       failureReason: reason || "User cancelled payment or banking session timed out",
-      retryCheckoutUrl: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}?retryOrder=${order.orderId}`
+      retryCheckoutUrl: `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.apoorvashells.com"}?retryOrder=${order.orderId}`
     });
 
     return NextResponse.json({

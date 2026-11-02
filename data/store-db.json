@@ -359,7 +359,7 @@
       "shipping": {
         "courierName": "Blue Dart Express (Air Cargo)",
         "trackingNumber": "BD-88492019IN",
-        "trackingUrl": "http://localhost:3000/track?orderId=APV-89421",
+        "trackingUrl": "https://www.apoorvashells.com/track?orderId=APV-89421",
         "estimatedDelivery": "2-3 Business Days",
         "dispatchedAt": "2026-10-30T09:43:20.718Z"
       }
@@ -415,7 +415,7 @@
       "shipping": {
         "courierName": "Blue Dart Express",
         "trackingNumber": "BD-77319042IN",
-        "trackingUrl": "http://localhost:3000/track?orderId=APV-89390",
+        "trackingUrl": "https://www.apoorvashells.com/track?orderId=APV-89390",
         "estimatedDelivery": "1-2 Business Days"
       }
     },
@@ -471,7 +471,7 @@
       "shipping": {
         "courierName": "Delhivery Air Express",
         "trackingNumber": "DLV-99104281IN",
-        "trackingUrl": "http://localhost:3000/track?orderId=APV-89314",
+        "trackingUrl": "https://www.apoorvashells.com/track?orderId=APV-89314",
         "estimatedDelivery": "Delivered",
         "dispatchedAt": "2026-10-28T13:43:20.718Z"
       }
@@ -641,7 +641,7 @@
         "pincode": "403515"
       },
       "orderId": "APV-89421",
-      "paymentLink": "https://apoorva-eight.vercel.app/?payOrder=APV-89421",
+      "paymentLink": "https://www.apoorvashells.com/?payOrder=APV-89421",
       "updatedAt": "2026-11-02T03:27:33.181Z",
       "messages": [
         {
@@ -665,9 +665,9 @@
         {
           "id": "msg-4",
           "sender": "ai",
-          "text": "🎉 Wonderful choice, Ananya! I have reserved the 2-Set Resort Bundle (15% OFF • ₹7,395) for delivery to Villa 14, Candolim Beach Road (PIN 403515).\n\n💳 Tap your 1-Click Razorpay Payment Link below to complete your order (#APV-89421):\nhttps://apoorva-eight.vercel.app/?payOrder=APV-89421",
+          "text": "🎉 Wonderful choice, Ananya! I have reserved the 2-Set Resort Bundle (15% OFF • ₹7,395) for delivery to Villa 14, Candolim Beach Road (PIN 403515).\n\n💳 Tap your 1-Click Razorpay Payment Link below to complete your order (#APV-89421):\nhttps://www.apoorvashells.com/?payOrder=APV-89421",
           "timestamp": "2026-11-02T03:24:33.181Z",
-          "paymentLink": "https://apoorva-eight.vercel.app/?payOrder=APV-89421",
+          "paymentLink": "https://www.apoorvashells.com/?payOrder=APV-89421",
           "orderId": "APV-89421"
         }
       ]

@@ -160,7 +160,7 @@ export async function POST(req: Request) {
           `BD-${Math.floor(10000000 + Math.random() * 90000000)}IN`,
         trackingUrl:
           existing.shipping?.trackingUrl ||
-          `http://localhost:3000/track?orderId=${existing.orderId}`,
+          `https://www.apoorvashells.com/track?orderId=${existing.orderId}`,
         estimatedDelivery:
           estimatedDelivery ||
           existing.shipping?.estimatedDelivery ||
