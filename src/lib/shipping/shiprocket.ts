@@ -115,13 +115,58 @@ export async function createShiprocketOrder(payload: ShiprocketOrderPayload): Pr
   }
 
   try {
+    // Auto-detect pickup location from Shiprocket account if not explicitly overridden
+    let pickupLocation = payload.pickup_location;
+    if (!process.env.SHIPROCKET_PICKUP_LOCATION) {
+      try {
+        const pRes = await fetch(
+          "https://apiv2.shiprocket.in/v1/external/settings/company/pickup",
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+        const pData = await pRes.json();
+        const addresses = pData?.data?.shipping_address;
+        if (Array.isArray(addresses) && addresses.length > 0) {
+          const primary =
+            addresses.find(
+              (a: { is_primary_location?: number }) =>
+                a.is_primary_location === 1
+            ) || addresses[0];
+          if (primary?.pickup_location) {
+            pickupLocation = String(primary.pickup_location);
+          }
+        }
+      } catch {
+        // Keep payload.pickup_location fallback
+      }
+    }
+
+    const nameParts = (payload.billing_customer_name || "Coastal Guest")
+      .trim()
+      .split(/\s+/);
+    const firstName = nameParts[0] || "Coastal";
+    const lastName =
+      payload.billing_last_name || nameParts.slice(1).join(" ") || "Guest";
+    const cleanPhone =
+      (payload.billing_phone || "").replace(/\D/g, "").slice(-10) ||
+      "9847000000";
+
+    const normalizedPayload = {
+      ...payload,
+      pickup_location: pickupLocation,
+      billing_customer_name: firstName,
+      billing_last_name: lastName,
+      billing_phone: cleanPhone
+    };
+
     const res = await fetch("https://apiv2.shiprocket.in/v1/external/orders/create/adhoc", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(normalizedPayload)
     });
 
     const data = await res.json();
