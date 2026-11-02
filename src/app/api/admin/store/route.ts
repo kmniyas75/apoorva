@@ -12,13 +12,18 @@ import {
   StoreDatabase,
   MediaAsset
 } from "@/lib/store/adminStore";
-import { OrderRecord } from "@/lib/types/checkout";
+import { OrderRecord, OrderDisputeInfo } from "@/lib/types/checkout";
 import { sendShippingDispatchEmail } from "@/lib/email/emailService";
-import { sendWhatsAppShippingNotification } from "@/lib/meta/whatsapp";
+import {
+  sendWhatsAppShippingNotification,
+  sendWhatsAppTextMessage
+} from "@/lib/meta/whatsapp";
 import {
   createShiprocketOrder,
+  cancelShiprocketOrder,
   checkShiprocketServiceability
 } from "@/lib/shipping/shiprocket";
+import { refundRazorpayPayment } from "@/lib/payment/razorpay";
 import {
   generateTrackingData,
   saveTrackingRecord
@@ -184,6 +189,17 @@ export async function POST(req: Request) {
       if (srRes.courierName && order.shipping) {
         order.shipping.courierName = srRes.courierName;
       }
+      if (order.shipping) {
+        order.shipping.shiprocketOrderId = srRes.orderId;
+        order.shipping.shipmentId = srRes.shipmentId;
+        order.shipping.shiprocketStatus = srRes.isSimulated
+          ? "SIMULATED"
+          : srRes.awbCode
+            ? "AWB_ASSIGNED"
+            : srRes.orderId
+              ? "ORDER_CREATED"
+              : "SIMULATED";
+      }
       const savedOrder = recordOrderInStore(order);
       await persistStoreDatabase(getStoreDatabase());
       return NextResponse.json({
@@ -226,6 +242,11 @@ export async function POST(req: Request) {
         existing.shipping?.trackingNumber ||
         `BD-${Math.floor(10000000 + Math.random() * 90000000)}IN`;
 
+      let resolvedShiprocketOrderId = existing.shipping?.shiprocketOrderId;
+      let resolvedShipmentId = existing.shipping?.shipmentId;
+      let resolvedShiprocketStatus = existing.shipping?.shiprocketStatus;
+      let stockRestored = existing.stockRestored;
+
       // If dispatching from Admin, push to Shiprocket if not yet assigned a live AWB
       if (status === "dispatched" && sendDispatchEmail) {
         const srRes = await createShiprocketOrder({
@@ -253,7 +274,8 @@ export async function POST(req: Request) {
             selling_price: i.unitPrice || 2499
           })),
           payment_method: "Prepaid",
-          sub_total: existing.pricing?.total || 2499,
+          sub_total: existing.pricing?.subtotal || existing.pricing?.total || 2499,
+          shipping_charges: existing.pricing?.shippingFee || 0,
           length: 22,
           breadth: 18,
           height: 12,
@@ -261,9 +283,38 @@ export async function POST(req: Request) {
         });
         if (srRes.awbCode) resolvedAwb = srRes.awbCode;
         if (srRes.courierName) resolvedCourier = srRes.courierName;
+        if (srRes.orderId) resolvedShiprocketOrderId = srRes.orderId;
+        if (srRes.shipmentId) resolvedShipmentId = srRes.shipmentId;
+        resolvedShiprocketStatus = srRes.awbCode
+          ? "AWB_ASSIGNED"
+          : srRes.orderId
+            ? "ORDER_CREATED"
+            : resolvedShiprocketStatus;
+      }
+
+      // If cancelling order from Admin dropdown, automatically cancel in Shiprocket & restore inventory stock!
+      if (status === "cancelled" && existing.status !== "cancelled") {
+        await cancelShiprocketOrder({
+          shiprocketOrderId: existing.shipping?.shiprocketOrderId,
+          awbCode: existing.shipping?.trackingNumber
+        });
+        resolvedShiprocketStatus = "CANCELLED";
+        if (!stockRestored) {
+          for (const item of existing.items) {
+            const prod = db.products.find((p) => p.id === item.productId);
+            if (prod) {
+              const sizeEntry = prod.sizes.find((s) => s.size === item.size);
+              if (sizeEntry) {
+                sizeEntry.stock += item.quantity || 1;
+              }
+            }
+          }
+          stockRestored = true;
+        }
       }
 
       const updatedShipping = {
+        ...existing.shipping,
         courierName: resolvedCourier,
         trackingNumber: resolvedAwb,
         trackingUrl:
@@ -276,12 +327,20 @@ export async function POST(req: Request) {
         dispatchedAt:
           status === "dispatched"
             ? new Date().toISOString()
-            : existing.shipping?.dispatchedAt
+            : existing.shipping?.dispatchedAt,
+        shiprocketOrderId: resolvedShiprocketOrderId,
+        shipmentId: resolvedShipmentId,
+        shiprocketStatus: resolvedShiprocketStatus,
+        cancelledAt:
+          status === "cancelled"
+            ? new Date().toISOString()
+            : existing.shipping?.cancelledAt
       };
 
       const updatedOrder: OrderRecord = {
         ...existing,
         status: status || existing.status,
+        stockRestored,
         customer: {
           ...existing.customer,
           orderNotes:
@@ -346,6 +405,285 @@ export async function POST(req: Request) {
           : `Order ${orderId} updated & WhatsApp notification sent to ${updatedOrder.customer.phone || "customer"}!`,
         order: updatedOrder,
         whatsappNotification: whatsappResult,
+        orders: db.orders
+      });
+    }
+
+    if (action === "sync_shiprocket_order") {
+      const { orderId } = body as { orderId: string };
+      const idx = db.orders.findIndex((o) => o.orderId === orderId);
+      if (idx === -1) {
+        return NextResponse.json({ error: "Order not found" }, { status: 404 });
+      }
+      const existing = db.orders[idx];
+      const srRes = await createShiprocketOrder({
+        order_id: existing.orderId,
+        order_date: new Date(existing.createdAt || Date.now())
+          .toISOString()
+          .split("T")[0],
+        pickup_location: process.env.SHIPROCKET_PICKUP_LOCATION || "work",
+        billing_customer_name: existing.customer.fullName || "Valued Client",
+        billing_address:
+          existing.customer.addressLine1 || "Coastal Delivery Address",
+        billing_address_2: existing.customer.addressLine2 || "",
+        billing_city: existing.customer.city || "Kochi",
+        billing_pincode: existing.customer.pincode || "683101",
+        billing_state: existing.customer.state || "Kerala",
+        billing_country: "India",
+        billing_email:
+          existing.customer.email || "orders@apoorvashells.com",
+        billing_phone: existing.customer.phone || "9847000000",
+        shipping_is_billing: true,
+        order_items: existing.items.map((i) => ({
+          name: i.name,
+          sku: i.productId || "APV-SET",
+          units: i.quantity || 1,
+          selling_price: i.unitPrice || 2499
+        })),
+        payment_method: "Prepaid",
+        sub_total: existing.pricing?.subtotal || existing.pricing?.total || 2499,
+        shipping_charges: existing.pricing?.shippingFee || 0,
+        length: 22,
+        breadth: 18,
+        height: 12,
+        weight: 0.65
+      });
+
+      existing.shipping = {
+        courierName:
+          srRes.courierName ||
+          existing.shipping?.courierName ||
+          "Blue Dart Air",
+        trackingNumber:
+          srRes.awbCode ||
+          existing.shipping?.trackingNumber ||
+          `BD-${Math.floor(10000000 + Math.random() * 90000000)}IN`,
+        trackingUrl:
+          existing.shipping?.trackingUrl ||
+          `https://www.apoorvashells.com/track?orderId=${existing.orderId}`,
+        estimatedDelivery:
+          existing.shipping?.estimatedDelivery || "2-3 Business Days",
+        dispatchedAt: existing.shipping?.dispatchedAt,
+        shiprocketOrderId:
+          srRes.orderId || existing.shipping?.shiprocketOrderId,
+        shipmentId: srRes.shipmentId || existing.shipping?.shipmentId,
+        shiprocketStatus: srRes.isSimulated
+          ? "SIMULATED"
+          : srRes.awbCode
+            ? "AWB_ASSIGNED"
+            : srRes.orderId
+              ? "ORDER_CREATED"
+              : existing.shipping?.shiprocketStatus
+      };
+      db.orders[idx] = existing;
+      await persistStoreDatabase(db);
+
+      return NextResponse.json({
+        success: srRes.success,
+        message: srRes.orderId
+          ? `Order ${orderId} synced to Shiprocket (SR Order #${srRes.orderId}${srRes.awbCode ? ` • AWB ${srRes.awbCode}` : ""})!`
+          : srRes.message || "Could not create order on Shiprocket",
+        shiprocket: srRes,
+        order: existing,
+        orders: db.orders
+      });
+    }
+
+    if (action === "cancel_and_refund_order") {
+      const {
+        orderId,
+        cancelOrder = true,
+        issueRefund = false,
+        refundAmount,
+        reason = "Customer requested cancellation / refund"
+      } = body as {
+        orderId: string;
+        cancelOrder?: boolean;
+        issueRefund?: boolean;
+        refundAmount?: number;
+        reason?: string;
+      };
+
+      const idx = db.orders.findIndex((o) => o.orderId === orderId);
+      if (idx === -1) {
+        return NextResponse.json({ error: "Order not found" }, { status: 404 });
+      }
+
+      const existing = db.orders[idx];
+      const nowIso = new Date().toISOString();
+      const summaryParts: string[] = [];
+
+      // 1. Cancel in Shiprocket & restore inventory stock if cancelOrder is true
+      if (cancelOrder) {
+        const srCancel = await cancelShiprocketOrder({
+          shiprocketOrderId: existing.shipping?.shiprocketOrderId,
+          awbCode: existing.shipping?.trackingNumber
+        });
+        summaryParts.push(srCancel.message);
+
+        existing.status = issueRefund ? "refunded" : "cancelled";
+        if (existing.shipping) {
+          existing.shipping.shiprocketStatus = "CANCELLED";
+          existing.shipping.cancelledAt = nowIso;
+          existing.shipping.cancellationReason = reason;
+        }
+
+        if (!existing.stockRestored) {
+          for (const item of existing.items) {
+            const prod = db.products.find((p) => p.id === item.productId);
+            if (prod) {
+              const sizeEntry = prod.sizes.find((s) => s.size === item.size);
+              if (sizeEntry) {
+                sizeEntry.stock += item.quantity || 1;
+              }
+            }
+          }
+          existing.stockRestored = true;
+          summaryParts.push("Inventory stock restored.");
+        }
+      }
+
+      // 2. Process Full or Partial Refund via Razorpay if issueRefund is true
+      if (issueRefund) {
+        const amountToRefund =
+          typeof refundAmount === "number" && refundAmount > 0
+            ? Math.min(refundAmount, existing.pricing.total)
+            : existing.pricing.total;
+
+        const rzpRefund = await refundRazorpayPayment({
+          paymentId: existing.payment?.razorpayPaymentId || "",
+          amountInRupees: amountToRefund,
+          reason,
+          orderId: existing.orderId
+        });
+
+        existing.refund = {
+          status: rzpRefund.status,
+          refundId: rzpRefund.refundId,
+          amount: amountToRefund,
+          reason,
+          speed: "optimum",
+          refundedAt: nowIso
+        };
+        if (amountToRefund >= existing.pricing.total) {
+          existing.status = "refunded";
+        }
+        summaryParts.push(rzpRefund.message);
+      }
+
+      db.orders[idx] = existing;
+      await persistStoreDatabase(db);
+
+      // 3. Notify Customer on WhatsApp
+      if (existing.customer?.phone) {
+        const waText = issueRefund
+          ? `🌴 *APOORVA SHELLS — Refund Processed*\n\nNamaskaram *${existing.customer.fullName}*,\nYour refund of *₹${(existing.refund?.amount || existing.pricing.total).toLocaleString("en-IN")}* for Order *#${existing.orderId}* has been initiated via Razorpay.\n\n• *Refund ID:* ${existing.refund?.refundId}\n• *Reason:* ${reason}\n• *Credit Timeline:* 2–5 business days to your original UPI / Card account.\n\nWarm regards,\nAPOORVA SHELLS Atelier (Aluva, Kerala)`
+          : `🌴 *APOORVA SHELLS — Order Cancelled*\n\nNamaskaram *${existing.customer.fullName}*,\nYour Order *#${existing.orderId}* has been cancelled as requested (${reason}).\n\nWarm regards,\nAPOORVA SHELLS Atelier (Aluva, Kerala)`;
+
+        await sendWhatsAppTextMessage({
+          to: existing.customer.phone,
+          body: waText
+        });
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: summaryParts.join(" "),
+        order: existing,
+        orders: db.orders
+      });
+    }
+
+    if (action === "update_order_dispute") {
+      const {
+        orderId,
+        disputeStatus,
+        disputeType = "other",
+        reason = "",
+        customerNotes = "",
+        adminResolutionNotes = "",
+        issueRefund = false,
+        refundAmount
+      } = body as {
+        orderId: string;
+        disputeStatus: OrderDisputeInfo["status"];
+        disputeType?: OrderDisputeInfo["type"];
+        reason?: string;
+        customerNotes?: string;
+        adminResolutionNotes?: string;
+        issueRefund?: boolean;
+        refundAmount?: number;
+      };
+
+      const idx = db.orders.findIndex((o) => o.orderId === orderId);
+      if (idx === -1) {
+        return NextResponse.json({ error: "Order not found" }, { status: 404 });
+      }
+
+      const existing = db.orders[idx];
+      const nowIso = new Date().toISOString();
+
+      existing.dispute = {
+        status: disputeStatus,
+        type: disputeType,
+        reason: reason || existing.dispute?.reason || "Customer Support Case",
+        customerNotes: customerNotes || existing.dispute?.customerNotes,
+        adminResolutionNotes:
+          adminResolutionNotes || existing.dispute?.adminResolutionNotes,
+        openedAt: existing.dispute?.openedAt || nowIso,
+        updatedAt: nowIso,
+        resolvedAt:
+          disputeStatus.startsWith("resolved_") || disputeStatus === "rejected"
+            ? nowIso
+            : existing.dispute?.resolvedAt
+      };
+
+      if (issueRefund) {
+        const amt =
+          typeof refundAmount === "number" && refundAmount > 0
+            ? Math.min(refundAmount, existing.pricing.total)
+            : existing.pricing.total;
+        const rzpRefund = await refundRazorpayPayment({
+          paymentId: existing.payment?.razorpayPaymentId || "",
+          amountInRupees: amt,
+          reason: `Dispute Resolution: ${existing.dispute.reason}`,
+          orderId: existing.orderId
+        });
+        existing.refund = {
+          status: rzpRefund.status,
+          refundId: rzpRefund.refundId,
+          amount: amt,
+          reason: `Dispute Resolution: ${existing.dispute.reason}`,
+          speed: "optimum",
+          refundedAt: nowIso
+        };
+        existing.status = "refunded";
+      }
+
+      db.orders[idx] = existing;
+      await persistStoreDatabase(db);
+
+      if (existing.customer?.phone && disputeStatus !== "none") {
+        await sendWhatsAppTextMessage({
+          to: existing.customer.phone,
+          body:
+            `🌴 *APOORVA SHELLS — Support & Dispute Update (#${existing.orderId})*\n\n` +
+            `Namaskaram *${existing.customer.fullName}*,\n` +
+            `Your support case for Order *#${existing.orderId}* is now marked *${disputeStatus.replace(/_/g, " ").toUpperCase()}*.\n` +
+            (adminResolutionNotes
+              ? `\n📝 *Atelier Note:* ${adminResolutionNotes}\n`
+              : "") +
+            (existing.refund?.refundId
+              ? `\n💳 *Refund Issued:* ₹${existing.refund.amount.toLocaleString("en-IN")} (ID: ${existing.refund.refundId})\n`
+              : "") +
+            `\nReply here anytime if you need further assistance!`
+        });
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: `Dispute case for ${orderId} updated to ${disputeStatus.replace(/_/g, " ").toUpperCase()}!`,
+        order: existing,
         orders: db.orders
       });
     }

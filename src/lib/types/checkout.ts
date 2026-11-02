@@ -37,6 +37,39 @@ export interface OrderPricing {
   currency: string;
 }
 
+export interface OrderRefundInfo {
+  status: "none" | "initiated" | "processed" | "failed";
+  refundId?: string;
+  amount: number;
+  reason?: string;
+  speed?: "normal" | "optimum";
+  refundedAt?: string;
+  notes?: string;
+}
+
+export interface OrderDisputeInfo {
+  status:
+    | "none"
+    | "open"
+    | "under_review"
+    | "resolved_refunded"
+    | "resolved_replacement"
+    | "rejected";
+  type:
+    | "delivery_delay"
+    | "damaged_item"
+    | "size_exchange"
+    | "payment_dispute"
+    | "cancellation_request"
+    | "other";
+  reason: string;
+  customerNotes?: string;
+  adminResolutionNotes?: string;
+  openedAt: string;
+  updatedAt: string;
+  resolvedAt?: string;
+}
+
 export interface OrderRecord {
   orderId: string;
   receiptNumber: string;
@@ -49,6 +82,7 @@ export interface OrderRecord {
     | "out_for_delivery"
     | "delivered"
     | "cancelled"
+    | "refunded"
     | "failed";
   source?: "website" | "whatsapp" | "instagram" | "concierge";
   socialHandle?: string;
@@ -70,7 +104,22 @@ export interface OrderRecord {
     trackingUrl: string;
     estimatedDelivery: string;
     dispatchedAt?: string;
+    shiprocketOrderId?: number;
+    shipmentId?: number;
+    shiprocketStatus?:
+      | "ORDER_CREATED"
+      | "AWB_ASSIGNED"
+      | "PICKUP_SCHEDULED"
+      | "IN_TRANSIT"
+      | "DELIVERED"
+      | "CANCELLED"
+      | "SIMULATED";
+    cancelledAt?: string;
+    cancellationReason?: string;
   };
+  refund?: OrderRefundInfo;
+  dispute?: OrderDisputeInfo;
+  stockRestored?: boolean;
 }
 
 export interface EmailNotificationLog {

@@ -129,7 +129,16 @@ export async function POST(req: Request) {
         courierName: courierPartner,
         trackingNumber: assignedAwb,
         trackingUrl: `${process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin}/track?orderId=${orderId}`,
-        estimatedDelivery: "2-3 Business Days"
+        estimatedDelivery: "2-3 Business Days",
+        shiprocketOrderId: shiprocketResult.orderId,
+        shipmentId: shiprocketResult.shipmentId,
+        shiprocketStatus: shiprocketResult.isSimulated
+          ? "SIMULATED"
+          : shiprocketResult.awbCode
+            ? "AWB_ASSIGNED"
+            : shiprocketResult.orderId
+              ? "ORDER_CREATED"
+              : "SIMULATED"
       }
     };
 

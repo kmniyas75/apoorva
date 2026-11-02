@@ -31,6 +31,77 @@ function TrackContent() {
   const [phoneForAlerts, setPhoneForAlerts] = useState("");
   const [subscribedAlerts, setSubscribedAlerts] = useState(false);
 
+  // Customer Self-Service Cancellation / Dispute Request State
+  const [supportType, setSupportType] = useState<
+    | "cancellation_request"
+    | "size_exchange"
+    | "damaged_item"
+    | "delivery_delay"
+    | "other"
+  >("size_exchange");
+  const [supportReason, setSupportReason] = useState("");
+  const [supportSubmitting, setSupportSubmitting] = useState(false);
+  const [supportFeedback, setSupportFeedback] = useState<string | null>(null);
+
+  const handleSubmitSupportOrCancel = async (
+    e: React.FormEvent,
+    instantCancelBeforeDispatch = false
+  ) => {
+    e.preventDefault();
+    if (!trackingData?.orderId) return;
+    setSupportSubmitting(true);
+    setSupportFeedback(null);
+    try {
+      const canInstantCancel =
+        instantCancelBeforeDispatch &&
+        (trackingData.currentStatus === "order_placed" ||
+          trackingData.currentStatus === "handcrafted");
+
+      const res = await fetch("/api/admin/store", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          canInstantCancel
+            ? {
+                action: "cancel_and_refund_order",
+                orderId: trackingData.orderId,
+                cancelOrder: true,
+                issueRefund: true,
+                reason:
+                  supportReason.trim() ||
+                  "Customer cancelled order before dispatch via Track Portal"
+              }
+            : {
+                action: "update_order_dispute",
+                orderId: trackingData.orderId,
+                disputeStatus: "open",
+                disputeType: instantCancelBeforeDispatch
+                  ? "cancellation_request"
+                  : supportType,
+                reason:
+                  supportReason.trim() ||
+                  `Customer requested ${supportType.replace(/_/g, " ")}`,
+                customerNotes: supportReason.trim()
+              }
+        )
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not submit request");
+      setSupportFeedback(
+        canInstantCancel
+          ? `✅ Order #${trackingData.orderId} cancelled in Shiprocket & full Razorpay refund initiated!`
+          : `✅ Support / Dispute Case opened for Order #${trackingData.orderId}! Our Aluva Atelier team will update you on WhatsApp.`
+      );
+      setSupportReason("");
+    } catch (err: unknown) {
+      setSupportFeedback(
+        err instanceof Error ? err.message : "Could not submit request"
+      );
+    } finally {
+      setSupportSubmitting(false);
+    }
+  };
+
   const fetchTracking = async (searchQuery: string) => {
     setIsLoading(true);
     setError(null);
@@ -320,6 +391,100 @@ function TrackContent() {
                 </span>
               )}
             </div>
+          </div>
+
+          {/* Customer Self-Service: Cancel Order (Before Dispatch) or Raise a Dispute / Exchange Request */}
+          <div className="bg-white p-6 rounded-3xl border border-black/12 shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-black/10 pb-3">
+              <div>
+                <span className="text-[10px] uppercase tracking-widest text-amber-900 font-bold block">
+                  CLIENT SELF-SERVICE DESK
+                </span>
+                <h2 className="text-sm font-bold uppercase text-black">
+                  Need a Size Exchange, Cancellation, or Support for #{trackingData.orderId}?
+                </h2>
+              </div>
+              <span className="text-[10px] px-2.5 py-1 rounded-full bg-neutral-100 text-black/70 font-bold uppercase">
+                Synced with Admin &amp; Shiprocket
+              </span>
+            </div>
+
+            <form
+              onSubmit={(e) => handleSubmitSupportOrCancel(e, false)}
+              className="grid grid-cols-1 sm:grid-cols-12 gap-3"
+            >
+              <div className="sm:col-span-4">
+                <label className="block text-[10px] uppercase font-bold text-black/60 mb-1">
+                  Request Category
+                </label>
+                <select
+                  value={supportType}
+                  onChange={(e) =>
+                    setSupportType(
+                      e.target.value as
+                        | "cancellation_request"
+                        | "size_exchange"
+                        | "damaged_item"
+                        | "delivery_delay"
+                        | "other"
+                    )
+                  }
+                  className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 text-xs font-bold uppercase"
+                >
+                  <option value="size_exchange">Size / Fit Exchange</option>
+                  <option value="cancellation_request">
+                    Cancel Order &amp; Refund
+                  </option>
+                  <option value="damaged_item">
+                    Damaged / Transit Issue
+                  </option>
+                  <option value="delivery_delay">
+                    Courier Delivery Delay
+                  </option>
+                  <option value="other">Other Inquiry</option>
+                </select>
+              </div>
+
+              <div className="sm:col-span-5">
+                <label className="block text-[10px] uppercase font-bold text-black/60 mb-1">
+                  Reason / Notes for Atelier Team
+                </label>
+                <input
+                  type="text"
+                  value={supportReason}
+                  onChange={(e) => setSupportReason(e.target.value)}
+                  placeholder="Describe your request or cancellation reason..."
+                  className="w-full px-3 py-2 rounded-xl bg-neutral-50 border border-black/15 text-xs"
+                />
+              </div>
+
+              <div className="sm:col-span-3 flex flex-col justify-end gap-1.5">
+                <button
+                  type="submit"
+                  disabled={supportSubmitting}
+                  className="w-full py-2 px-3 rounded-xl bg-black hover:bg-black/85 text-white text-[10px] font-bold uppercase tracking-wider"
+                >
+                  {supportSubmitting ? "Submitting..." : "Raise Support Ticket"}
+                </button>
+                {(trackingData.currentStatus === "order_placed" ||
+                  trackingData.currentStatus === "handcrafted") && (
+                  <button
+                    type="button"
+                    disabled={supportSubmitting}
+                    onClick={(e) => handleSubmitSupportOrCancel(e, true)}
+                    className="w-full py-1.5 px-3 rounded-xl bg-red-100 hover:bg-red-200 text-red-900 text-[10px] font-bold uppercase tracking-wider"
+                  >
+                    Instant Cancel &amp; Refund
+                  </button>
+                )}
+              </div>
+            </form>
+
+            {supportFeedback && (
+              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-xs font-bold">
+                {supportFeedback}
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -46,7 +46,8 @@ import {
   HardDrive,
   RotateCw,
   Copy,
-  Zap
+  Zap,
+  Shield
 } from "lucide-react";
 
 interface AdminPanelProps {
@@ -190,6 +191,31 @@ export default function AdminPanel({
   const [dispatchingOrderId, setDispatchingOrderId] = useState<string | null>(
     null
   );
+  const [activeResolutionOrderId, setActiveResolutionOrderId] = useState<
+    string | null
+  >(null);
+  const [resolutionReason, setResolutionReason] = useState<string>(
+    "Customer requested cancellation / refund"
+  );
+  const [resolutionRefundAmount, setResolutionRefundAmount] =
+    useState<number>(0);
+  const [resolutionDisputeType, setResolutionDisputeType] = useState<
+    | "delivery_delay"
+    | "damaged_item"
+    | "size_exchange"
+    | "payment_dispute"
+    | "cancellation_request"
+    | "other"
+  >("cancellation_request");
+  const [resolutionDisputeStatus, setResolutionDisputeStatus] = useState<
+    | "none"
+    | "open"
+    | "under_review"
+    | "resolved_refunded"
+    | "resolved_replacement"
+    | "rejected"
+  >("open");
+  const [resolutionAdminNotes, setResolutionAdminNotes] = useState<string>("");
 
   // Manual New Order Modal state
   const [showNewOrderForm, setShowNewOrderForm] = useState(false);
@@ -938,6 +964,118 @@ export default function AdminPanel({
     }
   };
 
+  const handleSyncShiprocketOrder = async (order: OrderRecord) => {
+    setDispatchingOrderId(order.orderId);
+    try {
+      const res = await fetch("/api/admin/store", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "sync_shiprocket_order",
+          orderId: order.orderId
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Shiprocket sync failed");
+      if (Array.isArray(data.orders)) {
+        setOrders(data.orders);
+      }
+      showToastMessage(
+        data.success ? "success" : "error",
+        data.message || `Synced ${order.orderId} with Shiprocket.`
+      );
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Shiprocket sync failed";
+      showToastMessage("error", msg);
+    } finally {
+      setDispatchingOrderId(null);
+    }
+  };
+
+  const handleCancelAndRefundOrder = async (
+    order: OrderRecord,
+    opts: {
+      cancelOrder: boolean;
+      issueRefund: boolean;
+      refundAmount?: number;
+      reason?: string;
+    }
+  ) => {
+    setDispatchingOrderId(order.orderId);
+    try {
+      const res = await fetch("/api/admin/store", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "cancel_and_refund_order",
+          orderId: order.orderId,
+          cancelOrder: opts.cancelOrder,
+          issueRefund: opts.issueRefund,
+          refundAmount: opts.refundAmount ?? order.pricing?.total,
+          reason: opts.reason || resolutionReason
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Cancel/refund failed");
+      if (Array.isArray(data.orders)) {
+        setOrders(data.orders);
+      }
+      showToastMessage(
+        "success",
+        data.message || `Processed cancellation/refund for ${order.orderId}.`
+      );
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Failed to process refund/cancel";
+      showToastMessage("error", msg);
+    } finally {
+      setDispatchingOrderId(null);
+    }
+  };
+
+  const handleUpdateOrderDispute = async (
+    order: OrderRecord,
+    issueRefundNow = false
+  ) => {
+    setDispatchingOrderId(order.orderId);
+    try {
+      const res = await fetch("/api/admin/store", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update_order_dispute",
+          orderId: order.orderId,
+          disputeStatus: issueRefundNow
+            ? "resolved_refunded"
+            : resolutionDisputeStatus,
+          disputeType: resolutionDisputeType,
+          reason: resolutionReason,
+          adminResolutionNotes: resolutionAdminNotes,
+          issueRefund: issueRefundNow,
+          refundAmount:
+            resolutionRefundAmount > 0
+              ? resolutionRefundAmount
+              : order.pricing?.total
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Dispute update failed");
+      if (Array.isArray(data.orders)) {
+        setOrders(data.orders);
+      }
+      showToastMessage(
+        "success",
+        data.message || `Updated dispute case for ${order.orderId}.`
+      );
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Failed to update dispute case";
+      showToastMessage("error", msg);
+    } finally {
+      setDispatchingOrderId(null);
+    }
+  };
+
   const handleCreateManualOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newOrderCustomer.fullName.trim() || !newOrderCustomer.phone.trim()) {
@@ -1380,8 +1518,33 @@ export default function AdminPanel({
 
   // KPI calculations
   const totalRevenue = orders
-    .filter((o) => o.status !== "failed" && o.status !== "cancelled")
+    .filter(
+      (o) =>
+        o.status !== "failed" &&
+        o.status !== "cancelled" &&
+        o.status !== "refunded"
+    )
     .reduce((sum, o) => sum + (o.pricing?.total || 0), 0);
+  const totalRefundedAmount = orders.reduce(
+    (sum, o) => sum + (o.refund?.amount || 0),
+    0
+  );
+  const cancelledOrdersCount = orders.filter(
+    (o) => o.status === "cancelled"
+  ).length;
+  const refundedOrdersCount = orders.filter(
+    (o) =>
+      o.status === "refunded" ||
+      (o.refund && o.refund.status !== "none" && o.refund.amount > 0)
+  ).length;
+  const openDisputesCount = orders.filter(
+    (o) => o.dispute && o.dispute.status !== "none"
+  ).length;
+  const shiprocketSyncedCount = orders.filter(
+    (o) =>
+      Boolean(o.shipping?.shiprocketOrderId) ||
+      Boolean(o.shipping?.trackingNumber)
+  ).length;
   const pendingOrdersCount = orders.filter(
     (o) =>
       o.status === "paid" ||
@@ -1405,7 +1568,14 @@ export default function AdminPanel({
 
   const filteredOrders = orders.filter((o) => {
     const matchesStatus =
-      orderStatusFilter === "all" || o.status === orderStatusFilter;
+      orderStatusFilter === "all"
+        ? true
+        : orderStatusFilter === "refunded"
+          ? o.status === "refunded" ||
+            Boolean(o.refund && o.refund.status !== "none" && o.refund.amount > 0)
+          : orderStatusFilter === "disputes"
+            ? Boolean(o.dispute && o.dispute.status !== "none")
+            : o.status === orderStatusFilter;
     const matchesChannel =
       orderChannelFilter === "all" ||
       (o.source || "website") === orderChannelFilter;
@@ -1419,7 +1589,8 @@ export default function AdminPanel({
         o.customer.phone.toLowerCase().includes(q) ||
         o.customer.email.toLowerCase().includes(q) ||
         o.customer.city.toLowerCase().includes(q) ||
-        (o.shipping?.trackingNumber || "").toLowerCase().includes(q))
+        (o.shipping?.trackingNumber || "").toLowerCase().includes(q) ||
+        (o.refund?.refundId || "").toLowerCase().includes(q))
     );
   });
 
@@ -2717,6 +2888,95 @@ export default function AdminPanel({
                  ============================================================= */}
               {activeTab === "orders" && (
                 <div className="space-y-4">
+                  {/* Live Order, Shiprocket Sync, Cancellation, Refund & Dispute KPI Bar */}
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setOrderStatusFilter("all")}
+                      className={`p-3 rounded-2xl border text-left font-mono transition-all ${
+                        orderStatusFilter === "all"
+                          ? "bg-[#141414] text-white border-[#141414] shadow-sm"
+                          : "bg-white text-black border-black/10 hover:border-black/25"
+                      }`}
+                    >
+                      <span className="text-[10px] uppercase opacity-70 block">
+                        All Orders &amp; Net Rev
+                      </span>
+                      <span className="text-sm sm:text-base font-black block mt-0.5">
+                        {orders.length} • ₹{totalRevenue.toLocaleString("en-IN")}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setOrderStatusFilter("dispatched")}
+                      className={`p-3 rounded-2xl border text-left font-mono transition-all ${
+                        orderStatusFilter === "dispatched"
+                          ? "bg-blue-900 text-white border-blue-900 shadow-sm"
+                          : "bg-white text-black border-black/10 hover:border-black/25"
+                      }`}
+                    >
+                      <span className="text-[10px] uppercase opacity-70 block">
+                        Shiprocket Synced
+                      </span>
+                      <span className="text-sm sm:text-base font-black block mt-0.5">
+                        {shiprocketSyncedCount} Orders (Auto-Sync)
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setOrderStatusFilter("cancelled")}
+                      className={`p-3 rounded-2xl border text-left font-mono transition-all ${
+                        orderStatusFilter === "cancelled"
+                          ? "bg-red-900 text-white border-red-900 shadow-sm"
+                          : "bg-white text-black border-black/10 hover:border-black/25"
+                      }`}
+                    >
+                      <span className="text-[10px] uppercase opacity-70 block">
+                        Cancelled (SR Sync)
+                      </span>
+                      <span className="text-sm sm:text-base font-black block mt-0.5">
+                        {cancelledOrdersCount} Cancelled
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setOrderStatusFilter("refunded")}
+                      className={`p-3 rounded-2xl border text-left font-mono transition-all ${
+                        orderStatusFilter === "refunded"
+                          ? "bg-emerald-900 text-white border-emerald-900 shadow-sm"
+                          : "bg-white text-black border-black/10 hover:border-black/25"
+                      }`}
+                    >
+                      <span className="text-[10px] uppercase opacity-70 block">
+                        Razorpay Refunds
+                      </span>
+                      <span className="text-sm sm:text-base font-black block mt-0.5">
+                        {refundedOrdersCount} • ₹
+                        {totalRefundedAmount.toLocaleString("en-IN")}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setOrderStatusFilter("disputes")}
+                      className={`p-3 rounded-2xl border text-left font-mono transition-all col-span-2 sm:col-span-1 ${
+                        orderStatusFilter === "disputes"
+                          ? "bg-amber-600 text-black border-amber-600 shadow-sm"
+                          : "bg-white text-black border-black/10 hover:border-black/25"
+                      }`}
+                    >
+                      <span className="text-[10px] uppercase opacity-75 block">
+                        Disputes &amp; Exchanges
+                      </span>
+                      <span className="text-sm sm:text-base font-black block mt-0.5">
+                        {openDisputesCount} Active Cases
+                      </span>
+                    </button>
+                  </div>
+
                   {/* Search, Channel Filter, Status Filter & Manual Order Bar */}
                   <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-black/10 shadow-xs flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
                     <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 flex-1">
@@ -2725,7 +2985,7 @@ export default function AdminPanel({
                         <input
                           type="text"
                           aria-label="Search orders by ID, customer name, phone, or AWB"
-                          placeholder="Search Order ID, Customer, Phone, City, AWB..."
+                          placeholder="Search Order ID, Customer, Phone, City, AWB, Refund ID..."
                           value={orderSearch}
                           onChange={(e) => setOrderSearch(e.target.value)}
                           className="w-full pl-9 pr-3 py-2 rounded-xl bg-neutral-50 border border-black/15 font-mono text-xs"
@@ -2760,6 +3020,8 @@ export default function AdminPanel({
                           <option value="out_for_delivery">Out for Delivery</option>
                           <option value="delivered">Delivered</option>
                           <option value="cancelled">Cancelled</option>
+                          <option value="refunded">Refunded</option>
+                          <option value="disputes">Disputes &amp; Returns</option>
                         </select>
                       </div>
                     </div>
@@ -3016,6 +3278,42 @@ export default function AdminPanel({
                                   {order.payment?.method?.toUpperCase() || "UPI"}
                                 </span>
 
+                                {/* Shiprocket Live Sync Status Badge */}
+                                {order.shipping?.shiprocketStatus ===
+                                "CANCELLED" ? (
+                                  <span className="px-2.5 py-0.5 rounded-full bg-red-100 text-red-900 font-mono text-[10px] font-black uppercase">
+                                    SR CANCELLED
+                                  </span>
+                                ) : order.shipping?.shiprocketOrderId ? (
+                                  <span className="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-900 font-mono text-[10px] font-black uppercase">
+                                    SR #{order.shipping.shiprocketOrderId}
+                                  </span>
+                                ) : null}
+
+                                {/* Refund Status Badge */}
+                                {order.refund &&
+                                  order.refund.status !== "none" &&
+                                  order.refund.amount > 0 && (
+                                    <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-900 font-mono text-[10px] font-black uppercase">
+                                      REFUNDED ₹
+                                      {order.refund.amount.toLocaleString(
+                                        "en-IN"
+                                      )}{" "}
+                                      ({order.refund.refundId})
+                                    </span>
+                                  )}
+
+                                {/* Dispute Status Badge */}
+                                {order.dispute &&
+                                  order.dispute.status !== "none" && (
+                                    <span className="px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-950 font-mono text-[10px] font-black uppercase">
+                                      ⚠ DISPUTE:{" "}
+                                      {order.dispute.status
+                                        .replace(/_/g, " ")
+                                        .toUpperCase()}
+                                    </span>
+                                  )}
+
                                 <span className="text-[11px] font-mono text-black/50">
                                   {new Date(order.createdAt).toLocaleString(
                                     "en-IN",
@@ -3036,6 +3334,65 @@ export default function AdminPanel({
                                     "en-IN"
                                   )}
                                 </span>
+
+                                <button
+                                  type="button"
+                                  disabled={isBusy}
+                                  onClick={() => handleSyncShiprocketOrder(order)}
+                                  className="px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-950 border border-indigo-200 font-mono text-[10px] font-bold uppercase flex items-center gap-1"
+                                  title="Push or Re-Sync Order with Shiprocket"
+                                >
+                                  <Truck className="w-3.5 h-3.5 shrink-0" />
+                                  <span>
+                                    {order.shipping?.shiprocketOrderId
+                                      ? "Re-Sync SR"
+                                      : "Push to SR"}
+                                  </span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (
+                                      activeResolutionOrderId === order.orderId
+                                    ) {
+                                      setActiveResolutionOrderId(null);
+                                    } else {
+                                      setActiveResolutionOrderId(order.orderId);
+                                      setResolutionRefundAmount(
+                                        order.pricing?.total || 0
+                                      );
+                                      setResolutionReason(
+                                        order.dispute?.reason ||
+                                          order.shipping?.cancellationReason ||
+                                          "Customer requested cancellation / refund"
+                                      );
+                                      setResolutionDisputeType(
+                                        order.dispute?.type ||
+                                          "cancellation_request"
+                                      );
+                                      setResolutionDisputeStatus(
+                                        order.dispute?.status &&
+                                          order.dispute.status !== "none"
+                                          ? order.dispute.status
+                                          : "open"
+                                      );
+                                      setResolutionAdminNotes(
+                                        order.dispute?.adminResolutionNotes ||
+                                          ""
+                                      );
+                                    }
+                                  }}
+                                  className={`px-2.5 py-1.5 rounded-xl font-mono text-[10px] font-bold uppercase flex items-center gap-1 border transition-all ${
+                                    activeResolutionOrderId === order.orderId
+                                      ? "bg-red-900 text-white border-red-900"
+                                      : "bg-red-50 hover:bg-red-100 text-red-900 border-red-200"
+                                  }`}
+                                  title="Manage Cancellation, Razorpay Refund & Dispute Case"
+                                >
+                                  <Shield className="w-3.5 h-3.5 shrink-0" />
+                                  <span>Refund / Cancel / Dispute</span>
+                                </button>
 
                                 <a
                                   href={waUrl}
@@ -3219,7 +3576,8 @@ export default function AdminPanel({
                                       "dispatched",
                                       "out_for_delivery",
                                       "delivered",
-                                      "cancelled"
+                                      "cancelled",
+                                      "refunded"
                                     ] as const
                                   ).map((st) => (
                                     <option key={st} value={st}>
@@ -3293,6 +3651,270 @@ export default function AdminPanel({
                                 </button>
                               </div>
                             </div>
+
+                            {/* Inline Order Cancellation, Razorpay Refund & Dispute Management Console */}
+                            {activeResolutionOrderId === order.orderId && (
+                              <div className="mt-3 pt-4 border-t-2 border-dashed border-red-900/20 bg-neutral-50/90 p-4 rounded-2xl space-y-4 font-mono">
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                  <div>
+                                    <span className="text-xs font-black uppercase tracking-wider text-red-950 block">
+                                      Order Resolution, Shiprocket Cancel, Razorpay Refund &amp; Dispute Desk (#{order.orderId})
+                                    </span>
+                                    <span className="text-[11px] text-black/60">
+                                      Payment ID:{" "}
+                                      <strong>
+                                        {order.payment?.razorpayPaymentId ||
+                                          "Prepaid"}
+                                      </strong>{" "}
+                                      • Shiprocket Order:{" "}
+                                      <strong>
+                                        {order.shipping?.shiprocketOrderId
+                                          ? `#${order.shipping.shiprocketOrderId}`
+                                          : "Auto-Sync"}
+                                      </strong>{" "}
+                                      • Stock Restored:{" "}
+                                      <strong>
+                                        {order.stockRestored ? "YES" : "NO"}
+                                      </strong>
+                                    </span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setActiveResolutionOrderId(null)
+                                    }
+                                    className="text-xs text-black/50 hover:text-black underline"
+                                  >
+                                    Close Panel
+                                  </button>
+                                </div>
+
+                                {/* Section A: Instant Cancellation & Razorpay Refund Controls */}
+                                <div className="grid grid-cols-1 md:grid-cols-12 gap-3 bg-white p-3.5 rounded-xl border border-black/10">
+                                  <div className="md:col-span-5">
+                                    <label className="block text-[10px] font-bold uppercase text-black/60 mb-1">
+                                      Cancellation / Refund Reason
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={resolutionReason}
+                                      onChange={(e) =>
+                                        setResolutionReason(e.target.value)
+                                      }
+                                      placeholder="e.g. Customer requested cancellation before dispatch"
+                                      className="w-full px-3 py-2 rounded-lg bg-neutral-50 border border-black/15 text-xs"
+                                    />
+                                  </div>
+
+                                  <div className="md:col-span-3">
+                                    <label className="block text-[10px] font-bold uppercase text-black/60 mb-1">
+                                      Refund Amount (₹ Max ₹{order.pricing?.total})
+                                    </label>
+                                    <input
+                                      type="number"
+                                      min={1}
+                                      max={order.pricing?.total || 100000}
+                                      step="0.01"
+                                      value={resolutionRefundAmount}
+                                      onChange={(e) =>
+                                        setResolutionRefundAmount(
+                                          Number(e.target.value) || 0
+                                        )
+                                      }
+                                      className="w-full px-3 py-2 rounded-lg bg-neutral-50 border border-black/15 text-xs font-black"
+                                    />
+                                  </div>
+
+                                  <div className="md:col-span-4 flex flex-col justify-end gap-1.5">
+                                    <div className="grid grid-cols-2 gap-1.5">
+                                      <button
+                                        type="button"
+                                        disabled={isBusy}
+                                        onClick={() =>
+                                          handleCancelAndRefundOrder(order, {
+                                            cancelOrder: true,
+                                            issueRefund: false,
+                                            reason: resolutionReason
+                                          })
+                                        }
+                                        className="px-2.5 py-2 rounded-lg bg-red-100 hover:bg-red-200 text-red-950 text-[10px] font-black uppercase tracking-wider"
+                                      >
+                                        Cancel Order + SR Only
+                                      </button>
+
+                                      <button
+                                        type="button"
+                                        disabled={isBusy}
+                                        onClick={() =>
+                                          handleCancelAndRefundOrder(order, {
+                                            cancelOrder: false,
+                                            issueRefund: true,
+                                            refundAmount:
+                                              resolutionRefundAmount ||
+                                              order.pricing?.total,
+                                            reason: resolutionReason
+                                          })
+                                        }
+                                        className="px-2.5 py-2 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-950 text-[10px] font-black uppercase tracking-wider"
+                                      >
+                                        Refund ₹{resolutionRefundAmount || order.pricing?.total} Only
+                                      </button>
+                                    </div>
+
+                                    <button
+                                      type="button"
+                                      disabled={isBusy}
+                                      onClick={() =>
+                                        handleCancelAndRefundOrder(order, {
+                                          cancelOrder: true,
+                                          issueRefund: true,
+                                          refundAmount:
+                                            resolutionRefundAmount ||
+                                            order.pricing?.total,
+                                          reason: resolutionReason
+                                        })
+                                      }
+                                      className="w-full px-3 py-2 rounded-lg bg-red-900 hover:bg-red-800 text-white text-[10px] font-black uppercase tracking-wider"
+                                    >
+                                      ⚡ Cancel in Shiprocket + Restore Stock + Refund ₹
+                                      {resolutionRefundAmount ||
+                                        order.pricing?.total}
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Section B: Dispute / Return / Size Exchange Case Manager */}
+                                <div className="bg-white p-3.5 rounded-xl border border-black/10 space-y-3">
+                                  <div className="text-[11px] font-black uppercase text-amber-950">
+                                    Dispute / Return / Size Exchange Case Tracker
+                                  </div>
+                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                                    <div>
+                                      <label className="block text-[10px] font-bold uppercase text-black/60 mb-1">
+                                        Issue / Dispute Category
+                                      </label>
+                                      <select
+                                        value={resolutionDisputeType}
+                                        onChange={(e) =>
+                                          setResolutionDisputeType(
+                                            e.target.value as
+                                              | "delivery_delay"
+                                              | "damaged_item"
+                                              | "size_exchange"
+                                              | "payment_dispute"
+                                              | "cancellation_request"
+                                              | "other"
+                                          )
+                                        }
+                                        className="w-full px-2.5 py-2 rounded-lg bg-neutral-50 border border-black/15 text-xs font-bold uppercase"
+                                      >
+                                        <option value="cancellation_request">
+                                          Cancellation Request
+                                        </option>
+                                        <option value="size_exchange">
+                                          Size / Fit Exchange
+                                        </option>
+                                        <option value="damaged_item">
+                                          Damaged Shell / Transit Issue
+                                        </option>
+                                        <option value="delivery_delay">
+                                          Courier Delivery Delay
+                                        </option>
+                                        <option value="payment_dispute">
+                                          Razorpay Payment / Chargeback
+                                        </option>
+                                        <option value="other">
+                                          Other Customer Inquiry
+                                        </option>
+                                      </select>
+                                    </div>
+
+                                    <div>
+                                      <label className="block text-[10px] font-bold uppercase text-black/60 mb-1">
+                                        Dispute Resolution Status
+                                      </label>
+                                      <select
+                                        value={resolutionDisputeStatus}
+                                        onChange={(e) =>
+                                          setResolutionDisputeStatus(
+                                            e.target.value as
+                                              | "none"
+                                              | "open"
+                                              | "under_review"
+                                              | "resolved_refunded"
+                                              | "resolved_replacement"
+                                              | "rejected"
+                                          )
+                                        }
+                                        className="w-full px-2.5 py-2 rounded-lg bg-neutral-50 border border-black/15 text-xs font-bold uppercase"
+                                      >
+                                        <option value="open">
+                                          Open — Needs Action
+                                        </option>
+                                        <option value="under_review">
+                                          Under Atelier Review
+                                        </option>
+                                        <option value="resolved_replacement">
+                                          Resolved — Replacement Dispatched
+                                        </option>
+                                        <option value="resolved_refunded">
+                                          Resolved — Refund Issued
+                                        </option>
+                                        <option value="rejected">
+                                          Closed / Rejected
+                                        </option>
+                                        <option value="none">
+                                          Clear / No Dispute
+                                        </option>
+                                      </select>
+                                    </div>
+
+                                    <div>
+                                      <label className="block text-[10px] font-bold uppercase text-black/60 mb-1">
+                                        Admin Resolution Notes (Sent to Client)
+                                      </label>
+                                      <input
+                                        type="text"
+                                        value={resolutionAdminNotes}
+                                        onChange={(e) =>
+                                          setResolutionAdminNotes(
+                                            e.target.value
+                                          )
+                                        }
+                                        placeholder="e.g. Replacement cup dispatched via Blue Dart"
+                                        className="w-full px-2.5 py-2 rounded-lg bg-neutral-50 border border-black/15 text-xs"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  <div className="flex flex-wrap items-center justify-end gap-2">
+                                    <button
+                                      type="button"
+                                      disabled={isBusy}
+                                      onClick={() =>
+                                        handleUpdateOrderDispute(order, false)
+                                      }
+                                      className="px-3.5 py-2 rounded-lg bg-[#141414] hover:bg-black text-white text-[10px] font-black uppercase tracking-wider"
+                                    >
+                                      Save Case Status &amp; WhatsApp Client
+                                    </button>
+                                    <button
+                                      type="button"
+                                      disabled={isBusy}
+                                      onClick={() =>
+                                        handleUpdateOrderDispute(order, true)
+                                      }
+                                      className="px-3.5 py-2 rounded-lg bg-emerald-800 hover:bg-emerald-700 text-white text-[10px] font-black uppercase tracking-wider"
+                                    >
+                                      Resolve Case + Issue ₹
+                                      {resolutionRefundAmount ||
+                                        order.pricing?.total}{" "}
+                                      Refund
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         );
                       })}

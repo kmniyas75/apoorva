@@ -97,6 +97,8 @@ export async function createShiprocketOrder(payload: ShiprocketOrderPayload): Pr
   shipmentId?: number;
   awbCode?: string;
   courierName?: string;
+  status?: string;
+  message?: string;
   isSimulated: boolean;
 }> {
   const token = await getShiprocketAuthToken();
@@ -111,6 +113,7 @@ export async function createShiprocketOrder(payload: ShiprocketOrderPayload): Pr
       shipmentId: simShipmentId,
       awbCode: simAwb,
       courierName: "Blue Dart Express",
+      status: "SIMULATED",
       isSimulated: true
     };
   }
@@ -172,13 +175,13 @@ export async function createShiprocketOrder(payload: ShiprocketOrderPayload): Pr
 
     const data = await res.json();
 
-    if (!res.ok || !data.shipment_id) {
+    if (!res.ok || (!data.order_id && !data.shipment_id)) {
       throw new Error(data.message || "Failed to create order on Shiprocket");
     }
 
     // Auto-request AWB assignment
-    let awbCode: string | undefined = data.awb_code;
-    let courierName: string = data.courier_name || "Blue Dart Express";
+    let awbCode: string | undefined = data.awb_code || undefined;
+    let courierName: string = data.courier_name || "Blue Dart Air";
 
     if (!awbCode && data.shipment_id) {
       const awbRes = await assignShiprocketAwb(data.shipment_id, token);
@@ -194,6 +197,8 @@ export async function createShiprocketOrder(payload: ShiprocketOrderPayload): Pr
       shipmentId: data.shipment_id,
       awbCode,
       courierName,
+      status: awbCode ? "AWB_ASSIGNED" : "ORDER_CREATED",
+      message: data.message,
       isSimulated: false
     };
   } catch (err: unknown) {
@@ -201,6 +206,7 @@ export async function createShiprocketOrder(payload: ShiprocketOrderPayload): Pr
     console.error("[Shiprocket Order Creation Error]", msg);
     return {
       success: false,
+      message: msg,
       isSimulated: false
     };
   }
@@ -364,4 +370,101 @@ export async function checkShiprocketServiceability(
     return null;
   }
 }
+
+/**
+ * 6. Cancel Order & Shipment AWB in Shiprocket when an order is cancelled or refunded
+ */
+export async function cancelShiprocketOrder(params: {
+  shiprocketOrderId?: number;
+  awbCode?: string;
+}): Promise<{
+  success: boolean;
+  message: string;
+  isSimulated: boolean;
+}> {
+  const token = await getShiprocketAuthToken();
+  if (!token) {
+    return {
+      success: true,
+      message: "Cancelled in sandbox mode (no live Shiprocket token).",
+      isSimulated: true
+    };
+  }
+
+  let awbCancelled = false;
+  let orderCancelled = false;
+  const messages: string[] = [];
+
+  // 1. If a real AWB was assigned, cancel the shipment AWB first
+  if (
+    params.awbCode &&
+    !params.awbCode.startsWith("BD-") &&
+    !params.awbCode.startsWith("DLV-")
+  ) {
+    try {
+      const awbRes = await fetch(
+        "https://apiv2.shiprocket.in/v1/external/orders/cancel/shipment/awbs",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ awbs: [params.awbCode] })
+        }
+      );
+      const awbData = await awbRes.json().catch(() => ({}));
+      if (awbRes.ok) {
+        awbCancelled = true;
+        messages.push(
+          awbData?.message || `AWB ${params.awbCode} cancelled on Shiprocket.`
+        );
+      }
+    } catch (err) {
+      console.warn("[Shiprocket AWB Cancel Warning]", err);
+    }
+  }
+
+  // 2. Cancel the Shiprocket Order by order_id
+  if (params.shiprocketOrderId) {
+    try {
+      const ordRes = await fetch(
+        "https://apiv2.shiprocket.in/v1/external/orders/cancel",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ ids: [params.shiprocketOrderId] })
+        }
+      );
+      const ordData = await ordRes.json().catch(() => ({}));
+      if (ordRes.ok) {
+        orderCancelled = true;
+        messages.push(
+          ordData?.message ||
+            `Shiprocket Order #${params.shiprocketOrderId} cancelled.`
+        );
+      } else {
+        messages.push(
+          ordData?.message ||
+            `Shiprocket cancel response HTTP ${ordRes.status}`
+        );
+      }
+    } catch (err) {
+      console.error("[Shiprocket Order Cancel Error]", err);
+    }
+  } else {
+    messages.push("Order marked cancelled locally.");
+    orderCancelled = true;
+  }
+
+  return {
+    success: orderCancelled || awbCancelled,
+    message: messages.join(" "),
+    isSimulated: false
+  };
+}
+
 
