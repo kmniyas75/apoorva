@@ -3,6 +3,11 @@ const DEFAULT_META_TOKEN_B64 = Buffer.from(
   "utf8"
 ).toString("base64");
 
+const DEFAULT_IG_TOKEN_B64 = Buffer.from(
+  "EAAPGzQkah7wBS6hFnTSj8AYcmiutIRpGFSr3SfqbZCLwHbEqtgjZAaxt1VZA4hEkRZBuS1MZBCQ0JzYJ2o4Boge4h7hQdZAZCzdnbzKCHTqqWqoiLg2elgpbecxMyn8ZCT2agvYrJXZAT0e3pvOCmY5PxtZClsZCGDe8YnO9noMYdYZCfVvaUhwgYkXorQ8OWreGKcftw7hX4Kzl2ZBOZBW1ZA1ZABNEdmC98jzKBOQNWLMatPqYPTuEWv88xN3ktQZDZD",
+  "utf8"
+).toString("base64");
+
 function cleanEnv(val?: string): string {
   return (val || "").trim().replace(/^["']+|["']+$/g, "").trim();
 }
@@ -12,6 +17,13 @@ export function getMetaWhatsAppConfig() {
     cleanEnv(process.env.META_ACCESS_TOKEN) ||
     cleanEnv(process.env.WHATSAPP_ACCESS_TOKEN) ||
     Buffer.from(DEFAULT_META_TOKEN_B64, "base64").toString("utf8");
+
+  const instagramAccessToken =
+    cleanEnv(process.env.INSTAGRAM_ACCESS_TOKEN) ||
+    Buffer.from(DEFAULT_IG_TOKEN_B64, "base64").toString("utf8");
+
+  const instagramAccountId =
+    cleanEnv(process.env.INSTAGRAM_ACCOUNT_ID) || "17841418464150754";
 
   const phoneNumberId =
     cleanEnv(process.env.WHATSAPP_PHONE_NUMBER_ID) || "1332497489956818";
@@ -26,6 +38,8 @@ export function getMetaWhatsAppConfig() {
 
   return {
     accessToken,
+    instagramAccessToken,
+    instagramAccountId,
     phoneNumberId,
     wabaId,
     testNumber,
@@ -305,10 +319,16 @@ export async function sendMetaSocialDirectMessage(params: {
   messageId?: string;
   error?: string;
 }> {
-  const { accessToken: defaultMetaToken, graphVersion } = getMetaWhatsAppConfig();
+  const {
+    accessToken: defaultMetaToken,
+    instagramAccessToken,
+    instagramAccountId,
+    graphVersion
+  } = getMetaWhatsAppConfig();
+
   const channelToken =
     params.channel === "instagram"
-      ? cleanEnv(process.env.INSTAGRAM_ACCESS_TOKEN) || defaultMetaToken
+      ? instagramAccessToken || defaultMetaToken
       : cleanEnv(process.env.FACEBOOK_PAGE_ACCESS_TOKEN) || defaultMetaToken;
 
   const cleanRecipientId = params.recipientId
@@ -321,18 +341,29 @@ export async function sendMetaSocialDirectMessage(params: {
     return { sent: false, error: "Missing recipientId or access token" };
   }
 
-  // Instagram tokens starting with "IG" use graph.instagram.com; "EAA" tokens use graph.facebook.com
-  const isIgDirectToken =
-    params.channel === "instagram" && channelToken.startsWith("IG");
-  const baseEndpoint = isIgDirectToken
-    ? "https://graph.instagram.com/v22.0/me/messages"
-    : `https://graph.facebook.com/${graphVersion}/me/messages`;
+  // Build candidate endpoints in priority order (Unified Login IG_ID -> /me/messages -> graph.instagram.com)
+  const endpoints =
+    params.channel === "instagram"
+      ? channelToken.startsWith("IG")
+        ? [
+            "https://graph.instagram.com/v22.0/me/messages",
+            `https://graph.instagram.com/v22.0/${instagramAccountId}/messages`
+          ]
+        : [
+            `https://graph.facebook.com/${graphVersion}/${instagramAccountId}/messages`,
+            `https://graph.facebook.com/${graphVersion}/me/messages`,
+            `https://graph.instagram.com/v22.0/${instagramAccountId}/messages`
+          ]
+      : [`https://graph.facebook.com/${graphVersion}/me/messages`];
+
+  const primaryEndpoint = endpoints[0];
+  const isIgDirectToken = primaryEndpoint.includes("graph.instagram.com");
 
   try {
     // 1. Send product images first if provided
     if (params.images && params.images.length > 0) {
       for (const img of params.images) {
-        await fetch(baseEndpoint, {
+        await fetch(primaryEndpoint, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${channelToken}`,
@@ -366,39 +397,44 @@ export async function sendMetaSocialDirectMessage(params: {
           }))
         : undefined;
 
-    const res = await fetch(baseEndpoint, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${channelToken}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        recipient: { id: cleanRecipientId },
-        ...(isIgDirectToken ? {} : { messaging_type: "RESPONSE" }),
-        message: {
-          text: formatWhatsAppMarkdown(params.body),
-          ...(quickReplies ? { quick_replies: quickReplies } : {})
-        }
-      }),
-      cache: "no-store"
-    });
+    let lastError = "";
+    for (const endpoint of endpoints) {
+      const isIgHost = endpoint.includes("graph.instagram.com");
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${channelToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          recipient: { id: cleanRecipientId },
+          ...(isIgHost ? {} : { messaging_type: "RESPONSE" }),
+          message: {
+            text: formatWhatsAppMarkdown(params.body),
+            ...(quickReplies ? { quick_replies: quickReplies } : {})
+          }
+        }),
+        cache: "no-store"
+      });
 
-    const data = (await res.json()) as {
-      message_id?: string;
-      error?: { message?: string };
-    };
-
-    if (!res.ok) {
-      return {
-        sent: false,
-        error:
-          data.error?.message || `Meta ${params.channel} API HTTP ${res.status}`
+      const data = (await res.json()) as {
+        message_id?: string;
+        error?: { message?: string };
       };
+
+      if (res.ok) {
+        return {
+          sent: true,
+          messageId: data.message_id
+        };
+      }
+      lastError =
+        data.error?.message || `Meta ${params.channel} API HTTP ${res.status}`;
     }
 
     return {
-      sent: true,
-      messageId: data.message_id
+      sent: false,
+      error: lastError
     };
   } catch (err) {
     return {

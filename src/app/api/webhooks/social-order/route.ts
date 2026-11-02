@@ -39,6 +39,9 @@ export async function GET(req: Request) {
     whatsappWabaId: metaWa.wabaId,
     whatsappTestNumber: metaWa.testNumber,
     whatsappAccessTokenConfigured: Boolean(metaWa.accessToken),
+    instagramAccountId: metaWa.instagramAccountId,
+    instagramHandle: db.socialAutomation?.instagramHandle || "@apoorvacoastal",
+    instagramAccessTokenConfigured: Boolean(metaWa.instagramAccessToken),
     contactEmail: process.env.META_CONTACT_EMAIL || "apoorvacoastal@gmail.com",
     verifyTokenConfigured: Boolean(expectedToken),
     whatsappEnabled: db.socialAutomation?.whatsappEnabled ?? true,
@@ -126,19 +129,31 @@ export async function POST(req: Request) {
         "Hi! I want to check out the APOORVA SHELLS Coconut Beachwear sets.";
     } else if (body?.object === "instagram" && Array.isArray(body.entry)) {
       metaChannel = "instagram";
+      const metaWa = getMetaWhatsAppConfig();
+      const entryId = String(body.entry?.[0]?.id || "");
       const messaging = body.entry?.[0]?.messaging?.[0];
       const changeVal = body.entry?.[0]?.changes?.[0]?.value;
+      const senderId =
+        messaging?.sender?.id || changeVal?.sender?.id || changeVal?.from?.id || "guest";
+      if (
+        messaging?.message?.is_echo ||
+        changeVal?.message?.is_echo ||
+        String(senderId) === entryId ||
+        String(senderId) === metaWa.instagramAccountId
+      ) {
+        return NextResponse.json({ status: "ignored_echo_event" });
+      }
       const text =
         messaging?.message?.quick_reply?.payload ||
         messaging?.postback?.payload ||
         messaging?.message?.text ||
+        changeVal?.message?.quick_reply?.payload ||
+        changeVal?.postback?.payload ||
         changeVal?.message?.text ||
         changeVal?.text;
       if (!text) {
         return NextResponse.json({ status: "ignored_status_event" });
       }
-      const senderId =
-        messaging?.sender?.id || changeVal?.from?.id || "guest";
       metaSenderName =
         changeVal?.from?.username || `Instagram Guest (${String(senderId).slice(-4)})`;
       metaSenderHandle = String(senderId).startsWith("@")
@@ -147,7 +162,12 @@ export async function POST(req: Request) {
       metaMessageText = text;
     } else if (body?.object === "page" && Array.isArray(body.entry)) {
       metaChannel = "facebook";
+      const entryId = String(body.entry?.[0]?.id || "");
       const messaging = body.entry?.[0]?.messaging?.[0];
+      const senderId = messaging?.sender?.id || "fb_guest";
+      if (messaging?.message?.is_echo || String(senderId) === entryId) {
+        return NextResponse.json({ status: "ignored_echo_event" });
+      }
       const fbText =
         messaging?.message?.quick_reply?.payload ||
         messaging?.postback?.payload ||
@@ -155,7 +175,6 @@ export async function POST(req: Request) {
       if (!fbText) {
         return NextResponse.json({ status: "ignored_status_event" });
       }
-      const senderId = messaging?.sender?.id || "fb_guest";
       metaSenderName = `Facebook Guest (${String(senderId).slice(-4)})`;
       metaSenderHandle = `fb.me/${senderId}`;
       metaMessageText = fbText;

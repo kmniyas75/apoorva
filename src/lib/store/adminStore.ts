@@ -173,7 +173,7 @@ const DEFAULT_SOCIAL_CONFIG: SocialAutomationConfig = {
   whatsappWelcomeTemplate:
     "Namaskaram from APOORVA SHELLS (Aluva, Kerala) 🌴! Reply with:\n1️⃣ 'SET 1' for Coconut & Coir Fringe Beach Set (₹{{price_set1}})\n2️⃣ 'SET 2' for Coconut & Jute Wrap Beach Set (₹{{price_set2}})\n3️⃣ 'BOTH' for the 2-Set Bundle (Save {{discount}}% • ₹{{price_bundle}})\nInclude your Name, Address & 6-digit PIN code to receive your instant Razorpay payment link!",
   instagramEnabled: true,
-  instagramHandle: "@apoorva.coastal",
+  instagramHandle: "@apoorvacoastal",
   instagramTriggerKeywords: ["BEACH", "PRICE", "BUY", "SET1", "SET2", "BOTH", "LINK"],
   instagramDmReplyTemplate:
     "Hey beach lover! 🌊 Here is your instant 1-Click Razorpay Express Checkout for our Aluva, Kerala Coconut & Coir/Jute Beach Sets: {{checkout_link}} — or reply right here in DM with your Name, Phone, Address & PIN code for an instant Razorpay payment link!",
