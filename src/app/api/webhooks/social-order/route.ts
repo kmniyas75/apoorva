@@ -129,7 +129,11 @@ export async function POST(req: Request) {
       const messaging = body.entry?.[0]?.messaging?.[0];
       const changeVal = body.entry?.[0]?.changes?.[0]?.value;
       const text =
-        messaging?.message?.text || changeVal?.message?.text || changeVal?.text;
+        messaging?.message?.quick_reply?.payload ||
+        messaging?.postback?.payload ||
+        messaging?.message?.text ||
+        changeVal?.message?.text ||
+        changeVal?.text;
       if (!text) {
         return NextResponse.json({ status: "ignored_status_event" });
       }
@@ -144,13 +148,17 @@ export async function POST(req: Request) {
     } else if (body?.object === "page" && Array.isArray(body.entry)) {
       metaChannel = "facebook";
       const messaging = body.entry?.[0]?.messaging?.[0];
-      if (!messaging?.message?.text) {
+      const fbText =
+        messaging?.message?.quick_reply?.payload ||
+        messaging?.postback?.payload ||
+        messaging?.message?.text;
+      if (!fbText) {
         return NextResponse.json({ status: "ignored_status_event" });
       }
       const senderId = messaging?.sender?.id || "fb_guest";
       metaSenderName = `Facebook Guest (${String(senderId).slice(-4)})`;
       metaSenderHandle = `fb.me/${senderId}`;
-      metaMessageText = messaging.message.text;
+      metaMessageText = fbText;
     }
 
     const channel: "whatsapp" | "instagram" | "facebook" | "website" =

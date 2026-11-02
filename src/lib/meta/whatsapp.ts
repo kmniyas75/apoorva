@@ -289,22 +289,68 @@ export async function sendWhatsAppInteractiveButtons(params: {
 
 /**
  * Sends an Instagram DM or Facebook Messenger message via Meta Graph API (`/{version}/me/messages`).
+ * Supports product image attachments and interactive `quick_replies` tap buttons!
  */
 export async function sendMetaSocialDirectMessage(params: {
   channel: "instagram" | "facebook";
   recipientId: string;
   body: string;
+  images?: Array<{ url: string; caption?: string }>;
+  buttons?: Array<{ id: string; title: string }>;
 }): Promise<{
   sent: boolean;
   messageId?: string;
   error?: string;
 }> {
   const { accessToken, graphVersion } = getMetaWhatsAppConfig();
-  if (!params.recipientId || !accessToken) {
+  const cleanRecipientId = params.recipientId
+    .replace(/^@ig_/, "")
+    .replace(/^fb\.me\//, "")
+    .replace(/^@/, "")
+    .trim();
+
+  if (!cleanRecipientId || !accessToken) {
     return { sent: false, error: "Missing recipientId or Meta access token" };
   }
 
   try {
+    // 1. Send product images first if provided
+    if (params.images && params.images.length > 0) {
+      for (const img of params.images) {
+        await fetch(`https://graph.facebook.com/${graphVersion}/me/messages`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            recipient: { id: cleanRecipientId },
+            messaging_type: "RESPONSE",
+            message: {
+              attachment: {
+                type: "image",
+                payload: {
+                  url: img.url,
+                  is_reusable: true
+                }
+              }
+            }
+          }),
+          cache: "no-store"
+        }).catch(() => {});
+      }
+    }
+
+    // 2. Build message with optional Quick Reply tap buttons
+    const quickReplies =
+      params.buttons && params.buttons.length > 0
+        ? params.buttons.slice(0, 13).map((b) => ({
+            content_type: "text",
+            title: b.title.trim().slice(0, 20),
+            payload: b.id
+          }))
+        : undefined;
+
     const res = await fetch(
       `https://graph.facebook.com/${graphVersion}/me/messages`,
       {
@@ -314,9 +360,12 @@ export async function sendMetaSocialDirectMessage(params: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          recipient: { id: params.recipientId },
+          recipient: { id: cleanRecipientId },
           messaging_type: "RESPONSE",
-          message: { text: params.body }
+          message: {
+            text: formatWhatsAppMarkdown(params.body),
+            ...(quickReplies ? { quick_replies: quickReplies } : {})
+          }
         }),
         cache: "no-store"
       }
@@ -330,7 +379,8 @@ export async function sendMetaSocialDirectMessage(params: {
     if (!res.ok) {
       return {
         sent: false,
-        error: data.error?.message || `Meta ${params.channel} API HTTP ${res.status}`
+        error:
+          data.error?.message || `Meta ${params.channel} API HTTP ${res.status}`
       };
     }
 

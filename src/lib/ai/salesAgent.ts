@@ -880,7 +880,9 @@ export async function processIncomingSalesChat(params: {
     outboundDelivery = await sendMetaSocialDirectMessage({
       channel: params.channel,
       recipientId: session.customerHandleOrPhone,
-      body: aiReplyText
+      body: aiReplyText,
+      images: productImagesList,
+      buttons: replyButtons
     });
   }
 
