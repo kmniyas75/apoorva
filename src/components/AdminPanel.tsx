@@ -228,9 +228,35 @@ export default function AdminPanel({
   const [customMediaName, setCustomMediaName] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const chatListContainerRef = useRef<HTMLDivElement>(null);
+  const chatMessagesContainerRef = useRef<HTMLDivElement>(null);
+  const adminReplyInputRef = useRef<HTMLInputElement>(null);
+  const lastActiveMessageCountRef = useRef<number>(0);
   const [pendingUploadCallback, setPendingUploadCallback] = useState<
     ((url: string) => void) | null
   >(null);
+
+  const scrollChatStreamToBottom = (smooth = true) => {
+    setTimeout(() => {
+      if (chatMessagesContainerRef.current) {
+        chatMessagesContainerRef.current.scrollTo({
+          top: chatMessagesContainerRef.current.scrollHeight,
+          behavior: smooth ? "smooth" : "auto"
+        });
+      }
+    }, 40);
+  };
+
+  const scrollConversationsToTop = (smooth = true) => {
+    setTimeout(() => {
+      if (chatListContainerRef.current) {
+        chatListContainerRef.current.scrollTo({
+          top: 0,
+          behavior: smooth ? "smooth" : "auto"
+        });
+      }
+    }, 40);
+  };
 
   const showToastMessage = (type: "success" | "error", text: string) => {
     setToast({ type, text });
@@ -290,9 +316,9 @@ export default function AdminPanel({
     }
   }, [isOpen, isAuthenticated]);
 
-  // Live poll chatSessions every 6 seconds when viewing the WA / IG tab
+  // Real-time live sync every 2 seconds + on tab focus/visibility
   useEffect(() => {
-    if (!isOpen || !isAuthenticated || activeTab !== "social") return;
+    if (!isOpen || !isAuthenticated) return;
     const pollChats = async () => {
       try {
         const res = await fetch("/api/webhooks/social-order", {
@@ -301,9 +327,14 @@ export default function AdminPanel({
         if (!res.ok) return;
         const data = await res.json();
         if (Array.isArray(data.chatSessions)) {
-          setChatSessions(data.chatSessions);
+          const sortedSessions = [...data.chatSessions].sort(
+            (a, b) =>
+              new Date(b.updatedAt || 0).getTime() -
+              new Date(a.updatedAt || 0).getTime()
+          );
+          setChatSessions(sortedSessions);
           setSelectedChatId((prev) =>
-            prev || (data.chatSessions[0]?.id ?? "")
+            prev || (sortedSessions[0]?.id ?? "")
           );
         }
         if (Array.isArray(data.orders)) setOrders(data.orders);
@@ -314,9 +345,27 @@ export default function AdminPanel({
     };
     const interval = setInterval(() => {
       void pollChats();
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [isOpen, isAuthenticated, activeTab]);
+    }, 2000);
+    const onFocus = () => void pollChats();
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
+    };
+  }, [isOpen, isAuthenticated]);
+
+  // Auto-scroll messages stream when switching chats or when a new message arrives in the active chat
+  useEffect(() => {
+    const active =
+      chatSessions.find((c) => c.id === selectedChatId) || chatSessions[0];
+    const count = active?.messages?.length || 0;
+    if (count !== lastActiveMessageCountRef.current) {
+      lastActiveMessageCountRef.current = count;
+      scrollChatStreamToBottom(true);
+    }
+  }, [chatSessions, selectedChatId]);
 
   if (!isOpen) return null;
 
@@ -1028,15 +1077,37 @@ export default function AdminPanel({
     }
   };
 
-  const handleSendAdminChatReply = async (
-    e: React.FormEvent,
-    customText?: string
-  ) => {
+  const handleSendAdminChatReply = async (e: React.FormEvent) => {
     e.preventDefault();
     const activeChat =
       chatSessions.find((c) => c.id === selectedChatId) || chatSessions[0];
-    const textToSend = (customText ?? adminReplyText).trim();
+    const textToSend = adminReplyText.trim();
     if (!activeChat || !textToSend || sendingAdminMsg) return;
+
+    const nowIso = new Date().toISOString();
+    const optimisticMsg = {
+      id: `msg-admin-opt-${Date.now()}`,
+      sender: "admin" as const,
+      text: textToSend,
+      timestamp: nowIso
+    };
+
+    // Optimistic instant update: append message, move activeChat to top of list, clear input, and scroll
+    setAdminReplyText("");
+    setSelectedChatId(activeChat.id);
+    setChatSessions((prev) => {
+      const updatedSession: ChatSession = {
+        ...activeChat,
+        updatedAt: nowIso,
+        messages: [...activeChat.messages, optimisticMsg]
+      };
+      return [
+        updatedSession,
+        ...prev.filter((c) => c.id !== activeChat.id)
+      ];
+    });
+    scrollConversationsToTop(true);
+    scrollChatStreamToBottom(true);
 
     setSendingAdminMsg(true);
     try {
@@ -1051,8 +1122,16 @@ export default function AdminPanel({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not send reply");
-      if (Array.isArray(data.chatSessions)) setChatSessions(data.chatSessions);
-      setAdminReplyText("");
+      if (Array.isArray(data.chatSessions)) {
+        const sortedSessions = [...data.chatSessions].sort(
+          (a, b) =>
+            new Date(b.updatedAt || 0).getTime() -
+            new Date(a.updatedAt || 0).getTime()
+        );
+        setChatSessions(sortedSessions);
+      }
+      scrollConversationsToTop(true);
+      scrollChatStreamToBottom(true);
       showToastMessage(
         "success",
         `Sent reply to ${activeChat.customerName} on ${activeChat.channel.toUpperCase()}!`
@@ -1083,8 +1162,17 @@ export default function AdminPanel({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not send payment link");
-      if (Array.isArray(data.chatSessions)) setChatSessions(data.chatSessions);
+      if (Array.isArray(data.chatSessions)) {
+        const sortedSessions = [...data.chatSessions].sort(
+          (a, b) =>
+            new Date(b.updatedAt || 0).getTime() -
+            new Date(a.updatedAt || 0).getTime()
+        );
+        setChatSessions(sortedSessions);
+      }
       if (Array.isArray(data.orders)) setOrders(data.orders);
+      scrollConversationsToTop(true);
+      scrollChatStreamToBottom(true);
       showToastMessage(
         "success",
         `1-Click Razorpay Payment Link (${data.order?.orderId || "Order"}) sent to ${session.customerName}!`
@@ -1143,10 +1231,19 @@ export default function AdminPanel({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Chat simulation failed");
-      if (Array.isArray(data.chatSessions)) setChatSessions(data.chatSessions);
+      if (Array.isArray(data.chatSessions)) {
+        const sortedSessions = [...data.chatSessions].sort(
+          (a, b) =>
+            new Date(b.updatedAt || 0).getTime() -
+            new Date(a.updatedAt || 0).getTime()
+        );
+        setChatSessions(sortedSessions);
+      }
       if (Array.isArray(data.orders)) setOrders(data.orders);
       if (Array.isArray(data.socialEvents)) setSocialEvents(data.socialEvents);
       setSimCustomerChatText("");
+      scrollConversationsToTop(true);
+      scrollChatStreamToBottom(true);
       showToastMessage(
         "success",
         data.order
@@ -1179,11 +1276,20 @@ export default function AdminPanel({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not start chat");
-      if (Array.isArray(data.chatSessions)) setChatSessions(data.chatSessions);
+      if (Array.isArray(data.chatSessions)) {
+        const sortedSessions = [...data.chatSessions].sort(
+          (a, b) =>
+            new Date(b.updatedAt || 0).getTime() -
+            new Date(a.updatedAt || 0).getTime()
+        );
+        setChatSessions(sortedSessions);
+      }
       if (Array.isArray(data.orders)) setOrders(data.orders);
       if (Array.isArray(data.socialEvents)) setSocialEvents(data.socialEvents);
       if (data.session?.id) setSelectedChatId(data.session.id);
       setShowNewChatForm(false);
+      scrollConversationsToTop(true);
+      scrollChatStreamToBottom(true);
       showToastMessage(
         "success",
         `Started ${newChatDraft.channel.toUpperCase()} chat with ${newChatDraft.customerName}!`
@@ -3243,11 +3349,17 @@ export default function AdminPanel({
 
                       {/* Main 2-Pane Chat Inbox */}
                       {(() => {
-                        const visibleChats = chatSessions.filter(
-                          (c) =>
-                            chatChannelFilter === "all" ||
-                            c.channel === chatChannelFilter
-                        );
+                        const visibleChats = [...chatSessions]
+                          .filter(
+                            (c) =>
+                              chatChannelFilter === "all" ||
+                              c.channel === chatChannelFilter
+                          )
+                          .sort(
+                            (a, b) =>
+                              new Date(b.updatedAt || 0).getTime() -
+                              new Date(a.updatedAt || 0).getTime()
+                          );
                         const activeChat =
                           visibleChats.find((c) => c.id === selectedChatId) ||
                           visibleChats[0] ||
@@ -3256,13 +3368,17 @@ export default function AdminPanel({
                         return (
                           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                             {/* Left Pane (4 cols): Thread List */}
-                            <div className="lg:col-span-4 bg-white rounded-2xl border border-black/12 p-3 space-y-2 max-h-[600px] overflow-y-auto">
+                            <div
+                              ref={chatListContainerRef}
+                              className="lg:col-span-4 bg-white rounded-2xl border border-black/12 p-3 space-y-2 max-h-[600px] overflow-y-auto"
+                            >
                               <div className="px-1 py-1 flex items-center justify-between border-b border-black/10 pb-2">
                                 <span className="font-mono text-[11px] font-black uppercase tracking-wider text-black">
                                   Active Conversations ({visibleChats.length})
                                 </span>
-                                <span className="text-[10px] font-mono text-emerald-700 font-bold">
-                                  ● Live Sync
+                                <span className="text-[10px] font-mono text-emerald-700 font-bold flex items-center gap-1">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-ping" />
+                                  Real-Time (2s)
                                 </span>
                               </div>
 
@@ -3492,7 +3608,10 @@ export default function AdminPanel({
                                   </div>
 
                                   {/* Messages Stream */}
-                                  <div className="p-4 space-y-3 bg-[#FAF8F5] max-h-[380px] min-h-[280px] overflow-y-auto">
+                                  <div
+                                    ref={chatMessagesContainerRef}
+                                    className="p-4 space-y-3 bg-[#FAF8F5] max-h-[380px] min-h-[280px] overflow-y-auto scroll-smooth"
+                                  >
                                     {activeChat.messages.map((msg) => (
                                       <div
                                         key={msg.id}
@@ -3593,26 +3712,28 @@ export default function AdminPanel({
                                     ))}
                                   </div>
 
-                                  {/* Quick Sales Prompts for Admin */}
+                                  {/* Quick Sales Prompts for Admin (Tap to fill input box before sending) */}
                                   <div className="px-4 py-2 bg-neutral-100 border-t border-black/10 flex items-center gap-1.5 overflow-x-auto">
                                     <span className="text-[10px] font-mono font-bold uppercase text-black/50 shrink-0">
-                                      Quick Send:
+                                      Quick Fill:
                                     </span>
                                     {[
-                                      "Please share your Full Delivery Address & 6-digit PIN code so I can generate your Razorpay payment link!",
-                                      "Special Offer: Upgrade to BOTH sets (Set 01 Coir + Set 02 Jute) for ₹7,395 (Save 15% + Free Air Shipping)!",
+                                      `Hi ${activeChat.customerName}! Here is our handcrafted Set 01 (₹${(products[0]?.price || 2499).toLocaleString("en-IN")}) & Set 02 (₹${(products[1]?.price || 2799).toLocaleString("en-IN")}). Which set and size (S, M, L, XL) would you like?`,
+                                      `Special Offer: Upgrade to BOTH sets (Set 01 Coir + Set 02 Jute) for ₹${bundleCombinedPrice.toLocaleString("en-IN")} (Save 15% + Free Express Air Shipping)!`,
                                       "Your handcrafted APOORVA SHELLS set is packed in our Aluva atelier and ready for Blue Dart Air Express dispatch!"
                                     ].map((preset, idx) => (
                                       <button
                                         key={idx}
                                         type="button"
-                                        onClick={(e) =>
-                                          void handleSendAdminChatReply(
-                                            e,
-                                            preset
-                                          )
-                                        }
-                                        className="shrink-0 px-2.5 py-1 rounded-full bg-white hover:bg-amber-50 border border-black/15 font-mono text-[10px] text-black transition"
+                                        onClick={() => {
+                                          setAdminReplyText(preset);
+                                          adminReplyInputRef.current?.focus();
+                                        }}
+                                        className={`shrink-0 px-2.5 py-1 rounded-full border font-mono text-[10px] transition ${
+                                          adminReplyText === preset
+                                            ? "bg-amber-400 border-black text-black font-bold"
+                                            : "bg-white hover:bg-amber-50 border-black/15 text-black"
+                                        }`}
                                       >
                                         {preset.slice(0, 48)}...
                                       </button>
@@ -3627,12 +3748,13 @@ export default function AdminPanel({
                                     className="p-3 bg-white border-t border-black/10 flex items-center gap-2"
                                   >
                                     <input
+                                      ref={adminReplyInputRef}
                                       type="text"
                                       value={adminReplyText}
                                       onChange={(e) =>
                                         setAdminReplyText(e.target.value)
                                       }
-                                      placeholder={`Type a message to ${activeChat.customerName} on ${activeChat.channel.toUpperCase()}...`}
+                                      placeholder={`Type or tap Quick Fill above, then tap Send as Admin...`}
                                       className="flex-1 px-3.5 py-2.5 rounded-xl bg-neutral-50 border border-black/20 font-mono text-xs focus:outline-none focus:border-black"
                                     />
                                     <button

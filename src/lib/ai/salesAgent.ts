@@ -976,6 +976,10 @@ export async function handleAdminChatAction(params: {
 
   session.messages.push(adminMsg);
   session.updatedAt = adminMsg.timestamp;
+  db.chatSessions = [
+    session,
+    ...db.chatSessions.filter((s) => s.id !== session.id)
+  ];
 
   await persistStoreDatabase(db);
 
