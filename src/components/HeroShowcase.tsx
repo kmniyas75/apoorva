@@ -246,9 +246,9 @@ export default function HeroShowcase({
         </div>
 
         {/* Top Stage Telemetry & Editorial Header Strip */}
-        <div className="relative z-20 flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-amber-950/10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#141414] text-[#faf8f5] text-[10px] font-mono uppercase tracking-widest">
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+        <div className="relative z-20 flex flex-wrap items-center justify-center md:justify-between gap-2 pb-4 border-b border-amber-950/10">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-[#141414] text-[#faf8f5] text-[9px] sm:text-[10px] font-mono uppercase tracking-wider sm:tracking-widest whitespace-nowrap">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
             <span>360° INTERACTIVE TURNTABLE</span>
             <span className="text-amber-300 font-bold">• ALUVA, KERALA</span>
           </div>
@@ -260,8 +260,8 @@ export default function HeroShowcase({
             HAND-POLISHED KERALA COCONUT SHELLS • COIR FRINGE &amp; FINE JUTE WRAPS
           </p>
 
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/85 border border-amber-950/15 text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-950 shadow-2xs">
-            <Lock className="w-3 h-3 text-emerald-700" />
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-white/85 border border-amber-950/15 text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-950 shadow-2xs whitespace-nowrap">
+            <Lock className="w-3 h-3 text-emerald-700 shrink-0" />
             <span>100% Prepaid via Razorpay • Free Air Shipping</span>
           </div>
         </div>

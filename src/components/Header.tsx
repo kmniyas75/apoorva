@@ -36,28 +36,28 @@ export default function Header({
   };
 
   return (
-    <header className="relative z-30 w-full px-4 sm:px-6 md:px-12 py-4 flex items-center justify-between text-[#111111] border-b border-black/[0.08] bg-white/95 backdrop-blur-md">
-      {/* APOORVA Brand Crest & Wordmark Left */}
+    <header className="relative z-30 w-full px-3.5 sm:px-6 md:px-12 py-3.5 sm:py-4 flex items-center justify-between gap-2 text-[#111111] border-b border-black/[0.08] bg-white/95 backdrop-blur-md">
+      {/* APOORVA SHELLS Brand Crest & Wordmark Left */}
       <a
         href="#"
-        className="transition-opacity hover:opacity-85"
-        aria-label="APOORVA Coastal Beachwear Home"
+        className="transition-opacity hover:opacity-85 shrink-0"
+        aria-label="APOORVA SHELLS Coastal Resortwear Home"
       >
         <ApoorvaLogo size="md" showTagline={true} />
       </a>
 
       {/* Actions Right (No AI button) */}
-      <div className="flex items-center gap-2 sm:gap-3">
+      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
 
         {/* Instant 1-Click Fast Buy Button */}
         {onOpenFastBuy && (
           <button
             type="button"
             onClick={onOpenFastBuy}
-            className="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-black px-3.5 py-1.5 rounded-full transition-all duration-200 shadow-sm hover:shadow active:scale-95 font-mono text-[11px] font-black uppercase tracking-wider"
+            className="whitespace-nowrap shrink-0 flex items-center gap-1 sm:gap-1.5 bg-amber-500 hover:bg-amber-400 text-black px-2.5 sm:px-3.5 py-1.5 rounded-full transition-all duration-200 shadow-sm hover:shadow active:scale-95 font-mono text-[10px] sm:text-[11px] font-black uppercase tracking-wider"
             title="Open 1-Step Express Beachwear Checkout"
           >
-            <Zap className="w-3.5 h-3.5 fill-black" />
+            <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-black shrink-0" />
             <span>FAST BUY</span>
           </button>
         )}
@@ -92,10 +92,10 @@ export default function Header({
         <button
           type="button"
           onClick={onOpenCart}
-          className="relative flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-[#111111] hover:opacity-75 transition-opacity px-2.5 py-1.5 rounded-full border border-black/15 hover:border-black/30 bg-white/60"
+          className="whitespace-nowrap shrink-0 relative flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-[#111111] hover:opacity-75 transition-opacity px-2.5 py-1.5 rounded-full border border-black/15 hover:border-black/30 bg-white/60"
           title="Open Shopping Bag"
         >
-          <ShoppingBag className="w-4 h-4 stroke-[1.75]" />
+          <ShoppingBag className="w-4 h-4 stroke-[1.75] shrink-0" />
           <span className="hidden sm:inline text-[11px] font-bold">BAG</span>
           <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-[#111111] rounded-full">
             {cartCount}

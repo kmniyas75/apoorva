@@ -14,16 +14,20 @@ export default function ApoorvaLogo({
   className = ""
 }: ApoorvaLogoProps) {
   const iconDimensions =
-    size === "sm" ? "w-8 h-8" : size === "lg" ? "w-12 h-12" : "w-10 h-10";
+    size === "sm"
+      ? "w-7 h-7 sm:w-8 sm:h-8"
+      : size === "lg"
+      ? "w-10 h-10 sm:w-12 sm:h-12"
+      : "w-9 h-9 sm:w-10 sm:h-10";
   const titleSize =
     size === "sm"
-      ? "text-lg"
+      ? "text-sm sm:text-base"
       : size === "lg"
-      ? "text-2xl md:text-3xl"
-      : "text-xl md:text-2xl";
+      ? "text-lg sm:text-2xl md:text-3xl"
+      : "text-[15px] sm:text-lg md:text-2xl";
 
   return (
-    <div className={`inline-flex items-center gap-3 select-none ${className}`}>
+    <div className={`inline-flex items-center gap-2 sm:gap-3 select-none min-w-0 ${className}`}>
       {/* Bespoke APOORVA Coconut & Coastal Wave Crest Emblem */}
       <div
         className={`relative ${iconDimensions} rounded-full bg-white border border-black/15 shadow-sm flex items-center justify-center flex-shrink-0 overflow-hidden`}
@@ -99,25 +103,23 @@ export default function ApoorvaLogo({
       </div>
 
       {/* Brand Wordmark */}
-      <div className="flex flex-col leading-none">
-        <div className="flex items-baseline">
-          <span
-            className={`${titleSize} font-black uppercase font-mono tracking-[0.12em] ${
-              variant === "light" ? "text-[#faf8f5]" : "text-[#141414]"
-            }`}
-          >
-            APOORVA SHELLS
-          </span>
-          <span
-            className={`text-[10px] font-bold tracking-widest ml-0.5 ${
+      <div className="flex flex-col leading-none min-w-0">
+        <span
+          className={`${titleSize} font-black uppercase font-mono tracking-[0.06em] sm:tracking-[0.12em] whitespace-nowrap ${
+            variant === "light" ? "text-[#faf8f5]" : "text-[#141414]"
+          }`}
+        >
+          APOORVA SHELLS
+          <sup
+            className={`text-[9px] sm:text-[10px] font-bold tracking-normal ml-0.5 align-super ${
               variant === "light" ? "text-amber-300" : "text-amber-900"
             }`}
           >
             ™
-          </span>
-        </div>
+          </sup>
+        </span>
         {showTagline && (
-          <span className="text-[9px] font-mono uppercase tracking-[0.26em] text-amber-900/80 font-semibold mt-1">
+          <span className="text-[8px] sm:text-[9px] font-mono uppercase tracking-[0.16em] sm:tracking-[0.24em] text-amber-900/80 font-semibold mt-0.5 sm:mt-1 whitespace-nowrap">
             COASTAL RESORTWEAR
           </span>
         )}
