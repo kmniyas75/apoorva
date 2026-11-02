@@ -504,6 +504,7 @@ export async function processIncomingSalesChat(params: {
   customerName?: string;
   messageText: string;
   sessionId?: string;
+  commentId?: string;
 }): Promise<{
   session: ChatSession;
   aiReply?: string;
@@ -882,7 +883,8 @@ export async function processIncomingSalesChat(params: {
       recipientId: session.customerHandleOrPhone,
       body: aiReplyText,
       images: productImagesList,
-      buttons: replyButtons
+      buttons: replyButtons,
+      commentId: params.commentId
     });
   }
 

@@ -314,6 +314,7 @@ export async function sendMetaSocialDirectMessage(params: {
   body: string;
   images?: Array<{ url: string; caption?: string }>;
   buttons?: Array<{ id: string; title: string }>;
+  commentId?: string;
 }): Promise<{
   sent: boolean;
   messageId?: string;
@@ -360,8 +361,27 @@ export async function sendMetaSocialDirectMessage(params: {
   const isIgDirectToken = primaryEndpoint.includes("graph.instagram.com");
 
   try {
-    // 1. Send product images first if provided
-    if (params.images && params.images.length > 0) {
+    // 0. If triggered by an Instagram Post/Reel comment, post a quick public reply + Private Reply DM via comment_id
+    if (params.channel === "instagram" && params.commentId) {
+      await fetch(
+        `https://graph.facebook.com/${graphVersion}/${params.commentId}/replies`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${channelToken}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message:
+              "Just sent you our Coconut Shell Beachwear photos & 2-tap checkout options in your DMs! 🥥✨ Check your inbox!"
+          }),
+          cache: "no-store"
+        }
+      ).catch(() => {});
+    }
+
+    // 1. Send product images first if provided (for direct DM recipients)
+    if (params.images && params.images.length > 0 && !params.commentId) {
       for (const img of params.images) {
         await fetch(primaryEndpoint, {
           method: "POST",
@@ -398,38 +418,47 @@ export async function sendMetaSocialDirectMessage(params: {
         : undefined;
 
     let lastError = "";
-    for (const endpoint of endpoints) {
-      const isIgHost = endpoint.includes("graph.instagram.com");
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${channelToken}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          recipient: { id: cleanRecipientId },
-          ...(isIgHost ? {} : { messaging_type: "RESPONSE" }),
-          message: {
-            text: formatWhatsAppMarkdown(params.body),
-            ...(quickReplies ? { quick_replies: quickReplies } : {})
-          }
-        }),
-        cache: "no-store"
-      });
+    const recipientCandidates = params.commentId
+      ? [{ comment_id: params.commentId }, { id: cleanRecipientId }]
+      : [{ id: cleanRecipientId }];
 
-      const data = (await res.json()) as {
-        message_id?: string;
-        error?: { message?: string };
-      };
+    for (const recipientObj of recipientCandidates) {
+      for (const endpoint of endpoints) {
+        const isIgHost = endpoint.includes("graph.instagram.com");
+        const isCommentReply = "comment_id" in recipientObj;
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${channelToken}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            recipient: recipientObj,
+            ...(isIgHost || isCommentReply ? {} : { messaging_type: "RESPONSE" }),
+            message: {
+              text: formatWhatsAppMarkdown(params.body),
+              ...(quickReplies && !isCommentReply
+                ? { quick_replies: quickReplies }
+                : {})
+            }
+          }),
+          cache: "no-store"
+        });
 
-      if (res.ok) {
-        return {
-          sent: true,
-          messageId: data.message_id
+        const data = (await res.json()) as {
+          message_id?: string;
+          error?: { message?: string };
         };
+
+        if (res.ok) {
+          return {
+            sent: true,
+            messageId: data.message_id
+          };
+        }
+        lastError =
+          data.error?.message || `Meta ${params.channel} API HTTP ${res.status}`;
       }
-      lastError =
-        data.error?.message || `Meta ${params.channel} API HTTP ${res.status}`;
     }
 
     return {

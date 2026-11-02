@@ -93,6 +93,7 @@ export async function POST(req: Request) {
     let metaSenderName: string | undefined;
     let metaSenderHandle: string | undefined;
     let metaMessageText: string | undefined;
+    let metaCommentId: string | undefined;
 
     if (
       body?.object === "whatsapp_business_account" &&
@@ -132,6 +133,7 @@ export async function POST(req: Request) {
       const metaWa = getMetaWhatsAppConfig();
       const entryId = String(body.entry?.[0]?.id || "");
       const messaging = body.entry?.[0]?.messaging?.[0];
+      const changeField = body.entry?.[0]?.changes?.[0]?.field;
       const changeVal = body.entry?.[0]?.changes?.[0]?.value;
       const senderId =
         messaging?.sender?.id || changeVal?.sender?.id || changeVal?.from?.id || "guest";
@@ -139,9 +141,13 @@ export async function POST(req: Request) {
         messaging?.message?.is_echo ||
         changeVal?.message?.is_echo ||
         String(senderId) === entryId ||
-        String(senderId) === metaWa.instagramAccountId
+        String(senderId) === metaWa.instagramAccountId ||
+        changeVal?.from?.username === "apoorvacoastal"
       ) {
         return NextResponse.json({ status: "ignored_echo_event" });
+      }
+      if (changeField === "comments" && changeVal?.id) {
+        metaCommentId = String(changeVal.id);
       }
       const text =
         messaging?.message?.quick_reply?.payload ||
@@ -227,7 +233,8 @@ export async function POST(req: Request) {
       customerHandleOrPhone: senderHandleOrPhone,
       customerName: senderName,
       messageText,
-      sessionId: body?.sessionId
+      sessionId: body?.sessionId,
+      commentId: metaCommentId
     });
 
     const updatedDb = getStoreDatabase();
