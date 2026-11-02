@@ -85,6 +85,8 @@ export interface ChatSession {
     | "awaiting_payment"
     | "paid";
   aiAutoPilot: boolean;
+  aiRepliesCount?: number;
+  handedOverToHuman?: boolean;
   selectedProduct?: "set1" | "set2" | "both";
   selectedSize?: string;
   collectedName?: string;

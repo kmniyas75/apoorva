@@ -8,12 +8,15 @@ import {
   recordOrderInStore
 } from "@/lib/store/adminStore";
 import { OrderRecord } from "@/lib/types/checkout";
+import { generateGeminiReply, GeminiMessage } from "@/lib/ai/gemini";
 import {
   sendWhatsAppTextMessage,
   sendWhatsAppImageMessage,
   sendWhatsAppInteractiveButtons,
   sendMetaSocialDirectMessage
 } from "@/lib/meta/whatsapp";
+
+export const MAX_AI_REPLIES_PER_USER = 8;
 
 const rawSiteUrl = (
   process.env.NEXT_PUBLIC_SITE_URL ||
@@ -45,11 +48,18 @@ const SIZE_BUTTONS = [
 function isGreetingOrRestart(text: string): boolean {
   const clean = text.trim().toLowerCase();
   return (
-    /^(hi+|hello+|hey+|namaskaram|start|restart|reset|new order|menu|help)\b/i.test(
+    /^(hi+|hello+|hey+|namaskaram|start|restart|reset|new order|menu)\b/i.test(
       clean
     ) ||
     clean.includes("interested in learning more") ||
     clean.includes("start over")
+  );
+}
+
+function isHumanHandoverRequest(text: string): boolean {
+  const q = text.toLowerCase();
+  return /\b(human|real person|talk to someone|call me|customer care|support team|manager|owner|agent|custom size|bulk order|wholesale)\b/.test(
+    q
   );
 }
 
@@ -60,8 +70,19 @@ function detectProductChoice(
   const clean = text.trim();
   const upper = clean.toUpperCase();
 
+  // If the customer is asking a comparison/doubt question about Set 1 vs Set 2, treat as a doubt rather than locking a choice
+  const isDoubtOrComparison =
+    /\b(DIFFERENCE|COMPARE|WHICH IS BETTER|TELL ME ABOUT|EXPLAIN|WHY|COMFORT|ITCH|WATER|SWIM|HEAVY)\b/.test(
+      upper
+    ) && !/\b(SELECT_|BUY|ORDER|BOOK|WANT|TAKE|GET)\b/.test(upper);
+
+  if (isDoubtOrComparison) {
+    return undefined;
+  }
+
   if (
     upper === "SELECT_BOTH" ||
+    upper.includes("BOTH SETS") ||
     upper.includes("BOTH") ||
     upper.includes("BUNDLE") ||
     upper.includes("2 SETS") ||
@@ -78,8 +99,7 @@ function detectProductChoice(
     upper.includes("SET 2") ||
     upper.includes("SET2") ||
     upper.includes("SET 02") ||
-    upper.includes("JUTE") ||
-    upper.includes("WRAP") ||
+    upper.includes("JUTE WRAP") ||
     upper.includes("4500") ||
     upper.includes("4,500") ||
     (stage === "pitching" && clean === "2")
@@ -92,9 +112,7 @@ function detectProductChoice(
     upper.includes("SET 1") ||
     upper.includes("SET1") ||
     upper.includes("SET 01") ||
-    upper.includes("COIR") ||
-    upper.includes("FRINGE") ||
-    upper.includes("HULA") ||
+    upper.includes("COIR FRINGE") ||
     upper.includes("4200") ||
     upper.includes("4,200") ||
     (stage === "pitching" && clean === "1")
@@ -112,11 +130,16 @@ function detectSizeChoice(
   const clean = text.trim();
   const upper = clean.toUpperCase();
 
+  // If they are asking "what size should I get?" or "how do sizes work?", treat as a doubt
+  if (/\b(WHAT|WHICH|HOW|CONFUSED|DOUBT|GUIDE|CHART|FIT ME)\b/.test(upper)) {
+    return undefined;
+  }
+
   if (
     upper === "SIZE_FREE" ||
     upper.includes("FREE SIZE") ||
-    upper.includes("FREE") ||
-    upper.includes("TIE") ||
+    upper === "FREE" ||
+    upper.includes("(TIE)") ||
     (stage === "collecting_size" && clean === "1")
   ) {
     return "FREE SIZE (Adjustable Tie)";
@@ -144,6 +167,153 @@ function detectSizeChoice(
     return "M/L (Style B Cup)";
   }
   return undefined;
+}
+
+/**
+ * Detects if the customer is asking a doubt, objection, or question that needs convincing.
+ */
+async function buildPersuasiveDoubtAnswer(params: {
+  text: string;
+  session: ChatSession;
+  prod1Price: number;
+  prod2Price: number;
+  bundlePrice: number;
+  discountPct: number;
+}): Promise<string | null> {
+  const { text, session, prod1Price, prod2Price, bundlePrice, discountPct } =
+    params;
+  const q = text.trim().toLowerCase();
+
+  // Ignore simple button taps or greetings
+  if (
+    isGreetingOrRestart(q) ||
+    /^(select_set1|select_set2|select_both|size_free|size_sm|size_ml|1|2|3)$/i.test(
+      q
+    )
+  ) {
+    return null;
+  }
+
+  // 1. Comfort, Itchiness, Skin Feel, Weight
+  if (
+    /\b(comfort|comfortable|itch|itchy|scratch|hard|heavy|hurt|skin|lining|inside|wear|feel)\b/.test(
+      q
+    )
+  ) {
+    return (
+      `✨ *100% Cloud-Soft Against Skin:*\n` +
+      `Every coconut shell cup is fully lined inside with *2mm breathable organic malmal cotton felt*, and our tender Kerala coir & jute are triple-combed so there is *zero itch or rubbing* — even during all-day beach & pool wear!`
+    );
+  }
+
+  // 2. Water, Ocean, Swimming, Pool, Washing, Durability
+  if (
+    /\b(water|swim|swimming|ocean|sea|pool|wet|wash|care|crack|break|durable|rain|salt)\b/.test(
+      q
+    )
+  ) {
+    return (
+      `🌊 *100% Ocean & Resort Pool Ready:*\n` +
+      `Our shells are triple-cured in cold-pressed Kerala virgin coconut oil, so they naturally repel saltwater & chlorine without cracking or fading. Just rinse in fresh water after your swim and pat dry!`
+    );
+  }
+
+  // 3. Sizing, Fit, Cup Size, Body Type, Measurements
+  if (
+    /\b(size|sizing|fit|cup|bust|waist|small|medium|large|xs|xl|measurement|style a|style b|tie|adjustable)\b/.test(
+      q
+    )
+  ) {
+    return (
+      `👙 *Effortless Custom Fit (XS to XL):*\n` +
+      `We use our signature *"cut a cap, don't split in half"* contour so the cups hug naturally:\n` +
+      `• *Free Size (Tie)*: Adjustable braided cords fit XS–XL (Best for gifting!)\n` +
+      `• *S/M (Style A)*: Sleek oval contour for A/B/C cups\n` +
+      `• *M/L (Style B)*: Deeper sculpted support for C/D+ cups`
+    );
+  }
+
+  // 4. Difference / Comparison between Set 01 and Set 02 / Recommendation
+  if (
+    /\b(difference|compare|which one|better|recommend|suggest|set 1 or set 2|detail|explain|about)\b/.test(
+      q
+    )
+  ) {
+    return (
+      `🐚 *How to Choose Your Set:*\n` +
+      `• *Set 01 (Coir Fringe — ₹${prod1Price.toLocaleString("en-IN")})*: Playful kinetic hula fringe skirt that sways with every step — our #1 bestseller for sunset walks & beach parties.\n` +
+      `• *Set 02 (Jute Wrap — ₹${prod2Price.toLocaleString("en-IN")})*: Tailored cotton-lined fine jute A-line wrap skirt with a coconut buckle & 3 shell buttons.\n` +
+      `💡 *Most guests grab Both Sets for ₹${bundlePrice.toLocaleString("en-IN")} (Save ${discountPct}% / ₹1,305 OFF)!*`
+    );
+  }
+
+  // 5. Price, Discount, Offer, Expensive, Worth It
+  if (
+    /\b(price|cost|discount|offer|promo|coupon|expensive|cheap|less|bargain|worth|deal)\b/.test(
+      q
+    )
+  ) {
+    return (
+      `🌴 *Artisanal Value & Instant ${discountPct}% Savings:*\n` +
+      `Each piece takes 3 days of hand-carving, organic cotton lining, and weaving by master artisans in Aluva, Kerala. While Set 01 is *₹${prod1Price.toLocaleString("en-IN")}* and Set 02 is *₹${prod2Price.toLocaleString("en-IN")}*, you can get *Both Sets together for ₹${bundlePrice.toLocaleString("en-IN")} (${discountPct}% OFF)* + *Free Express Air Shipping*!`
+    );
+  }
+
+  // 6. Shipping, Delivery Time, Urgent Trip, Goa/Mumbai/Kochi
+  if (
+    /\b(ship|shipping|deliver|delivery|days|fast|urgent|when|reach|goa|mumbai|kochi|kerala|bangalore|delhi|courier|track)\b/.test(
+      q
+    )
+  ) {
+    return (
+      `✈️ *Free Express Air Shipping (24–72 Hours):*\n` +
+      `We dispatch directly from our Aluva, Kerala atelier via *Blue Dart Air Express*! Deliveries to Kochi & Kerala arrive in *24–48 hours*, and Goa, Mumbai, Bengaluru, Delhi & pan-India arrive in *2–3 business days* with live AWB tracking.`
+    );
+  }
+
+  // 7. COD, Payment Safety, Trust, Return/Exchange
+  if (
+    /\b(cod|cash on delivery|trust|safe|secure|refund|return|exchange|pay|upi|razorpay)\b/.test(
+      q
+    )
+  ) {
+    return (
+      `🔒 *100% Verified Razorpay Checkout:*\n` +
+      `Because each resort piece is hygienically handcrafted to order, we operate on *100% secure prepaid checkout via Razorpay (UPI / GPay / PhonePe / Cards)*. You receive your GST invoice & Blue Dart Air tracking number the moment you pay!`
+    );
+  }
+
+  // 8. Any other conversational question or doubt -> Use Gemini AI (with concise 2-3 line instruction)
+  const history: GeminiMessage[] = session.messages
+    .slice(-6, -1)
+    .map((m) => ({
+      role: m.sender === "customer" ? "user" : "model",
+      text: m.text
+    }));
+
+  const geminiRes = await generateGeminiReply({
+    prompt: text,
+    history,
+    temperature: 0.6,
+    maxOutputTokens: 180,
+    systemInstruction: `You are the warm, persuasive human-like luxury stylist for APOORVA SHELLS (Aluva, Kerala handcrafted coconut shell, coir fringe & jute resortwear).
+Clear the customer's doubt in 2 to 3 short, friendly sentences using single *asterisks* for bold text.
+Key facts to convince them:
+- Lined inside with 2mm soft organic malmal cotton felt (zero itch, super comfortable).
+- Triple-cured in virgin coconut oil (100% ocean & pool safe).
+- Signature "cut a cap, don't split in half" flattering anatomical curve + adjustable braided ties (fits XS to XL).
+- Set 01 (Coir Fringe Set): ₹${prod1Price.toLocaleString("en-IN")} | Set 02 (Jute Wrap Set): ₹${prod2Price.toLocaleString("en-IN")} | Both Sets Bundle: ₹${bundlePrice.toLocaleString("en-IN")} (15% OFF).
+- Free 2-3 day Blue Dart Air Express shipping across India.
+Do NOT ask for their address in chat (we use a 2-tap button flow). Keep it under 55 words.`
+  });
+
+  if (geminiRes && !geminiRes.fromFallback && geminiRes.text) {
+    return geminiRes.text.replace(/\*\*([^*]+)\*\*/g, "*$1*");
+  }
+
+  return (
+    `🌴 Handcrafted at our Aluva, Kerala atelier, every *APOORVA SHELLS* set is lined with soft organic cotton, 100% ocean-safe, and ships free via *Blue Dart Air Express* (2–3 days across India)!`
+  );
 }
 
 export function buildPaymentUrlForOrder(order: OrderRecord): string {
@@ -321,28 +491,12 @@ function getProductShortLabel(
 }
 
 /**
- * Answers specific questions briefly (1-2 human lines) before guiding back to the current tap step.
- */
-function buildShortFaqPrefix(text: string): string {
-  const q = text.toLowerCase();
-  if (/\b(water|swim|ocean|pool|wash|wet)\b/.test(q)) {
-    return "🥥 Yes! Our shells are sealed with Kerala virgin coconut oil and lined with soft organic cotton — 100% ocean & pool safe.\n\n";
-  }
-  if (/\b(ship|delivery|days|fast|courier|when)\b/.test(q)) {
-    return "🚚 We ship free via *Blue Dart Air Express* from Aluva, Kerala (delivers in 2–3 days across India).\n\n";
-  }
-  if (/\b(cod|cash on delivery)\b/.test(q)) {
-    return "💳 Because each set is handcrafted to order, we accept 100% secure online payment via *Razorpay (UPI / GPay / PhonePe / Cards)*.\n\n";
-  }
-  return "";
-}
-
-/**
  * Processes an incoming customer message on WhatsApp, Instagram, Facebook, or Website.
- * 2-Tap Express Flow:
- *   - Greeting / Inquiry -> Sends Set 01 & Set 02 photos + 3 Interactive Set Buttons (`Set 01`, `Set 02`, `Both Sets`)
- *   - Tap 1 (Set selected) -> Sends 3 Interactive Size Buttons (`Free Size`, `S/M`, `M/L`)
- *   - Tap 2 (Size selected) -> Immediately creates order & sends the `/pay/APV-XXXXX` link where Phone is pre-filled and customer enters Name, Email, Address & PIN code right before tapping Pay!
+ * Architecture:
+ *   1. Visual Welcome: Sends Set 01 & Set 02 photos + 3 tap buttons (`Set 01`, `Set 02`, `Both Sets`)
+ *   2. Persuasive Doubt Clearing: Answers any customer doubt (comfort, water, size, price, shipping) in 2-3 lines + re-shows the tap buttons
+ *   3. 2-Tap Express Checkout: Set button -> Size button -> Instant `/pay/APV-XXXXX` link (Phone pre-filled; Name, Email, Address & PIN collected on checkout page)
+ *   4. 8-Message AI Runway + Human Handover: After 8 AI replies (or if customer asks for a human), AI sends a warm handover message, sets `aiAutoPilot = false`, and waits for human interaction!
  */
 export async function processIncomingSalesChat(params: {
   channel: "whatsapp" | "instagram" | "facebook" | "website";
@@ -387,6 +541,8 @@ export async function processIncomingSalesChat(params: {
           : normalizedHandle),
       stage: "pitching",
       aiAutoPilot: true,
+      aiRepliesCount: 0,
+      handedOverToHuman: false,
       messages: [],
       updatedAt: nowIso
     };
@@ -416,10 +572,74 @@ export async function processIncomingSalesChat(params: {
   session.messages.push(customerMsg);
   session.updatedAt = nowIso;
 
-  // If AI Auto-Pilot is turned OFF by Admin, save message and wait for Admin manual reply
+  // If user explicitly sends "restart" or "reset", re-enable AI & reset counter so they can test from scratch
+  if (/^(restart|reset|start over)$/i.test(incomingText)) {
+    session.aiAutoPilot = true;
+    session.aiRepliesCount = 0;
+    session.handedOverToHuman = false;
+  }
+
+  // If AI Auto-Pilot is turned OFF (either manually by Admin or after 8-message human handover), wait for human interaction!
   if (!session.aiAutoPilot) {
     await persistStoreDatabase(db);
     return { session };
+  }
+
+  const currentAiCount = session.aiRepliesCount ?? 0;
+
+  // Check if customer reached the 8 AI replies limit OR asked to talk to a human
+  if (
+    currentAiCount >= MAX_AI_REPLIES_PER_USER ||
+    isHumanHandoverRequest(incomingText)
+  ) {
+    session.aiAutoPilot = false;
+    session.handedOverToHuman = true;
+    session.aiRepliesCount = currentAiCount + 1;
+
+    const handoverLink = session.paymentLink || SITE_URL;
+    const handoverText =
+      `🤍 I've connected your chat with our senior stylist at the *APOORVA SHELLS Aluva Atelier*! A team member will reply to you personally right here shortly.\n\n` +
+      `Meanwhile, you can also view or complete your order anytime here:\n${handoverLink}`;
+
+    const handoverMsg: ChatMessage = {
+      id: `msg-ai-${Date.now()}`,
+      sender: "ai",
+      text: handoverText,
+      timestamp: new Date().toISOString(),
+      paymentLink: session.paymentLink,
+      orderId: session.orderId
+    };
+    session.messages.push(handoverMsg);
+    session.updatedAt = handoverMsg.timestamp;
+
+    await persistStoreDatabase(db);
+
+    let outboundDelivery: { sent: boolean; messageId?: string; error?: string } =
+      { sent: true, messageId: `web-${Date.now()}` };
+
+    if (params.channel === "whatsapp") {
+      outboundDelivery = await sendWhatsAppTextMessage({
+        to: session.customerHandleOrPhone,
+        body: handoverText,
+        previewUrl: true
+      });
+    } else if (
+      params.channel === "instagram" ||
+      params.channel === "facebook"
+    ) {
+      outboundDelivery = await sendMetaSocialDirectMessage({
+        channel: params.channel,
+        recipientId: session.customerHandleOrPhone,
+        body: handoverText
+      });
+    }
+
+    return {
+      session,
+      aiReply: handoverText,
+      paymentLink: session.paymentLink,
+      outboundDelivery
+    };
   }
 
   const prod1 = db.products[0];
@@ -432,7 +652,7 @@ export async function processIncomingSalesChat(params: {
   const detectedSetFromMsg = detectProductChoice(incomingText, session.stage);
   const detectedSizeFromMsg = detectSizeChoice(incomingText, session.stage);
 
-  // Reset if user greets or starts a new order after an existing link was sent
+  // Reset order selection if user greets fresh
   if (isGreetingOrRestart(incomingText)) {
     session.stage = "pitching";
     session.selectedProduct = undefined;
@@ -471,6 +691,11 @@ export async function processIncomingSalesChat(params: {
   } else {
     if (detectedSetFromMsg) {
       session.selectedProduct = detectedSetFromMsg;
+      // If they switched sets, let them confirm size unless they also specified size in the same message
+      if (!detectedSizeFromMsg) {
+        session.selectedSize = undefined;
+        session.stage = "collecting_size";
+      }
     }
     if (detectedSizeFromMsg) {
       session.selectedSize = detectedSizeFromMsg;
@@ -483,22 +708,62 @@ export async function processIncomingSalesChat(params: {
   let replyButtons: Array<{ id: string; title: string }> | undefined;
   let attachProductImages = false;
 
-  const faqPrefix = buildShortFaqPrefix(incomingText);
+  // Check if the customer is asking a doubt/question rather than tapping a Set/Size button
+  const isActionTap = Boolean(
+    detectedSetFromMsg ||
+      detectedSizeFromMsg ||
+      incomingText.includes("|") ||
+      isGreetingOrRestart(incomingText)
+  );
 
-  if (!session.selectedProduct) {
-    // TAP 0: Show Set 01 & Set 02 Photos + 3 Interactive Set Tap Buttons
+  const persuasiveAnswer = !isActionTap
+    ? await buildPersuasiveDoubtAnswer({
+        text: incomingText,
+        session,
+        prod1Price: prod1.price,
+        prod2Price: prod2.price,
+        bundlePrice,
+        discountPct: db.settings.bundleDiscountPercent
+      })
+    : null;
+
+  if (persuasiveAnswer) {
+    // Customer asked a doubt! Answer persuasively in 2-3 lines AND re-show the appropriate tap buttons / link
+    if (!session.selectedProduct) {
+      replyButtons = PRODUCT_BUTTONS;
+      aiReplyText = `${persuasiveAnswer}\n\nWhich set would you like to try? Tap below 👇`;
+    } else if (!session.selectedSize) {
+      replyButtons = SIZE_BUTTONS;
+      const setLabel = getProductShortLabel(
+        session.selectedProduct,
+        prod1.price,
+        prod2.price,
+        bundlePrice
+      );
+      aiReplyText = `${persuasiveAnswer}\n\nWhich fit would you like for your *${setLabel}*? Tap below 👇`;
+    } else if (session.paymentLink) {
+      paymentLink = session.paymentLink;
+      aiReplyText =
+        `${persuasiveAnswer}\n\n` +
+        `💳 *Your reserved order (#${session.orderId}) is ready — tap below to complete checkout:*\n${session.paymentLink}`;
+    } else {
+      replyButtons = PRODUCT_BUTTONS;
+      aiReplyText = `${persuasiveAnswer}\n\nWhich set would you like? Tap below 👇`;
+    }
+  } else if (!session.selectedProduct) {
+    // TAP 0: Greeting -> Show Set 01 & Set 02 Photos + 3 Interactive Set Tap Buttons
     session.stage = "pitching";
     attachProductImages = !session.imagesSent;
     session.imagesSent = true;
     replyButtons = PRODUCT_BUTTONS;
 
     aiReplyText =
-      `${faqPrefix}Hi! Welcome to *APOORVA SHELLS* 🐚\n\n` +
-      `Here are our 2 handcrafted Kerala coconut shell beachwear sets:\n` +
+      `Hi! Welcome to *APOORVA SHELLS* 🐚\n\n` +
+      `Here are our 2 handcrafted Kerala coconut shell beachwear sets (lined with soft organic cotton & 100% ocean-safe):\n` +
       `1️⃣ *Set 01: Coir Fringe Set* — ₹${prod1.price.toLocaleString("en-IN")}\n` +
       `2️⃣ *Set 02: Jute Wrap Set* — ₹${prod2.price.toLocaleString("en-IN")}\n` +
       `🎁 *Both Sets Bundle* — ₹${bundlePrice.toLocaleString("en-IN")} (15% OFF)\n\n` +
-      `Which set would you like? Tap below 👇`;
+      `Which set would you like, or do you have any questions? 👇`;
   } else if (!session.selectedSize) {
     // TAP 1: Set Chosen -> Ask Size/Fit with 3 Interactive Tap Buttons
     session.stage = "collecting_size";
@@ -511,7 +776,7 @@ export async function processIncomingSalesChat(params: {
     );
 
     aiReplyText =
-      `${faqPrefix}Lovely choice! ✨ I've selected *${setLabel}*.\n\n` +
+      `Lovely choice! ✨ I've selected *${setLabel}*.\n\n` +
       `Which fit would you like? Tap below 👇`;
   } else {
     // TAP 2: Set + Size Chosen -> Immediately Create Order & Send Express Checkout Link!
@@ -533,6 +798,9 @@ export async function processIncomingSalesChat(params: {
       `👇 *Tap below to enter your delivery address & pay securely via Razorpay (UPI / GPay / Cards):*\n` +
       `${paymentLink}`;
   }
+
+  // Increment AI reply count for this user (out of MAX_AI_REPLIES_PER_USER = 8)
+  session.aiRepliesCount = currentAiCount + 1;
 
   const productImagesList = attachProductImages
     ? [
@@ -655,6 +923,11 @@ export async function handleAdminChatAction(params: {
       typeof params.aiAutoPilot === "boolean"
         ? params.aiAutoPilot
         : !session.aiAutoPilot;
+    if (session.aiAutoPilot) {
+      // Reset the 8-reply AI runway when Admin re-enables Auto-Pilot
+      session.aiRepliesCount = 0;
+      session.handedOverToHuman = false;
+    }
     session.updatedAt = new Date().toISOString();
     await persistStoreDatabase(db);
     return { session };
