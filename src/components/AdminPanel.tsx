@@ -3304,26 +3304,32 @@ export default function AdminPanel({
 
                                         <span
                                           className={`px-2 py-0.5 rounded font-mono text-[9px] font-bold uppercase ${
-                                            chat.stage === "paid"
-                                              ? "bg-emerald-600 text-white"
-                                              : chat.stage === "awaiting_payment"
-                                                ? "bg-amber-400 text-black"
-                                                : chat.stage ===
-                                                    "collecting_address"
-                                                  ? "bg-blue-600 text-white"
-                                                  : isSelected
-                                                    ? "bg-white/15 text-white/80"
-                                                    : "bg-black/10 text-black/70"
+                                            chat.handedOverToHuman ||
+                                            !chat.aiAutoPilot
+                                              ? "bg-rose-600 text-white"
+                                              : chat.stage === "paid"
+                                                ? "bg-emerald-600 text-white"
+                                                : chat.stage === "awaiting_payment"
+                                                  ? "bg-amber-400 text-black"
+                                                  : chat.stage ===
+                                                      "collecting_size"
+                                                    ? "bg-blue-600 text-white"
+                                                    : isSelected
+                                                      ? "bg-white/15 text-white/80"
+                                                      : "bg-black/10 text-black/70"
                                           }`}
                                         >
-                                          {chat.stage === "paid"
-                                            ? "✓ PAID"
-                                            : chat.stage === "awaiting_payment"
-                                              ? "💳 LINK SENT"
-                                              : chat.stage ===
-                                                  "collecting_address"
-                                                ? "📍 ASKING ADDRESS"
-                                                : "🎯 PITCHING"}
+                                          {chat.handedOverToHuman ||
+                                          !chat.aiAutoPilot
+                                            ? "🚨 HUMAN NEEDED"
+                                            : chat.stage === "paid"
+                                              ? "✓ PAID"
+                                              : chat.stage === "awaiting_payment"
+                                                ? "💳 LINK SENT"
+                                                : chat.stage ===
+                                                    "collecting_size"
+                                                  ? "📏 PICKING SIZE"
+                                                  : `🤖 AI (${chat.aiRepliesCount || 0}/8)`}
                                         </span>
                                       </div>
 
@@ -3399,11 +3405,11 @@ export default function AdminPanel({
                                             <strong className="text-white uppercase">
                                               {activeChat.selectedProduct ===
                                               "both"
-                                                ? "Both Sets Bundle (₹7,395)"
+                                                ? `Both Sets Bundle (₹${bundleCombinedPrice.toLocaleString("en-IN")})`
                                                 : activeChat.selectedProduct ===
                                                     "set2"
-                                                  ? "Set 02 Jute Wrap (₹4,500)"
-                                                  : "Set 01 Coir Fringe (₹4,200)"}
+                                                  ? `Set 02 Jute Wrap (₹${(products[1]?.price || 2799).toLocaleString("en-IN")})`
+                                                  : `Set 01 Coir Fringe (₹${(products[0]?.price || 2499).toLocaleString("en-IN")})`}
                                             </strong>
                                           </span>
                                         )}
@@ -3426,6 +3432,23 @@ export default function AdminPanel({
                                             </strong>
                                           </span>
                                         )}
+                                        <span>
+                                          • AI Replies:{" "}
+                                          <strong
+                                            className={
+                                              (activeChat.aiRepliesCount ||
+                                                0) >= 8 ||
+                                              activeChat.handedOverToHuman
+                                                ? "text-rose-400"
+                                                : "text-emerald-300"
+                                            }
+                                          >
+                                            {activeChat.aiRepliesCount || 0}/8
+                                            {activeChat.handedOverToHuman
+                                              ? " (Handed Over to Human)"
+                                              : ""}
+                                          </strong>
+                                        </span>
                                       </div>
                                     </div>
 
@@ -3506,6 +3529,47 @@ export default function AdminPanel({
                                             </span>
                                           </div>
                                           <div>{msg.text}</div>
+                                          {msg.images &&
+                                            msg.images.length > 0 && (
+                                              <div className="mt-2 grid grid-cols-2 gap-2">
+                                                {msg.images.map(
+                                                  (img, imgIdx) => (
+                                                    <div
+                                                      key={imgIdx}
+                                                      className="rounded-xl overflow-hidden border border-white/15 bg-black/30"
+                                                    >
+                                                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                      <img
+                                                        src={img.url}
+                                                        alt={
+                                                          img.caption ||
+                                                          "Product photo"
+                                                        }
+                                                        className="w-full h-24 object-cover"
+                                                      />
+                                                      {img.caption && (
+                                                        <div className="p-1.5 text-[9px] text-white/80 line-clamp-2">
+                                                          {img.caption}
+                                                        </div>
+                                                      )}
+                                                    </div>
+                                                  )
+                                                )}
+                                              </div>
+                                            )}
+                                          {msg.quickReplies &&
+                                            msg.quickReplies.length > 0 && (
+                                              <div className="mt-2 flex flex-wrap gap-1.5">
+                                                {msg.quickReplies.map((qr) => (
+                                                  <span
+                                                    key={qr.id}
+                                                    className="px-2.5 py-1 rounded-full bg-white/15 border border-white/25 text-[10px] font-bold text-amber-300"
+                                                  >
+                                                    🔘 {qr.title}
+                                                  </span>
+                                                ))}
+                                              </div>
+                                            )}
                                           {msg.paymentLink && (
                                             <div className="mt-2 pt-2 border-t border-white/15 flex items-center justify-between gap-2">
                                               <a

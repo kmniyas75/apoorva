@@ -160,6 +160,44 @@ export async function POST(req: Request) {
       if (!text) {
         return NextResponse.json({ status: "ignored_status_event" });
       }
+      // If this is a public Reel/Post comment, check the Admin Panel's Comment Trigger Keywords
+      if (metaCommentId) {
+        const configuredKeywords = (
+          db.socialAutomation?.instagramTriggerKeywords || [
+            "BUY",
+            "SET1",
+            "SET2",
+            "BOTH",
+            "ORDER",
+            "PRICE",
+            "LINK",
+            "SHELL",
+            "PP",
+            "COST",
+            "DM",
+            "DETAILS"
+          ]
+        )
+          .map((k) => k.trim().toUpperCase())
+          .filter(Boolean);
+
+        const upperComment = String(text).toUpperCase();
+        const matchAll =
+          configuredKeywords.length === 0 ||
+          configuredKeywords.includes("*") ||
+          configuredKeywords.includes("ALL");
+        const matchedKeyword =
+          matchAll ||
+          configuredKeywords.some((kw) => upperComment.includes(kw));
+
+        if (!matchedKeyword) {
+          return NextResponse.json({
+            status: "ignored_comment_no_keyword_match",
+            comment: text,
+            configuredKeywords
+          });
+        }
+      }
       metaSenderName =
         changeVal?.from?.username || `Instagram Guest (${String(senderId).slice(-4)})`;
       metaSenderHandle = String(senderId).startsWith("@")
