@@ -3,6 +3,7 @@ import {
   saveTrackingToMongoDB,
   loadTrackingFromMongoDB
 } from "@/lib/db/mongodb";
+import { getShiprocketAuthToken } from "@/lib/shipping/shiprocket";
 
 // Global tracking records cache across reloads
 const globalTracking = globalThis as unknown as {
@@ -170,11 +171,12 @@ export async function fetchTrackingInfo(query: string): Promise<ShipmentTracking
   }
 
   // Live Shiprocket API check if configured
-  if (process.env.SHIPROCKET_API_TOKEN) {
+  const srToken = await getShiprocketAuthToken();
+  if (srToken) {
     try {
       const res = await fetch(`https://apiv2.shiprocket.in/v1/external/courier/track/awb/${cleanKey}`, {
         headers: {
-          "Authorization": `Bearer ${process.env.SHIPROCKET_API_TOKEN}`
+          "Authorization": `Bearer ${srToken}`
         }
       });
       if (res.ok) {

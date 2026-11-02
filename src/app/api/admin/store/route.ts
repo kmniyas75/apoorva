@@ -15,6 +15,7 @@ import {
 import { OrderRecord } from "@/lib/types/checkout";
 import { sendShippingDispatchEmail } from "@/lib/email/emailService";
 import { sendWhatsAppShippingNotification } from "@/lib/meta/whatsapp";
+import { createShiprocketOrder } from "@/lib/shipping/shiprocket";
 import {
   generateTrackingData,
   saveTrackingRecord
@@ -119,10 +120,50 @@ export async function POST(req: Request) {
       if (!order || !order.orderId) {
         return NextResponse.json({ error: "Invalid order payload" }, { status: 400 });
       }
+      // Push to Shiprocket automatically on manual order creation
+      const srRes = await createShiprocketOrder({
+        order_id: order.orderId,
+        order_date: new Date(order.createdAt || Date.now())
+          .toISOString()
+          .split("T")[0],
+        pickup_location: process.env.SHIPROCKET_PICKUP_LOCATION || "work",
+        billing_customer_name: order.customer.fullName || "Valued Client",
+        billing_address:
+          order.customer.addressLine1 || "Coastal Delivery Address",
+        billing_address_2: order.customer.addressLine2 || "",
+        billing_city: order.customer.city || "Kochi",
+        billing_pincode: order.customer.pincode || "683101",
+        billing_state: order.customer.state || "Kerala",
+        billing_country: "India",
+        billing_email:
+          order.customer.email || "orders@apoorvashells.com",
+        billing_phone: order.customer.phone || "9847000000",
+        shipping_is_billing: true,
+        order_items: order.items.map((i) => ({
+          name: i.name,
+          sku: i.productId || "APV-SET",
+          units: i.quantity || 1,
+          selling_price: i.unitPrice || 2499
+        })),
+        payment_method: "Prepaid",
+        sub_total: order.pricing?.total || 2499,
+        length: 22,
+        breadth: 18,
+        height: 12,
+        weight: 0.65
+      });
+      if (srRes.awbCode && order.shipping) {
+        order.shipping.trackingNumber = srRes.awbCode;
+      }
+      if (srRes.courierName && order.shipping) {
+        order.shipping.courierName = srRes.courierName;
+      }
       const savedOrder = recordOrderInStore(order);
+      await persistStoreDatabase(getStoreDatabase());
       return NextResponse.json({
         success: true,
         order: savedOrder,
+        shiprocket: srRes,
         orders: getStoreDatabase().orders
       });
     }
@@ -152,13 +193,53 @@ export async function POST(req: Request) {
       }
 
       const existing = db.orders[idx];
+      let resolvedCourier =
+        courierName || existing.shipping?.courierName || "Blue Dart Express";
+      let resolvedAwb =
+        trackingNumber ||
+        existing.shipping?.trackingNumber ||
+        `BD-${Math.floor(10000000 + Math.random() * 90000000)}IN`;
+
+      // If dispatching from Admin, push to Shiprocket if not yet assigned a live AWB
+      if (status === "dispatched" && sendDispatchEmail) {
+        const srRes = await createShiprocketOrder({
+          order_id: existing.orderId,
+          order_date: new Date(existing.createdAt || Date.now())
+            .toISOString()
+            .split("T")[0],
+          pickup_location: process.env.SHIPROCKET_PICKUP_LOCATION || "work",
+          billing_customer_name: existing.customer.fullName || "Valued Client",
+          billing_address:
+            existing.customer.addressLine1 || "Coastal Delivery Address",
+          billing_address_2: existing.customer.addressLine2 || "",
+          billing_city: existing.customer.city || "Kochi",
+          billing_pincode: existing.customer.pincode || "683101",
+          billing_state: existing.customer.state || "Kerala",
+          billing_country: "India",
+          billing_email:
+            existing.customer.email || "orders@apoorvashells.com",
+          billing_phone: existing.customer.phone || "9847000000",
+          shipping_is_billing: true,
+          order_items: existing.items.map((i) => ({
+            name: i.name,
+            sku: i.productId || "APV-SET",
+            units: i.quantity || 1,
+            selling_price: i.unitPrice || 2499
+          })),
+          payment_method: "Prepaid",
+          sub_total: existing.pricing?.total || 2499,
+          length: 22,
+          breadth: 18,
+          height: 12,
+          weight: 0.65
+        });
+        if (srRes.awbCode) resolvedAwb = srRes.awbCode;
+        if (srRes.courierName) resolvedCourier = srRes.courierName;
+      }
+
       const updatedShipping = {
-        courierName:
-          courierName || existing.shipping?.courierName || "Blue Dart Express",
-        trackingNumber:
-          trackingNumber ||
-          existing.shipping?.trackingNumber ||
-          `BD-${Math.floor(10000000 + Math.random() * 90000000)}IN`,
+        courierName: resolvedCourier,
+        trackingNumber: resolvedAwb,
         trackingUrl:
           existing.shipping?.trackingUrl ||
           `https://www.apoorvashells.com/track?orderId=${existing.orderId}`,

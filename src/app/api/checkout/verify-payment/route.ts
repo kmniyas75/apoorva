@@ -68,7 +68,7 @@ export async function POST(req: Request) {
     const shiprocketResult = await createShiprocketOrder({
       order_id: orderId,
       order_date: new Date().toISOString().split("T")[0],
-      pickup_location: process.env.SHIPROCKET_PICKUP_LOCATION || "Aluva Atelier",
+      pickup_location: process.env.SHIPROCKET_PICKUP_LOCATION || "work",
       billing_customer_name: customer.fullName || "Valued Client",
       billing_address: customer.addressLine1,
       billing_address_2: customer.addressLine2 || "",

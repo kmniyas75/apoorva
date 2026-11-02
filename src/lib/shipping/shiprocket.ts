@@ -273,7 +273,7 @@ export interface ShiprocketServiceabilityResult {
  */
 export async function checkShiprocketServiceability(
   deliveryPincode: string,
-  pickupPincode = "688001",
+  pickupPincode = process.env.SHIPROCKET_PICKUP_PINCODE || "683108",
   weight = 0.65
 ): Promise<ShiprocketServiceabilityResult | null> {
   const token = await getShiprocketAuthToken();
