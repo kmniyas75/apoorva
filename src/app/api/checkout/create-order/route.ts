@@ -51,7 +51,11 @@ export async function POST(req: Request) {
       });
     }
 
-    const discountPercentage = appliedDiscount > 0 ? appliedDiscount : 0;
+    const totalQty = validatedItems.reduce((sum, i) => sum + i.quantity, 0);
+    const defaultBundleDiscount =
+      totalQty >= 2 ? (storeDb.settings?.bundleDiscountPercent ?? 15) : 0;
+    const discountPercentage =
+      appliedDiscount > 0 ? appliedDiscount : defaultBundleDiscount;
     const discountAmount = Math.round((rawSubtotal * discountPercentage) / 100);
     const subtotal = Math.max(0, rawSubtotal - discountAmount);
 

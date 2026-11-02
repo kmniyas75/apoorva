@@ -631,6 +631,10 @@ export function getStoreDatabase(): StoreDatabase {
         if (!parsed.settings.adminPassword) {
           parsed.settings.adminPassword = DEFAULT_SETTINGS.adminPassword;
         }
+        if (typeof parsed.settings.gstPercent !== "number") {
+          parsed.settings.gstPercent = DEFAULT_SETTINGS.gstPercent ?? 12;
+        }
+        parsed.settings.freeShipping = false;
         globalStore.__APOORVA_ADMIN_DB__ = parsed;
         return parsed;
       }
@@ -685,6 +689,10 @@ export async function ensureStoreDatabaseLoaded(): Promise<StoreDatabase> {
       if (!mongoDb.settings.adminPassword) {
         mongoDb.settings.adminPassword = DEFAULT_SETTINGS.adminPassword;
       }
+      if (typeof mongoDb.settings.gstPercent !== "number") {
+        mongoDb.settings.gstPercent = DEFAULT_SETTINGS.gstPercent ?? 12;
+      }
+      mongoDb.settings.freeShipping = false;
       if (!Array.isArray(mongoDb.deletedMediaUrls)) {
         mongoDb.deletedMediaUrls = [];
       }
@@ -716,6 +724,10 @@ export async function ensureStoreDatabaseLoaded(): Promise<StoreDatabase> {
       if (!cloudDb.settings.adminPassword) {
         cloudDb.settings.adminPassword = DEFAULT_SETTINGS.adminPassword;
       }
+      if (typeof cloudDb.settings.gstPercent !== "number") {
+        cloudDb.settings.gstPercent = DEFAULT_SETTINGS.gstPercent ?? 12;
+      }
+      cloudDb.settings.freeShipping = false;
       if (!Array.isArray(cloudDb.deletedMediaUrls)) {
         cloudDb.deletedMediaUrls = [];
       }
