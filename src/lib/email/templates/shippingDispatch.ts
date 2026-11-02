@@ -1,120 +1,208 @@
 import { OrderRecord } from "@/lib/types/checkout";
 
+const SITE_URL = "https://www.apoorvashells.com";
+
+function resolveImageUrl(img?: string): string {
+  if (!img) return `${SITE_URL}/images/products/set1-coconut-coir.png`;
+  if (img.startsWith("http://") || img.startsWith("https://")) return img;
+  return `${SITE_URL}${img.startsWith("/") ? "" : "/"}${img}`;
+}
+
 export function generateShippingDispatchHtml(
   order: OrderRecord,
   trackingNumber: string = "BD-88492019IN",
-  courierName: string = "Blue Dart Express",
+  courierName: string = "Blue Dart Express (Air Cargo)",
   trackingUrl?: string
 ): string {
   const { customer, items, orderId } = order;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.apoorvashells.com";
-  const finalTrackingUrl = trackingUrl || `${siteUrl}/track?orderId=${orderId}`;
+  const finalTrackingUrl =
+    trackingUrl && !trackingUrl.includes("bluedart.com")
+      ? trackingUrl
+      : `${SITE_URL}/track?orderId=${encodeURIComponent(orderId)}`;
+  const whatsappUrl = `https://wa.me/917306409010?text=${encodeURIComponent(
+    `Hi APOORVA Atelier! I'm tracking my dispatched order #${orderId} (Waybill: ${trackingNumber}).`
+  )}`;
+
+  const itemsHtml = items
+    .map((item) => {
+      const imgUrl = resolveImageUrl(item.image);
+      return `
+      <tr>
+        <td style="padding: 12px 0; border-bottom: 1px solid #ece3d5;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td width="56" valign="top" style="padding-right: 14px;">
+                <img src="${imgUrl}" alt="${item.name}" width="56" height="56" style="display: block; width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid #e2d5c1;" />
+              </td>
+              <td valign="middle">
+                <div style="font-family: Georgia, serif; font-size: 14px; font-weight: bold; color: #1c1613;">
+                  🥥 ${item.name}
+                </div>
+                <div style="font-size: 12px; color: #6e6053; margin-top: 3px;">
+                  📏 Size: <strong>${item.size}</strong> &bull; 🛍️ Qty: <strong>${item.quantity}</strong>
+                </div>
+              </td>
+              <td valign="middle" align="right">
+                <span style="display: inline-block; background-color: #e0f2fe; color: #0369a1; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 4px; text-transform: uppercase;">
+                  ✈️ Dispatched
+                </span>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    `;
+    })
+    .join("");
 
   return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Your Archive Has Dispatched #${orderId} — APOORVA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>✈️ Your APOORVA Order #${orderId} Has Shipped — Waybill ${trackingNumber}</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f3efe6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #141414; line-height: 1.5;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f3efe6; padding: 40px 15px;">
+<body style="margin: 0; padding: 0; background-color: #f2ebe1; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1c1613; line-height: 1.5;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f2ebe1; padding: 36px 14px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" style="max-width: 600px; background-color: #ffffff; border: 1px solid #e0d8ca; border-radius: 4px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.04);" cellpadding="0" cellspacing="0">
+        <table role="presentation" width="100%" style="max-width: 620px; background-color: #ffffff; border: 1px solid #dfd3c0; border-radius: 14px; overflow: hidden; box-shadow: 0 12px 32px rgba(28, 22, 19, 0.08);" cellpadding="0" cellspacing="0">
           
+          <!-- Top Accent Bar -->
+          <tr>
+            <td style="height: 5px; background: linear-gradient(90deg, #0284c7 0%, #d4af37 50%, #8c5a3c 100%);"></td>
+          </tr>
+
           <!-- Header -->
           <tr>
-            <td style="background-color: #141414; padding: 36px 32px; text-align: center;">
-              <div style="font-family: Georgia, serif; font-size: 26px; font-weight: normal; letter-spacing: 6px; color: #ffffff; text-transform: uppercase;">
+            <td style="background-color: #161210; padding: 36px 32px 30px; text-align: center;">
+              <div style="display: inline-block; width: 48px; height: 48px; line-height: 48px; border-radius: 50%; background-color: #261f1b; border: 1px solid #b89768; font-size: 22px; margin-bottom: 12px;">
+                ✈️
+              </div>
+              <div style="font-family: Georgia, serif; font-size: 28px; font-weight: normal; letter-spacing: 7px; color: #ffffff; text-transform: uppercase;">
                 A P O O R V A
               </div>
-              <div style="font-family: monospace; font-size: 10px; letter-spacing: 3px; color: #b89f80; text-transform: uppercase; margin-top: 6px;">
-                COASTAL RESORTWEAR ATELIER &bull; DISPATCH DESK
+              <div style="font-size: 10px; letter-spacing: 3px; color: #c8a97e; text-transform: uppercase; margin-top: 6px; font-weight: 600;">
+                🐚 COASTAL RESORTWEAR ATELIER &bull; EXPRESS AIR DISPATCH
               </div>
             </td>
           </tr>
 
-          <!-- Courier Banner -->
+          <!-- Hero Dispatch Banner -->
           <tr>
-            <td style="padding: 32px 32px 24px; background-color: #faf7f2; border-bottom: 1px solid #eee8dc;">
-              <span style="display: inline-block; padding: 4px 10px; background-color: #e0f2fe; color: #0369a1; font-family: monospace; font-size: 11px; font-weight: bold; border-radius: 2px; text-transform: uppercase; letter-spacing: 1px;">
-                In Transit &bull; Express Courier
+            <td style="padding: 32px 32px 24px; background-color: #fcf9f4; border-bottom: 1px solid #ede3d4; text-align: center;">
+              <span style="display: inline-block; padding: 6px 14px; background-color: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 700; border-radius: 20px; text-transform: uppercase; letter-spacing: 1.2px; border: 1px solid #bae6fd;">
+                ✈️ In Transit &bull; Express Air Courier
               </span>
-              <h1 style="font-family: Georgia, serif; font-size: 22px; font-weight: normal; color: #141414; margin: 12px 0 6px 0;">
-                Your Archival Piece Has Left The Studio
+              <h1 style="font-family: Georgia, serif; font-size: 24px; font-weight: normal; color: #1c1613; margin: 16px 0 8px 0;">
+                Your APOORVA Piece Is On Its Way!
               </h1>
-              <p style="margin: 0; font-size: 13px; color: #5a5448;">
-                Greetings ${customer.fullName}. Order <strong style="font-family: monospace; color: #141414;">#${orderId}</strong> has been hand-wrapped in our archival cedar packaging and handed over to our courier partner.
+              <p style="margin: 0 auto; max-width: 480px; font-size: 14px; color: #5c5046; line-height: 1.6;">
+                Greetings ${customer.fullName}! Your order <strong style="color: #1c1613;">#${orderId}</strong> has been hand-wrapped in our wax-sealed resort gift box at our Aluva, Kerala studio and handed over to <strong>${courierName}</strong>.
               </p>
             </td>
           </tr>
 
-          <!-- Tracking Card -->
+          <!-- 4-Step Visual Progress Tracker -->
           <tr>
-            <td style="padding: 24px 32px;">
-              <div style="background-color: #f7f3ec; border: 1px solid #e4dccc; border-radius: 4px; padding: 20px;">
-                <table role="presentation" width="100%">
+            <td style="padding: 20px 24px; background-color: #ffffff; border-bottom: 1px solid #f0e8dc;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="text-align: center; font-size: 11px;">
+                <tr>
+                  <td width="25%" style="color: #137333; font-weight: 700;">
+                    <div style="font-size: 18px; margin-bottom: 4px;">✅</div>
+                    1. Confirmed
+                  </td>
+                  <td width="25%" style="color: #137333; font-weight: 700;">
+                    <div style="font-size: 18px; margin-bottom: 4px;">✅</div>
+                    2. Oil Cured
+                  </td>
+                  <td width="25%" style="color: #0369a1; font-weight: 800;">
+                    <div style="font-size: 18px; margin-bottom: 4px;">✈️</div>
+                    3. In Transit
+                  </td>
+                  <td width="25%" style="color: #8c6d46; font-weight: 600;">
+                    <div style="font-size: 18px; margin-bottom: 4px;">🏡</div>
+                    4. 2–3 Days
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Boarding Pass Waybill Card -->
+          <tr>
+            <td style="padding: 26px 32px;">
+              <div style="background: linear-gradient(135deg, #1b1613 0%, #2b221d 100%); border: 1px solid #b89768; border-radius: 12px; padding: 24px; color: #ffffff;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                   <tr>
-                    <td>
-                      <div style="font-family: monospace; font-size: 10px; letter-spacing: 1px; color: #767064; text-transform: uppercase;">
-                        Courier Partner
+                    <td width="55%">
+                      <div style="font-size: 10px; letter-spacing: 1.5px; color: #c8a97e; text-transform: uppercase; font-weight: 700;">
+                        ✈️ Express Courier Partner
                       </div>
-                      <div style="font-family: Georgia, serif; font-size: 16px; font-weight: bold; color: #141414; margin-top: 2px;">
+                      <div style="font-family: Georgia, serif; font-size: 18px; font-weight: bold; color: #ffffff; margin-top: 4px;">
                         ${courierName}
                       </div>
-                    </td>
-                    <td style="text-align: right;">
-                      <div style="font-family: monospace; font-size: 10px; letter-spacing: 1px; color: #767064; text-transform: uppercase;">
-                        Waybill / AWB No.
+                      <div style="font-size: 12px; color: #d6c7b2; margin-top: 6px;">
+                        ⚡ Estimated Arrival: <strong>2–3 Business Days</strong>
                       </div>
-                      <div style="font-family: monospace; font-size: 14px; font-weight: bold; color: #141414; margin-top: 2px;">
+                    </td>
+                    <td width="45%" align="right" valign="top">
+                      <div style="font-size: 10px; letter-spacing: 1.5px; color: #c8a97e; text-transform: uppercase; font-weight: 700;">
+                        📦 Air Waybill (AWB)
+                      </div>
+                      <div style="font-family: monospace; font-size: 16px; font-weight: bold; color: #fbbf24; margin-top: 4px; background-color: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 6px; display: inline-block;">
                         ${trackingNumber}
                       </div>
                     </td>
                   </tr>
                 </table>
 
-                <div style="margin-top: 18px; text-align: center;">
-                  <a href="${finalTrackingUrl}" style="display: inline-block; background-color: #141414; color: #ffffff; padding: 12px 28px; font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; text-decoration: none; border-radius: 2px; font-weight: bold;">
-                    Track Live Shipment &rarr;
+                <div style="margin-top: 22px; text-align: center; border-top: 1px dashed #4a3c32; padding-top: 18px;">
+                  <a href="${finalTrackingUrl}" style="display: inline-block; background-color: #d4af37; color: #161210; padding: 13px 28px; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; text-decoration: none; border-radius: 8px; font-weight: 800; margin: 4px;">
+                    🚚 Track Live Shipment &rarr;
+                  </a>
+                  <a href="${whatsappUrl}" style="display: inline-block; background-color: #1fb855; color: #ffffff; padding: 13px 20px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-radius: 8px; font-weight: 700; margin: 4px;">
+                    💬 WhatsApp Support
                   </a>
                 </div>
               </div>
             </td>
           </tr>
 
-          <!-- Contents Summary -->
+          <!-- Dispatched Items with Product Thumbnails -->
           <tr>
-            <td style="padding: 0 32px 20px;">
-              <div style="font-family: monospace; font-size: 11px; letter-spacing: 1px; color: #767064; text-transform: uppercase; margin-bottom: 8px;">
-                Package Contents:
+            <td style="padding: 0 32px 22px;">
+              <div style="font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: #8c6d46; text-transform: uppercase; margin-bottom: 8px; border-bottom: 1px solid #eadfce; padding-bottom: 6px;">
+                🎁 Dispatched Package Contents
               </div>
-              <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #141414; line-height: 1.6;">
-                ${items.map((i) => `<li><strong>${i.name}</strong> — Size ${i.size} (${i.quantity}x)</li>`).join("")}
-              </ul>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                ${itemsHtml}
+              </table>
             </td>
           </tr>
 
-          <!-- Delivery Address -->
+          <!-- Destination & Wax-Seal Notice -->
           <tr>
-            <td style="padding: 20px 32px; background-color: #faf7f2; border-top: 1px solid #eee8dc; font-size: 12px; color: #5a5448;">
-              <strong style="color: #141414;">Destination:</strong> ${customer.addressLine1}${customer.addressLine2 ? `, ${customer.addressLine2}` : ""}, ${customer.city}, ${customer.state} — ${customer.pincode}
-            </td>
-          </tr>
-
-          <!-- Seal Instructions -->
-          <tr>
-            <td style="padding: 20px 32px; font-size: 12px; color: #767064; line-height: 1.6;">
-              <strong style="color: #141414;">Tamper-Proof Notice:</strong> Please ensure the APOORVA wax-seal stamp on the outer box is intact upon courier arrival. Do not accept if broken.
+            <td style="padding: 22px 32px; background-color: #fcf9f4; border-top: 1px solid #ede3d4;">
+              <div style="font-size: 13px; color: #1c1613; margin-bottom: 10px;">
+                📍 <strong>Delivery Address:</strong> ${customer.fullName}, ${customer.addressLine1}${customer.addressLine2 ? `, ${customer.addressLine2}` : ""}, ${customer.city}, ${customer.state} — <strong>${customer.pincode}</strong>
+              </div>
+              <div style="font-size: 12px; color: #6e6053; background-color: #f5efe4; padding: 12px 14px; border-radius: 8px; border-left: 3px solid #8c5a3c;">
+                🕯️ <strong>Tamper-Proof Wax Seal Guarantee:</strong> Please verify that the APOORVA artisanal seal on your outer gift box is intact upon delivery.
+              </div>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td style="background-color: #141414; padding: 24px 32px; text-align: center; color: #9c9589; font-size: 11px; font-family: monospace;">
-              <div>APOORVA ATELIER &bull; INDIA</div>
-              <div style="margin-top: 6px; color: #706a60;">© ${new Date().getFullYear()} APOORVA. Handcrafted in Aluva, Kerala.</div>
+            <td style="background-color: #161210; padding: 26px 32px; text-align: center; color: #a39688; font-size: 11px;">
+              <div style="letter-spacing: 3px; color: #ffffff; font-weight: 700; margin-bottom: 6px;">
+                🐚 APOORVA COASTAL ATELIER &bull; ALUVA, KERALA
+              </div>
+              <div style="color: #6e645a; font-size: 10px;">
+                © ${new Date().getFullYear()} APOORVA Shells (<a href="${SITE_URL}" style="color: #8c7f73;">www.apoorvashells.com</a>). Handcrafted in Kerala, India.
+              </div>
             </td>
           </tr>
         </table>

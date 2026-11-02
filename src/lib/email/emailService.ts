@@ -38,12 +38,15 @@ function getResendClient(): Resend | null {
   return new Resend(apiKey);
 }
 
-export function getSenderEmail(): string {
+export function getSenderEmail(customDisplayName?: string): string {
   const fromEnv = (process.env.RESEND_FROM_EMAIL || "").trim();
-  if (fromEnv && !fromEnv.includes("onboarding@resend.dev")) {
-    return fromEnv;
-  }
-  return "APOORVA Atelier <orders@apoorvashells.com>";
+  const emailMatch = fromEnv.match(/<([^>]+)>/);
+  const rawAddress = emailMatch ? emailMatch[1] : fromEnv.includes("@") ? fromEnv : "orders@apoorvashells.com";
+  const address = rawAddress.includes("onboarding@resend.dev")
+    ? "orders@apoorvashells.com"
+    : rawAddress;
+  const displayName = customDisplayName || "🐚 APOORVA Coastal Atelier";
+  return `${displayName} <${address}>`;
 }
 
 export function getAdminEmail(): string {
@@ -75,7 +78,7 @@ export async function sendOrderConfirmationEmail(order: OrderRecord): Promise<{
   error?: string;
 }> {
   const recipient = order.customer.email;
-  const subject = `Archival Acquisition Confirmed #${order.orderId} — APOORVA Atelier`;
+  const subject = `🌴 Order Confirmed #${order.orderId} — APOORVA Coastal Atelier`;
   const html = generateOrderConfirmationHtml(order);
 
   const resend = getResendClient();
@@ -98,7 +101,8 @@ export async function sendOrderConfirmationEmail(order: OrderRecord): Promise<{
 
   try {
     const data = await resend.emails.send({
-      from: getSenderEmail(),
+      from: getSenderEmail("🐚 APOORVA Coastal Atelier"),
+      replyTo: getAdminEmail(),
       to: recipient,
       subject,
       html
@@ -146,7 +150,7 @@ export async function sendAdminOrderAlertEmail(order: OrderRecord): Promise<{
   messageId?: string;
 }> {
   const recipient = getAdminEmail();
-  const subject = `[ATELIER ALERT] New Order Received #${order.orderId} (₹${order.pricing.total.toLocaleString("en-IN")})`;
+  const subject = `⚡ [NEW ORDER #${order.orderId}] ₹${order.pricing.total.toLocaleString("en-IN")} from ${order.customer.fullName}`;
   const html = generateAdminAlertHtml(order);
 
   const resend = getResendClient();
@@ -169,7 +173,8 @@ export async function sendAdminOrderAlertEmail(order: OrderRecord): Promise<{
 
   try {
     const data = await resend.emails.send({
-      from: getSenderEmail(),
+      from: getSenderEmail("⚡ APOORVA Dispatch Desk"),
+      replyTo: order.customer.email,
       to: recipient,
       subject,
       html
@@ -219,9 +224,9 @@ export async function sendShippingDispatchEmail(params: {
   mode: "resend" | "simulated";
   messageId?: string;
 }> {
-  const { order, trackingNumber = "BD-88492019IN", courierName = "Blue Dart Express", trackingUrl = "https://www.bluedart.com" } = params;
+  const { order, trackingNumber = "BD-88492019IN", courierName = "Blue Dart Express (Air Cargo)", trackingUrl } = params;
   const recipient = order.customer.email;
-  const subject = `Your Archive Has Dispatched #${order.orderId} — Tracking ${trackingNumber}`;
+  const subject = `✈️ Your APOORVA Order #${order.orderId} Has Shipped — Waybill ${trackingNumber}`;
   const html = generateShippingDispatchHtml(order, trackingNumber, courierName, trackingUrl);
 
   const resend = getResendClient();
@@ -243,7 +248,8 @@ export async function sendShippingDispatchEmail(params: {
 
   try {
     const data = await resend.emails.send({
-      from: getSenderEmail(),
+      from: getSenderEmail("✈️ APOORVA Express Dispatch"),
+      replyTo: getAdminEmail(),
       to: recipient,
       subject,
       html
@@ -292,9 +298,9 @@ export async function sendPaymentFailedEmail(params: {
   mode: "resend" | "simulated";
   messageId?: string;
 }> {
-  const { order, failureReason = "Payment session was cancelled or timed out", retryCheckoutUrl } = params;
+  const { order, failureReason = "Payment session was interrupted or timed out", retryCheckoutUrl } = params;
   const recipient = order.customer.email;
-  const subject = `Artisanal Reservation Held: Order #${order.orderId} Payment Incomplete`;
+  const subject = `⏳ Your Handcrafted APOORVA Piece Is Reserved (#${order.orderId})`;
   const html = generatePaymentFailedHtml(order, failureReason, retryCheckoutUrl);
 
   const resend = getResendClient();
@@ -316,7 +322,8 @@ export async function sendPaymentFailedEmail(params: {
 
   try {
     const data = await resend.emails.send({
-      from: getSenderEmail(),
+      from: getSenderEmail("⏳ APOORVA Private Concierge"),
+      replyTo: getAdminEmail(),
       to: recipient,
       subject,
       html
