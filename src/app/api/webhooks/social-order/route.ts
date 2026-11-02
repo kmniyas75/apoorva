@@ -208,18 +208,75 @@ export async function POST(req: Request) {
       metaChannel = "facebook";
       const entryId = String(body.entry?.[0]?.id || "");
       const messaging = body.entry?.[0]?.messaging?.[0];
-      const senderId = messaging?.sender?.id || "fb_guest";
-      if (messaging?.message?.is_echo || String(senderId) === entryId) {
+      const changeField = body.entry?.[0]?.changes?.[0]?.field;
+      const changeVal = body.entry?.[0]?.changes?.[0]?.value;
+      const senderId =
+        messaging?.sender?.id || changeVal?.from?.id || "fb_guest";
+      if (
+        messaging?.message?.is_echo ||
+        String(senderId) === entryId ||
+        (changeField === "feed" &&
+          changeVal?.verb &&
+          changeVal.verb !== "add")
+      ) {
         return NextResponse.json({ status: "ignored_echo_event" });
+      }
+      if (
+        changeField === "feed" &&
+        changeVal?.item === "comment" &&
+        (changeVal?.comment_id || changeVal?.id)
+      ) {
+        metaCommentId = String(changeVal.comment_id || changeVal.id);
       }
       const fbText =
         messaging?.message?.quick_reply?.payload ||
         messaging?.postback?.payload ||
-        messaging?.message?.text;
+        messaging?.message?.text ||
+        changeVal?.message ||
+        changeVal?.text;
       if (!fbText) {
         return NextResponse.json({ status: "ignored_status_event" });
       }
-      metaSenderName = `Facebook Guest (${String(senderId).slice(-4)})`;
+      if (metaCommentId) {
+        const configuredKeywords = (
+          db.socialAutomation?.instagramTriggerKeywords || [
+            "BUY",
+            "SET1",
+            "SET2",
+            "BOTH",
+            "ORDER",
+            "PRICE",
+            "LINK",
+            "SHELL",
+            "PP",
+            "COST",
+            "DM",
+            "DETAILS"
+          ]
+        )
+          .map((k) => k.trim().toUpperCase())
+          .filter(Boolean);
+
+        const upperComment = String(fbText).toUpperCase();
+        const matchAll =
+          configuredKeywords.length === 0 ||
+          configuredKeywords.includes("*") ||
+          configuredKeywords.includes("ALL");
+        const matchedKeyword =
+          matchAll ||
+          configuredKeywords.some((kw) => upperComment.includes(kw));
+
+        if (!matchedKeyword) {
+          return NextResponse.json({
+            status: "ignored_comment_no_keyword_match",
+            comment: fbText,
+            configuredKeywords
+          });
+        }
+      }
+      metaSenderName =
+        changeVal?.from?.name ||
+        `Facebook Guest (${String(senderId).slice(-4)})`;
       metaSenderHandle = `fb.me/${senderId}`;
       metaMessageText = fbText;
     }

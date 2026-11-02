@@ -361,23 +361,24 @@ export async function sendMetaSocialDirectMessage(params: {
   const isIgDirectToken = primaryEndpoint.includes("graph.instagram.com");
 
   try {
-    // 0. If triggered by an Instagram Post/Reel comment, post a quick public reply + Private Reply DM via comment_id
-    if (params.channel === "instagram" && params.commentId) {
-      await fetch(
-        `https://graph.facebook.com/${graphVersion}/${params.commentId}/replies`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${channelToken}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            message:
-              "Just sent you our Coconut Shell Beachwear photos & 2-tap checkout options in your DMs! 🥥✨ Check your inbox!"
-          }),
-          cache: "no-store"
-        }
-      ).catch(() => {});
+    // 0. If triggered by an Instagram or Facebook Page comment, post a quick public reply + Private Reply DM via comment_id
+    if (params.commentId) {
+      const publicCommentEndpoint =
+        params.channel === "instagram"
+          ? `https://graph.facebook.com/${graphVersion}/${params.commentId}/replies`
+          : `https://graph.facebook.com/${graphVersion}/${params.commentId}/comments`;
+      await fetch(publicCommentEndpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${channelToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message:
+            "Just sent you our Coconut Shell Beachwear photos & 2-tap checkout options in your DMs! 🥥✨ Check your inbox!"
+        }),
+        cache: "no-store"
+      }).catch(() => {});
     }
 
     // 1. Send product images first if provided (for direct DM recipients)
