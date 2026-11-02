@@ -8,6 +8,11 @@ const DEFAULT_IG_TOKEN_B64 = Buffer.from(
   "utf8"
 ).toString("base64");
 
+const DEFAULT_FB_PAGE_TOKEN_B64 = Buffer.from(
+  "EAAPGzQkah7wBS8T5KkxyRZBboqI3mAzTZAc1yniKLbbkCKhYhTTy6A9cGKSnjAo3Jb5u8XiWgVTwCUyMcnfOw2lFeFbPRHV5gZCmhlxLNqQBqcYmc6ZC2yeCqKVf5BVu5zMBghrNkR3KeE0xnsGAQBZC8h85ZC13OFFjUkf0bsyj3gZBQ7smxyK9xeDCyMn7GC6MHrl2HWAtAZDZD",
+  "utf8"
+).toString("base64");
+
 function cleanEnv(val?: string): string {
   return (val || "").trim().replace(/^["']+|["']+$/g, "").trim();
 }
@@ -25,6 +30,13 @@ export function getMetaWhatsAppConfig() {
   const instagramAccountId =
     cleanEnv(process.env.INSTAGRAM_ACCOUNT_ID) || "17841418464150754";
 
+  const facebookPageAccessToken =
+    cleanEnv(process.env.FACEBOOK_PAGE_ACCESS_TOKEN) ||
+    Buffer.from(DEFAULT_FB_PAGE_TOKEN_B64, "base64").toString("utf8");
+
+  const facebookPageId =
+    cleanEnv(process.env.FACEBOOK_PAGE_ID) || "1378312578702288";
+
   const phoneNumberId =
     cleanEnv(process.env.WHATSAPP_PHONE_NUMBER_ID) || "1332497489956818";
 
@@ -40,6 +52,8 @@ export function getMetaWhatsAppConfig() {
     accessToken,
     instagramAccessToken,
     instagramAccountId,
+    facebookPageAccessToken,
+    facebookPageId,
     phoneNumberId,
     wabaId,
     testNumber,
@@ -324,13 +338,15 @@ export async function sendMetaSocialDirectMessage(params: {
     accessToken: defaultMetaToken,
     instagramAccessToken,
     instagramAccountId,
+    facebookPageAccessToken,
+    facebookPageId,
     graphVersion
   } = getMetaWhatsAppConfig();
 
   const channelToken =
     params.channel === "instagram"
       ? instagramAccessToken || defaultMetaToken
-      : cleanEnv(process.env.FACEBOOK_PAGE_ACCESS_TOKEN) || defaultMetaToken;
+      : facebookPageAccessToken || defaultMetaToken;
 
   const cleanRecipientId = params.recipientId
     .replace(/^@ig_/, "")
@@ -342,7 +358,7 @@ export async function sendMetaSocialDirectMessage(params: {
     return { sent: false, error: "Missing recipientId or access token" };
   }
 
-  // Build candidate endpoints in priority order (Unified Login IG_ID -> /me/messages -> graph.instagram.com)
+  // Build candidate endpoints in priority order
   const endpoints =
     params.channel === "instagram"
       ? channelToken.startsWith("IG")
@@ -355,7 +371,10 @@ export async function sendMetaSocialDirectMessage(params: {
             `https://graph.facebook.com/${graphVersion}/me/messages`,
             `https://graph.instagram.com/v22.0/${instagramAccountId}/messages`
           ]
-      : [`https://graph.facebook.com/${graphVersion}/me/messages`];
+      : [
+          `https://graph.facebook.com/${graphVersion}/${facebookPageId}/messages`,
+          `https://graph.facebook.com/${graphVersion}/me/messages`
+        ];
 
   const primaryEndpoint = endpoints[0];
   const isIgDirectToken = primaryEndpoint.includes("graph.instagram.com");

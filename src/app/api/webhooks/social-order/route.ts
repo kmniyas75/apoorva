@@ -42,6 +42,8 @@ export async function GET(req: Request) {
     instagramAccountId: metaWa.instagramAccountId,
     instagramHandle: db.socialAutomation?.instagramHandle || "@apoorvacoastal",
     instagramAccessTokenConfigured: Boolean(metaWa.instagramAccessToken),
+    facebookPageId: metaWa.facebookPageId,
+    facebookPageAccessTokenConfigured: Boolean(metaWa.facebookPageAccessToken),
     contactEmail: process.env.META_CONTACT_EMAIL || "apoorvacoastal@gmail.com",
     verifyTokenConfigured: Boolean(expectedToken),
     whatsappEnabled: db.socialAutomation?.whatsappEnabled ?? true,
