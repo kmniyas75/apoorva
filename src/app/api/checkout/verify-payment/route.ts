@@ -10,12 +10,14 @@ import {
   persistStoreDatabase,
   recordOrderInStore
 } from "@/lib/store/adminStore";
+import { sendWhatsAppTextMessage } from "@/lib/meta/whatsapp";
 import { OrderRecord, CustomerDetails, OrderItemSummary, OrderPricing } from "@/lib/types/checkout";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const {
+      existingOrderId,
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
@@ -25,6 +27,7 @@ export async function POST(req: Request) {
       paymentMethod = "upi",
       isSandbox = false
     } = body as {
+      existingOrderId?: string;
       razorpay_order_id: string;
       razorpay_payment_id: string;
       razorpay_signature: string;
@@ -56,7 +59,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const orderId = `APV-${Math.floor(10000 + Math.random() * 90000)}`;
+    const orderId =
+      existingOrderId && existingOrderId.trim().startsWith("APV-")
+        ? existingOrderId.trim().toUpperCase()
+        : `APV-${Math.floor(10000 + Math.random() * 90000)}`;
 
     // ⚡ ON BOOKING ITSELF: Create Order in Shiprocket & Auto-Assign AWB
     const shiprocketResult = await createShiprocketOrder({
@@ -126,16 +132,34 @@ export async function POST(req: Request) {
       }
     };
 
-    // Persist order into Admin Store & MongoDB
-    await ensureStoreDatabaseLoaded();
-    recordOrderInStore(orderRecord);
+    // Persist order into Admin Store & MongoDB (without reloading stale state!)
     const currentDb = await ensureStoreDatabaseLoaded();
+    const existingOrderInDb = currentDb.orders.find((o) => o.orderId === orderId);
+    if (existingOrderInDb?.source) {
+      orderRecord.source = existingOrderInDb.source;
+      orderRecord.socialHandle = existingOrderInDb.socialHandle;
+    }
+    recordOrderInStore(orderRecord, currentDb);
     await persistStoreDatabase(currentDb);
 
-    // Trigger Email Notification System concurrently
+    // Trigger Email Notification System + WhatsApp confirmation concurrently
     const [customerEmailResult, adminEmailResult] = await Promise.allSettled([
       sendOrderConfirmationEmail(orderRecord),
-      sendAdminOrderAlertEmail(orderRecord)
+      sendAdminOrderAlertEmail(orderRecord),
+      ...(customer.phone
+        ? [
+            sendWhatsAppTextMessage({
+              to: customer.phone,
+              body:
+                `✅ *Payment Confirmed!* Thank you, *${customer.fullName || "Valued Guest"}*! 🐚\n\n` +
+                `Your *APOORVA SHELLS* order *#${orderRecord.orderId}* (*₹${orderRecord.pricing.total.toLocaleString("en-IN")}*) is confirmed and being prepared at our Aluva, Kerala Atelier.\n\n` +
+                `🚚 *Courier:* ${courierPartner}\n` +
+                `📦 *AWB Tracking:* ${assignedAwb}\n` +
+                `🔗 *Live Tracking:* ${orderRecord.shipping?.trackingUrl || "https://www.apoorvashells.com/track"}`,
+              previewUrl: true
+            })
+          ]
+        : [])
     ]);
 
     return NextResponse.json({

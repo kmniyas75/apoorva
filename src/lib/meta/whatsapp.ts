@@ -45,6 +45,13 @@ export function normalizeWhatsAppRecipient(rawPhone: string): string {
 }
 
 /**
+ * Normalizes markdown for WhatsApp (converts `**bold**` to `*bold*`).
+ */
+export function formatWhatsAppMarkdown(text: string): string {
+  return text.replace(/\*\*([^*]+)\*\*/g, "*$1*");
+}
+
+/**
  * Sends a real WhatsApp text message via Meta Graph API (`v25.0/{PHONE_NUMBER_ID}/messages`).
  */
 export async function sendWhatsAppTextMessage(params: {
@@ -63,6 +70,8 @@ export async function sendWhatsAppTextMessage(params: {
     return { sent: false, error: "Missing recipient or Meta access token" };
   }
 
+  const formattedBody = formatWhatsAppMarkdown(params.body);
+
   try {
     const res = await fetch(
       `https://graph.facebook.com/${graphVersion}/${phoneNumberId}/messages`,
@@ -79,7 +88,7 @@ export async function sendWhatsAppTextMessage(params: {
           type: "text",
           text: {
             preview_url: Boolean(params.previewUrl),
-            body: params.body
+            body: formattedBody
           }
         }),
         cache: "no-store"
@@ -107,6 +116,174 @@ export async function sendWhatsAppTextMessage(params: {
       sent: false,
       error: err instanceof Error ? err.message : "WhatsApp API request failed"
     };
+  }
+}
+
+/**
+ * Sends a real WhatsApp image message with caption via Meta Graph API.
+ */
+export async function sendWhatsAppImageMessage(params: {
+  to: string;
+  imageUrl: string;
+  caption?: string;
+}): Promise<{
+  sent: boolean;
+  messageId?: string;
+  error?: string;
+}> {
+  const { accessToken, phoneNumberId, graphVersion } = getMetaWhatsAppConfig();
+  const recipient = normalizeWhatsAppRecipient(params.to);
+
+  if (!recipient || !accessToken) {
+    return { sent: false, error: "Missing recipient or Meta access token" };
+  }
+
+  try {
+    const res = await fetch(
+      `https://graph.facebook.com/${graphVersion}/${phoneNumberId}/messages`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
+          to: recipient,
+          type: "image",
+          image: {
+            link: params.imageUrl,
+            ...(params.caption
+              ? { caption: formatWhatsAppMarkdown(params.caption) }
+              : {})
+          }
+        }),
+        cache: "no-store"
+      }
+    );
+
+    const data = (await res.json()) as {
+      messages?: Array<{ id?: string }>;
+      error?: { message?: string };
+    };
+
+    if (!res.ok) {
+      return {
+        sent: false,
+        error: data.error?.message || `Meta Image API HTTP ${res.status}`
+      };
+    }
+
+    return {
+      sent: true,
+      messageId: data.messages?.[0]?.id
+    };
+  } catch (err) {
+    return {
+      sent: false,
+      error: err instanceof Error ? err.message : "WhatsApp image send failed"
+    };
+  }
+}
+
+/**
+ * Sends an interactive WhatsApp Reply Button message (up to 3 tap buttons, with optional header image).
+ * Falls back to `sendWhatsAppTextMessage` if the interactive call fails.
+ */
+export async function sendWhatsAppInteractiveButtons(params: {
+  to: string;
+  bodyText: string;
+  footerText?: string;
+  headerImageUrl?: string;
+  buttons: Array<{ id: string; title: string }>;
+}): Promise<{
+  sent: boolean;
+  messageId?: string;
+  error?: string;
+}> {
+  const { accessToken, phoneNumberId, graphVersion } = getMetaWhatsAppConfig();
+  const recipient = normalizeWhatsAppRecipient(params.to);
+
+  if (!recipient || !accessToken) {
+    return { sent: false, error: "Missing recipient or Meta access token" };
+  }
+
+  const formattedBody = formatWhatsAppMarkdown(params.bodyText);
+  const safeButtons = params.buttons.slice(0, 3).map((b, idx) => ({
+    type: "reply",
+    reply: {
+      id: b.id || `btn_${idx + 1}`,
+      title: b.title.trim().slice(0, 20)
+    }
+  }));
+
+  try {
+    const res = await fetch(
+      `https://graph.facebook.com/${graphVersion}/${phoneNumberId}/messages`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
+          to: recipient,
+          type: "interactive",
+          interactive: {
+            type: "button",
+            ...(params.headerImageUrl
+              ? {
+                  header: {
+                    type: "image",
+                    image: { link: params.headerImageUrl }
+                  }
+                }
+              : {}),
+            body: {
+              text: formattedBody
+            },
+            ...(params.footerText
+              ? {
+                  footer: {
+                    text: params.footerText.slice(0, 60)
+                  }
+                }
+              : {}),
+            action: {
+              buttons: safeButtons
+            }
+          }
+        }),
+        cache: "no-store"
+      }
+    );
+
+    const data = (await res.json()) as {
+      messages?: Array<{ id?: string }>;
+      error?: { message?: string };
+    };
+
+    if (!res.ok) {
+      return sendWhatsAppTextMessage({
+        to: params.to,
+        body: formattedBody,
+        previewUrl: true
+      });
+    }
+
+    return {
+      sent: true,
+      messageId: data.messages?.[0]?.id
+    };
+  } catch {
+    return sendWhatsAppTextMessage({
+      to: params.to,
+      body: formattedBody,
+      previewUrl: true
+    });
   }
 }
 

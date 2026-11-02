@@ -67,6 +67,8 @@ export interface ChatMessage {
   timestamp: string;
   paymentLink?: string;
   orderId?: string;
+  images?: Array<{ url: string; caption?: string }>;
+  quickReplies?: Array<{ id: string; title: string }>;
 }
 
 export interface ChatSession {
@@ -74,10 +76,21 @@ export interface ChatSession {
   channel: "whatsapp" | "instagram" | "facebook" | "website";
   customerHandleOrPhone: string;
   customerName: string;
-  stage: "pitching" | "collecting_address" | "awaiting_payment" | "paid";
+  stage:
+    | "pitching"
+    | "collecting_size"
+    | "collecting_name"
+    | "collecting_address"
+    | "collecting_pincode"
+    | "awaiting_payment"
+    | "paid";
   aiAutoPilot: boolean;
   selectedProduct?: "set1" | "set2" | "both";
   selectedSize?: string;
+  collectedName?: string;
+  collectedAddressLine?: string;
+  collectedPincode?: string;
+  imagesSent?: boolean;
   collectedAddress?: {
     addressLine1: string;
     city: string;
@@ -743,8 +756,11 @@ export function saveStoreDatabase(db: StoreDatabase): StoreDatabase {
   return db;
 }
 
-export function recordOrderInStore(order: OrderRecord): OrderRecord {
-  const db = getStoreDatabase();
+export function recordOrderInStore(
+  order: OrderRecord,
+  targetDb?: StoreDatabase
+): OrderRecord {
+  const db = targetDb || getStoreDatabase();
   if (!order.source) {
     order.source = "website";
   }

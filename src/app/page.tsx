@@ -56,6 +56,13 @@ export default function Home() {
         : null;
     const payOrderId = urlParams?.get("payOrder");
 
+    // Immediately redirect ?payOrder=APV-XXXXX to the dedicated 1-Click Payment Page (/pay/APV-XXXXX)
+    if (payOrderId && typeof window !== "undefined") {
+      setIsCheckoutOpen(true);
+      window.location.replace(`/pay/${encodeURIComponent(payOrderId.trim())}`);
+      return;
+    }
+
     fetch("/api/admin/store", { cache: "no-store" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
