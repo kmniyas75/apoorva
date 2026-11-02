@@ -102,11 +102,11 @@ export default function ApoorvaLogo({
       <div className="flex flex-col leading-none">
         <div className="flex items-baseline">
           <span
-            className={`${titleSize} font-black uppercase font-mono tracking-[0.14em] ${
+            className={`${titleSize} font-black uppercase font-mono tracking-[0.12em] ${
               variant === "light" ? "text-[#faf8f5]" : "text-[#141414]"
             }`}
           >
-            APOORVA
+            APOORVA SHELLS
           </span>
           <span
             className={`text-[10px] font-bold tracking-widest ml-0.5 ${
@@ -118,7 +118,7 @@ export default function ApoorvaLogo({
         </div>
         {showTagline && (
           <span className="text-[9px] font-mono uppercase tracking-[0.26em] text-amber-900/80 font-semibold mt-1">
-            COASTAL BEACHWEAR
+            COASTAL RESORTWEAR
           </span>
         )}
       </div>

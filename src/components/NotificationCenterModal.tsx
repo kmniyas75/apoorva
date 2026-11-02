@@ -43,9 +43,9 @@ export default function NotificationCenterModal({
     fromEmail: string;
     adminEmail: string;
   }>({
-    resendConfigured: false,
-    fromEmail: "APOORVA Atelier <onboarding@resend.dev>",
-    adminEmail: "concierge@apoorva.luxury"
+    resendConfigured: true,
+    fromEmail: "🐚 APOORVA SHELLS <orders@apoorvashells.com>",
+    adminEmail: "apoorvacoastal@gmail.com"
   });
 
   const fetchLogs = async () => {

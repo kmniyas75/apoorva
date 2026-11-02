@@ -5,7 +5,7 @@ export default function PrivacyPage() {
   return (
     <LegalPageShell
       title="Privacy Policy"
-      subtitle="How APOORVA™ collects, protects, and processes your personal and payment information."
+      subtitle="How APOORVA SHELLS™ collects, protects, and processes your personal and payment information."
       activePath="/privacy"
     >
       <section className="space-y-2">
@@ -13,7 +13,7 @@ export default function PrivacyPage() {
           1. Information We Collect
         </h2>
         <p>
-          When you purchase a beachwear set from APOORVA™ (via our website,
+          When you purchase a beachwear set from APOORVA SHELLS™ (via our website,
           WhatsApp Business bot, or Instagram DM checkout), we collect only the
           essential details required to fulfill and deliver your order:
         </p>
@@ -53,7 +53,7 @@ export default function PrivacyPage() {
           4. Meta (WhatsApp, Instagram &amp; Facebook) User Data Deletion Instructions
         </h2>
         <p>
-          If you have interacted with APOORVA™ through Facebook Login, Instagram
+          If you have interacted with APOORVA SHELLS™ through Facebook Login, Instagram
           DM, or WhatsApp Business and wish to delete all personal data
           associated with your account or phone number:
         </p>
@@ -61,7 +61,7 @@ export default function PrivacyPage() {
           <li>
             Send an email with the subject <strong>&quot;DATA DELETION REQUEST&quot;</strong> to{" "}
             <strong>apoorvacoastal@gmail.com</strong> (or{" "}
-            <strong>concierge@apoorva.luxury</strong>), or
+            <strong>orders@apoorvashells.com</strong>), or
           </li>
           <li>
             Send the message <strong>&quot;DELETE MY DATA&quot;</strong> to our
@@ -83,8 +83,8 @@ export default function PrivacyPage() {
           To request access, correction, or deletion of your personal data,
           please contact our Privacy &amp; Grievance Officer at{" "}
           <strong>apoorvacoastal@gmail.com</strong> /{" "}
-          <strong>concierge@apoorva.luxury</strong> or write to APOORVA Coastal
-          Atelier, Periyar River Road, Aluva, Ernakulam, Kerala — 683101.
+          <strong>orders@apoorvashells.com</strong> or write to APOORVA SHELLS,
+          Periyar River Road, Aluva, Ernakulam, Kerala — 683101.
         </p>
       </section>
     </LegalPageShell>

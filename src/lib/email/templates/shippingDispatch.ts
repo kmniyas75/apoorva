@@ -20,7 +20,7 @@ export function generateShippingDispatchHtml(
       ? trackingUrl
       : `${SITE_URL}/track?orderId=${encodeURIComponent(orderId)}`;
   const whatsappUrl = `https://wa.me/917306409010?text=${encodeURIComponent(
-    `Hi APOORVA Atelier! I'm tracking my dispatched order #${orderId} (Waybill: ${trackingNumber}).`
+    `Hi APOORVA SHELLS! I'm tracking my dispatched order #${orderId} (Waybill: ${trackingNumber}).`
   )}`;
 
   const itemsHtml = items
@@ -61,7 +61,7 @@ export function generateShippingDispatchHtml(
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>✈️ Your APOORVA Order #${orderId} Has Shipped — Waybill ${trackingNumber}</title>
+  <title>✈️ Your APOORVA SHELLS Order #${orderId} Has Shipped — Waybill ${trackingNumber}</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f2ebe1; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1c1613; line-height: 1.5;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f2ebe1; padding: 36px 14px;">
@@ -80,8 +80,8 @@ export function generateShippingDispatchHtml(
               <div style="display: inline-block; width: 48px; height: 48px; line-height: 48px; border-radius: 50%; background-color: #261f1b; border: 1px solid #b89768; font-size: 22px; margin-bottom: 12px;">
                 ✈️
               </div>
-              <div style="font-family: Georgia, serif; font-size: 28px; font-weight: normal; letter-spacing: 7px; color: #ffffff; text-transform: uppercase;">
-                A P O O R V A
+              <div style="font-family: Georgia, serif; font-size: 26px; font-weight: normal; letter-spacing: 5px; color: #ffffff; text-transform: uppercase;">
+                APOORVA SHELLS
               </div>
               <div style="font-size: 10px; letter-spacing: 3px; color: #c8a97e; text-transform: uppercase; margin-top: 6px; font-weight: 600;">
                 🐚 COASTAL RESORTWEAR ATELIER &bull; EXPRESS AIR DISPATCH
@@ -96,7 +96,7 @@ export function generateShippingDispatchHtml(
                 ✈️ In Transit &bull; Express Air Courier
               </span>
               <h1 style="font-family: Georgia, serif; font-size: 24px; font-weight: normal; color: #1c1613; margin: 16px 0 8px 0;">
-                Your APOORVA Piece Is On Its Way!
+                Your APOORVA SHELLS Piece Is On Its Way!
               </h1>
               <p style="margin: 0 auto; max-width: 480px; font-size: 14px; color: #5c5046; line-height: 1.6;">
                 Greetings ${customer.fullName}! Your order <strong style="color: #1c1613;">#${orderId}</strong> has been hand-wrapped in our wax-sealed resort gift box at our Aluva, Kerala studio and handed over to <strong>${courierName}</strong>.
@@ -189,7 +189,7 @@ export function generateShippingDispatchHtml(
                 📍 <strong>Delivery Address:</strong> ${customer.fullName}, ${customer.addressLine1}${customer.addressLine2 ? `, ${customer.addressLine2}` : ""}, ${customer.city}, ${customer.state} — <strong>${customer.pincode}</strong>
               </div>
               <div style="font-size: 12px; color: #6e6053; background-color: #f5efe4; padding: 12px 14px; border-radius: 8px; border-left: 3px solid #8c5a3c;">
-                🕯️ <strong>Tamper-Proof Wax Seal Guarantee:</strong> Please verify that the APOORVA artisanal seal on your outer gift box is intact upon delivery.
+                🕯️ <strong>Tamper-Proof Wax Seal Guarantee:</strong> Please verify that the APOORVA SHELLS artisanal seal on your outer gift box is intact upon delivery.
               </div>
             </td>
           </tr>
@@ -198,10 +198,10 @@ export function generateShippingDispatchHtml(
           <tr>
             <td style="background-color: #161210; padding: 26px 32px; text-align: center; color: #a39688; font-size: 11px;">
               <div style="letter-spacing: 3px; color: #ffffff; font-weight: 700; margin-bottom: 6px;">
-                🐚 APOORVA COASTAL ATELIER &bull; ALUVA, KERALA
+                🐚 APOORVA SHELLS &bull; ALUVA, KERALA
               </div>
               <div style="color: #6e645a; font-size: 10px;">
-                © ${new Date().getFullYear()} APOORVA Shells (<a href="${SITE_URL}" style="color: #8c7f73;">www.apoorvashells.com</a>). Handcrafted in Kerala, India.
+                © ${new Date().getFullYear()} APOORVA SHELLS (<a href="${SITE_URL}" style="color: #8c7f73;">www.apoorvashells.com</a>). Handcrafted in Kerala, India.
               </div>
             </td>
           </tr>

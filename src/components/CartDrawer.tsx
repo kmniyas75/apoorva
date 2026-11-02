@@ -165,7 +165,7 @@ export default function CartDrawer({
               ORDER CONFIRMED
             </h4>
             <p className="text-xs text-black/70 mb-4">
-              Thank you for archiving with APOORVA. Your order{" "}
+              Thank you for shopping with APOORVA SHELLS. Your order{" "}
               <span className="font-bold text-black">#APV-89421</span> has been queued for hand-inspection and courier dispatch.
             </p>
             <div className="bg-white/80 p-4 rounded-xl border border-black/10 w-full text-left text-xs space-y-1 mb-6">
@@ -192,7 +192,7 @@ export default function CartDrawer({
           <div className="flex-1 p-8 flex flex-col items-center justify-center text-center font-mono text-black/60">
             <p className="text-sm uppercase tracking-wider mb-3">Your bag is empty</p>
             <p className="text-xs text-black/40 max-w-xs mb-6">
-              Explore the APOORVA Coastal Atelier capsule and select your artisanal piece.
+              Explore the APOORVA SHELLS capsule and select your artisanal piece.
             </p>
             <button
               onClick={onClose}

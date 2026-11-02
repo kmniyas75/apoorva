@@ -55,7 +55,7 @@ export function generateTrackingData(
     {
       stage: "handcrafted",
       title: "Artisanal Finishing & Archival Box Sealing",
-      description: "Shells hand-contoured, polished with organic virgin coconut oil, soft-cotton lined, and sealed with APOORVA wax stamp.",
+      description: "Shells hand-contoured, polished with organic virgin coconut oil, soft-cotton lined, and sealed with APOORVA SHELLS wax stamp.",
       location: "Aluva Studio, Kerala",
       timestamp: dMinus1.toLocaleDateString("en-IN", {
         day: "numeric",
@@ -121,7 +121,7 @@ export function generateTrackingData(
     currentStatus: "in_transit",
     statusBadge: "In Transit — Air Cargo Express",
     origin: {
-      atelier: "APOORVA Atelier Studio",
+      atelier: "APOORVA SHELLS Studio",
       city: "Aluva",
       state: "Kerala"
     },

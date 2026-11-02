@@ -31,11 +31,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.SITE_URL || "https://www.apoorvashells.com"
   ),
-  title: "APOORVA™ — Handcrafted Coconut & Coir Coastal Resortwear (Aluva, Kerala)",
+  title: "APOORVA SHELLS™ — Handcrafted Coconut & Coir Coastal Resortwear (Aluva, Kerala)",
   description:
-    "Discover APOORVA's signature handcrafted coastal resortwear and artisanal beach apparel from our Aluva, Kerala Atelier: natural coconut shell tops, combed coir fringe skirts, and fine handloom jute wraps.",
+    "Discover APOORVA SHELLS' signature handcrafted coastal resortwear and artisanal beach apparel from our Aluva, Kerala Atelier: natural coconut shell tops, combed coir fringe skirts, and fine handloom jute wraps.",
   keywords: [
-    "APOORVA",
+    "APOORVA SHELLS",
     "apoorvashells",
     "coastal resortwear",
     "tropical beachwear",
@@ -45,9 +45,9 @@ export const metadata: Metadata = {
     "luxury resort apparel",
     "kerala handicraft fashion"
   ],
-  authors: [{ name: "APOORVA Coastal Atelier" }],
-  creator: "APOORVA",
-  publisher: "APOORVA",
+  authors: [{ name: "APOORVA SHELLS" }],
+  creator: "APOORVA SHELLS",
+  publisher: "APOORVA SHELLS",
   robots: {
     index: true,
     follow: true,
@@ -63,22 +63,22 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://www.apoorvashells.com",
-    siteName: "APOORVA Coastal Resortwear",
-    title: "APOORVA™ // Handcrafted Coastal Resortwear & Kerala Artisanal Apparel",
+    siteName: "APOORVA SHELLS",
+    title: "APOORVA SHELLS™ // Handcrafted Coastal Resortwear & Kerala Artisanal Apparel",
     description:
-      "Explore APOORVA's Sustainable Coconut, Coir & Handwoven Jute Coastal Resortwear Collection — 100% Handcrafted & Biodegradable in Aluva, Kerala.",
+      "Explore APOORVA SHELLS' Sustainable Coconut, Coir & Handwoven Jute Coastal Resortwear Collection — 100% Handcrafted & Biodegradable in Aluva, Kerala.",
     images: [
       {
         url: "https://res.cloudinary.com/oiu0lhfe/image/upload/v1793435598/apoorva/apoorva_coconut_set.png",
         width: 1024,
         height: 578,
-        alt: "APOORVA Handcrafted Coconut & Jute Coastal Resortwear Set"
+        alt: "APOORVA SHELLS Handcrafted Coconut & Jute Coastal Resortwear Set"
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    title: "APOORVA™ — Handcrafted Coastal Resortwear & Kerala Artisanal Apparel",
+    title: "APOORVA SHELLS™ — Handcrafted Coastal Resortwear & Kerala Artisanal Apparel",
     description:
       "Sustainable coastal resortwear combining natural polished coconut craft, tender coir, and handwoven jute fabrics from Aluva, Kerala.",
     images: [

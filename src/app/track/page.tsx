@@ -76,7 +76,7 @@ function TrackContent() {
           className="inline-flex items-center gap-2 text-xs uppercase tracking-wider text-black/70 hover:text-black font-bold transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Return to APOORVA Atelier</span>
+          <span>Return to APOORVA SHELLS</span>
         </Link>
 
         <div className="flex items-center gap-1.5 text-xs text-emerald-800 font-semibold bg-emerald-100/70 px-3 py-1 rounded-full">
@@ -284,7 +284,7 @@ function TrackContent() {
             <div className="bg-neutral-50 p-5 rounded-2xl border border-black/10 space-y-2">
               <div className="font-bold uppercase text-xs text-black">Packaging Guarantee</div>
               <p className="text-[11px] text-black/70 leading-relaxed">
-                Every APOORVA piece is inspected for shell wall thickness, oiled with organic coconut oil, and sealed inside an archival cedar gift box.
+                Every APOORVA SHELLS piece is inspected for shell wall thickness, oiled with organic coconut oil, and sealed inside an archival cedar gift box.
               </p>
               <div className="text-[11px] text-emerald-900 font-semibold pt-1">
                 ✓ Intact Tamper-Evident Wax Stamp required on delivery
@@ -333,7 +333,7 @@ export default function TrackPage() {
       {/* Top Bar */}
       <header className="px-6 md:px-12 py-5 border-b border-black/10 flex items-center justify-between">
         <Link href="/" className="text-xl md:text-2xl font-black uppercase font-mono tracking-wider text-[#141414]">
-          APOORVA™
+          APOORVA SHELLS™
         </Link>
         <span className="text-[11px] font-mono tracking-widest uppercase text-black/60">
           LOGISTICS DESK

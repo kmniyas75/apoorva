@@ -8,13 +8,13 @@ export default function SeoStructuredData() {
       {
         "@type": "Organization",
         "@id": `${siteUrl}/#organization`,
-        "name": "APOORVA",
+        "name": "APOORVA SHELLS",
         "url": siteUrl,
         "logo": `${siteUrl}/images/apoorva_logo.svg`,
         "sameAs": [
-          "https://instagram.com/apoorva_atelier"
+          "https://instagram.com/apoorva.coastal"
         ],
-        "description": "APOORVA — Handcrafted coastal beachwear atelier in Aluva, Kerala featuring natural coconut shell, combed coir fringe, and fine jute garments.",
+        "description": "APOORVA SHELLS — Handcrafted coastal resortwear atelier in Aluva, Kerala featuring natural coconut shell, combed coir fringe, and fine jute garments.",
         "address": {
           "@type": "PostalAddress",
           "streetAddress": "Periyar River Road, Aluva",
@@ -28,8 +28,8 @@ export default function SeoStructuredData() {
         "@type": "WebSite",
         "@id": `${siteUrl}/#website`,
         "url": siteUrl,
-        "name": "APOORVA Coastal Beachwear",
-        "description": "Handcrafted Coconut, Coir & Jute Beachwear // 2-Product Capsule",
+        "name": "APOORVA SHELLS",
+        "description": "Handcrafted Coconut, Coir & Jute Coastal Resortwear // 2-Product Capsule",
         "publisher": {
           "@id": `${siteUrl}/#organization`
         }
@@ -45,7 +45,7 @@ export default function SeoStructuredData() {
           : `${siteUrl}${product.image}`,
         "brand": {
           "@type": "Brand",
-          "name": "APOORVA"
+          "name": "APOORVA SHELLS"
         },
         "color": product.color,
         "material": product.material,

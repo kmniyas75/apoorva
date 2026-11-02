@@ -156,7 +156,7 @@ const DEFAULT_SOCIAL_CONFIG: SocialAutomationConfig = {
   whatsappPhoneId: "1332497489956818",
   whatsappAutoConfirmCod: false,
   whatsappWelcomeTemplate:
-    "Namaskaram from APOORVA Coastal Beachwear (Aluva, Kerala) 🌴! Reply with:\n1️⃣ 'SET 1' for Coconut & Coir Fringe Beach Set (₹{{price_set1}})\n2️⃣ 'SET 2' for Coconut & Jute Wrap Beach Set (₹{{price_set2}})\n3️⃣ 'BOTH' for the 2-Set Bundle (Save {{discount}}% • ₹{{price_bundle}})\nInclude your Name, Address & 6-digit PIN code to receive your instant Razorpay payment link!",
+    "Namaskaram from APOORVA SHELLS (Aluva, Kerala) 🌴! Reply with:\n1️⃣ 'SET 1' for Coconut & Coir Fringe Beach Set (₹{{price_set1}})\n2️⃣ 'SET 2' for Coconut & Jute Wrap Beach Set (₹{{price_set2}})\n3️⃣ 'BOTH' for the 2-Set Bundle (Save {{discount}}% • ₹{{price_bundle}})\nInclude your Name, Address & 6-digit PIN code to receive your instant Razorpay payment link!",
   instagramEnabled: true,
   instagramHandle: "@apoorva.coastal",
   instagramTriggerKeywords: ["BEACH", "PRICE", "BUY", "SET1", "SET2", "BOTH", "LINK"],
@@ -763,7 +763,7 @@ export function recordOrderInStore(order: OrderRecord): OrderRecord {
       linkedChat.messages.push({
         id: `msg-paid-${Date.now()}`,
         sender: "ai",
-        text: `✅ Payment received via Razorpay for Order #${order.orderId} (₹${order.pricing.total.toLocaleString("en-IN")})! Your handcrafted APOORVA Beachwear is now queued for express dispatch from Aluva, Kerala. Tracking details will follow shortly.`,
+        text: `✅ Payment received via Razorpay for Order #${order.orderId} (₹${order.pricing.total.toLocaleString("en-IN")})! Your handcrafted APOORVA SHELLS piece is now queued for express dispatch from Aluva, Kerala. Tracking details will follow shortly.`,
         timestamp: new Date().toISOString(),
         orderId: order.orderId
       });

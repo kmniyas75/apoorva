@@ -5,7 +5,7 @@ export default function TermsPage() {
   return (
     <LegalPageShell
       title="Terms & Conditions"
-      subtitle="Terms of use, prepaid Razorpay transactions, and legal conditions for APOORVA™."
+      subtitle="Terms of use, prepaid Razorpay transactions, and legal conditions for APOORVA SHELLS™."
       activePath="/terms"
     >
       <section className="space-y-2">
@@ -13,7 +13,7 @@ export default function TermsPage() {
           1. Overview &amp; Acceptance of Terms
         </h2>
         <p>
-          This website is operated by <strong>APOORVA Coastal Atelier</strong>,
+          This website is operated by <strong>APOORVA SHELLS</strong>,
           headquartered at Periyar River Road, Aluva, Ernakulam, Kerala —
           683101, India. By accessing our website or purchasing our handcrafted
           beachwear products, you agree to be bound by these Terms &amp;
@@ -26,7 +26,7 @@ export default function TermsPage() {
           2. 100% Prepaid Online Orders via Razorpay
         </h2>
         <p>
-          All orders placed on APOORVA™ are <strong>100% prepaid</strong> and
+          All orders placed on APOORVA SHELLS™ are <strong>100% prepaid</strong> and
           processed securely through the <strong>Razorpay Payment Gateway</strong>{" "}
           (supporting UPI, Credit/Debit Cards, NetBanking, and Wallets). We do
           not offer Cash on Delivery (COD). Prices are listed in Indian Rupees
@@ -51,9 +51,9 @@ export default function TermsPage() {
           4. Intellectual Property
         </h2>
         <p>
-          All brand trademarks, the APOORVA™ crest and wordmark, 360° product
+          All brand trademarks, the APOORVA SHELLS™ crest and wordmark, 360° product
           visuals, motion videos, and garment designs are the exclusive
-          intellectual property of APOORVA Coastal Atelier, Aluva, Kerala.
+          intellectual property of APOORVA SHELLS, Aluva, Kerala.
         </p>
       </section>
 

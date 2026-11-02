@@ -5,7 +5,7 @@ export default function DataDeletionPage() {
   return (
     <LegalPageShell
       title="User Data Deletion Instructions"
-      subtitle="Official Meta (Facebook, Instagram & WhatsApp) user data deletion procedure for APOORVA™ (App ID: 1063008853460924)."
+      subtitle="Official Meta (Facebook, Instagram & WhatsApp) user data deletion procedure for APOORVA SHELLS™ (App ID: 1063008853460924)."
       activePath="/privacy"
     >
       <section className="space-y-2">
@@ -14,7 +14,7 @@ export default function DataDeletionPage() {
         </h2>
         <p>
           In accordance with Meta Platform Terms and GDPR / DPDP data protection
-          regulations, users who have interacted with <strong>APOORVA™</strong>{" "}
+          regulations, users who have interacted with <strong>APOORVA SHELLS™</strong>{" "}
           via Facebook Login, Instagram Direct Messages, or WhatsApp Business
           can request complete removal of their personal data at any time:
         </p>

@@ -1491,7 +1491,7 @@ export default function AdminPanel({
           {loading ? (
             <div className="py-20 text-center font-mono text-sm text-black/60 flex flex-col items-center gap-3">
               <RefreshCw className="w-6 h-6 animate-spin text-amber-800" />
-              <span>Loading APOORVA Admin Studio...</span>
+              <span>Loading APOORVA SHELLS Admin Studio...</span>
             </div>
           ) : (
             <>
@@ -2765,7 +2765,7 @@ export default function AdminPanel({
                         const waNumber = order.customer.phone.replace(/\D/g, "");
                         const waUrl = `https://wa.me/${waNumber.length === 10 ? `91${waNumber}` : waNumber
                           }?text=${encodeURIComponent(
-                            `Namaskaram ${order.customer.fullName}! Your APOORVA Beachwear Order #${order.orderId} is ${order.status.toUpperCase()}. Courier: ${order.shipping?.courierName || "Blue Dart"
+                            `Namaskaram ${order.customer.fullName}! Your APOORVA SHELLS Order #${order.orderId} is ${order.status.toUpperCase()}. Courier: ${order.shipping?.courierName || "Blue Dart"
                             } | AWB: ${order.shipping?.trackingNumber || "Assigned"
                             }. Track live: https://www.apoorvashells.com/track?orderId=${order.orderId
                             }`
@@ -3494,7 +3494,7 @@ export default function AdminPanel({
                                                 ? `👤 ${activeChat.customerName}`
                                                 : msg.sender === "admin"
                                                   ? "✨ You (Admin Manual Reply)"
-                                                  : "🤖 APOORVA AI Sales Agent"}
+                                                  : "🤖 APOORVA SHELLS AI Sales Agent"}
                                             </span>
                                             <span>
                                               {new Date(
@@ -3537,7 +3537,7 @@ export default function AdminPanel({
                                     {[
                                       "Please share your Full Delivery Address & 6-digit PIN code so I can generate your Razorpay payment link!",
                                       "Special Offer: Upgrade to BOTH sets (Set 01 Coir + Set 02 Jute) for ₹7,395 (Save 15% + Free Air Shipping)!",
-                                      "Your handcrafted APOORVA set is packed in our Aluva atelier and ready for Blue Dart Air Express dispatch!"
+                                      "Your handcrafted APOORVA SHELLS set is packed in our Aluva atelier and ready for Blue Dart Air Express dispatch!"
                                     ].map((preset, idx) => (
                                       <button
                                         key={idx}

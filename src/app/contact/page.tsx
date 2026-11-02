@@ -13,7 +13,7 @@ export default function ContactPage() {
           1. Studio &amp; Registered Office Address
         </h2>
         <p>
-          <strong>APOORVA Coastal Atelier</strong>
+          <strong>APOORVA SHELLS</strong>
           <br />
           Periyar River Road, Aluva
           <br />
@@ -27,10 +27,10 @@ export default function ContactPage() {
         </h2>
         <ul className="list-disc pl-5 space-y-1">
           <li>
-            <strong>Concierge Email:</strong> concierge@apoorva.luxury
+            <strong>Concierge Email:</strong> orders@apoorvashells.com
           </li>
           <li>
-            <strong>Phone &amp; WhatsApp Support:</strong> +91 98470 89421
+            <strong>Phone &amp; WhatsApp Support:</strong> +91 73064 09010
           </li>
           <li>
             <strong>Operating Hours:</strong> Monday to Saturday, 9:30 AM – 6:30
@@ -45,8 +45,8 @@ export default function ContactPage() {
         </h2>
         <p>
           For luxury beach resorts, honeymoon villas, and coastal boutiques
-          seeking curated APOORVA™ beachwear gift boxes, please write to{" "}
-          <strong>concierge@apoorva.luxury</strong> with your resort location
+          seeking curated APOORVA SHELLS™ gift boxes, please write to{" "}
+          <strong>orders@apoorvashells.com</strong> with your resort location
           and quantity requirements.
         </p>
       </section>

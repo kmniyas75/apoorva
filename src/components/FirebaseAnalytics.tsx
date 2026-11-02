@@ -31,7 +31,7 @@ export default function FirebaseAnalytics() {
   const [messages, setMessages] = useState<ChatTurn[]>([
     {
       sender: "ai",
-      text: "Namaskaram! 🌴 I’m your APOORVA AI Sales Concierge (Aluva, Kerala). Tell me which beachwear set you love (Set 01 Coir ₹4,200, Set 02 Jute ₹4,500, or Both at ₹7,395 with 15% OFF) and share your delivery address + PIN code to get your instant 1-Click Razorpay payment link right here!"
+      text: "Namaskaram! 🌴 I’m your APOORVA SHELLS AI Sales Concierge (Aluva, Kerala). Tell me which beachwear set you love (Set 01 Coir ₹4,200, Set 02 Jute ₹4,500, or Both at ₹7,395 with 15% OFF) and share your delivery address + PIN code to get your instant 1-Click Razorpay payment link right here!"
     }
   ]);
 
@@ -156,7 +156,7 @@ export default function FirebaseAnalytics() {
               </span>
               <div>
                 <p className="text-xs font-bold tracking-wider uppercase">
-                  APOORVA AI Sales Agent
+                  APOORVA SHELLS AI Sales Agent
                 </p>
                 <p className="text-[10px] text-white/65 font-mono">
                   Order & Pay in Chat • Live Concierge

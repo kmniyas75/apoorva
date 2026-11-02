@@ -353,7 +353,7 @@ export default function CheckoutModal({
           key: keyId,
           amount,
           currency: currency || "INR",
-          name: "APOORVA Coastal Beachwear",
+          name: "APOORVA SHELLS",
           description: "Aluva, Kerala Artisanal Beachwear Acquisition",
           order_id: razorpayOrderId,
           prefill: {

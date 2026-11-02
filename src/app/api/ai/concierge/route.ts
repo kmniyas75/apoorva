@@ -7,7 +7,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const {
-      message = "Explain APOORVA's handcrafted beachwear sets and sizing",
+      message = "Explain APOORVA SHELLS' handcrafted beachwear sets and sizing",
       history = [],
       mode = "concierge",
       sessionId,
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
 
       const result = await generateGeminiReply({
         prompt: message,
-        systemInstruction: `You are the Creative Director at APOORVA Atelier in Aluva, Kerala. Write punchy, editorial, luxury tropical beachwear copy grounded in authentic Kerala craftsmanship (virgin coconut oil polished shells, breathable cotton cup lining, combed tender coir fringe, fine-weave jute wrap skirts). Current catalog:\n${catalogSummary}`,
+        systemInstruction: `You are the Creative Director at APOORVA SHELLS in Aluva, Kerala. Write punchy, editorial, luxury tropical beachwear copy grounded in authentic Kerala craftsmanship (virgin coconut oil polished shells, breathable cotton cup lining, combed tender coir fringe, fine-weave jute wrap skirts). Current catalog:\n${catalogSummary}`,
         history: Array.isArray(history) ? history.slice(-6) : []
       });
 
@@ -89,7 +89,7 @@ export async function GET(req: Request) {
   }
 
   const result = await generateGeminiReply({
-    prompt: "Introduce APOORVA Kerala coastal beachwear in one short sentence."
+    prompt: "Introduce APOORVA SHELLS Kerala coastal beachwear in one short sentence."
   });
   return NextResponse.json({
     status: "active",

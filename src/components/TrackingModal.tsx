@@ -325,7 +325,7 @@ export default function TrackingModal({
                   </div>
                   <div className="flex justify-between text-black/70 text-[11px]">
                     <span>Security Seal:</span>
-                    <span className="font-bold text-emerald-800">APOORVA Wax Seal #9921</span>
+                    <span className="font-bold text-emerald-800">APOORVA SHELLS Wax Seal #9921</span>
                   </div>
                 </div>
 
@@ -397,7 +397,7 @@ export default function TrackingModal({
 
         {/* Footer */}
         <div className="px-6 py-3 bg-neutral-50 border-t border-black/10 flex items-center justify-between text-[11px] font-mono text-black/60">
-          <span>APOORVA Atelier Aluva Logistics Desk</span>
+          <span>APOORVA SHELLS Aluva Logistics Desk</span>
           <button
             onClick={onClose}
             className="text-black font-bold uppercase hover:underline"

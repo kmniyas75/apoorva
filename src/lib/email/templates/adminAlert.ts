@@ -12,7 +12,7 @@ export function generateAdminAlertHtml(order: OrderRecord): string {
   const { customer, items, pricing, orderId, payment } = order;
   const cleanPhone = customer.phone.replace(/\D/g, "");
   const waCustomerUrl = `https://wa.me/${cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone}?text=${encodeURIComponent(
-    `Namaskaram ${customer.fullName}! This is APOORVA Atelier (Aluva, Kerala) regarding your order #${orderId}.`
+    `Namaskaram ${customer.fullName}! This is APOORVA SHELLS (Aluva, Kerala) regarding your order #${orderId}.`
   )}`;
 
   const itemsList = items
@@ -49,7 +49,7 @@ export function generateAdminAlertHtml(order: OrderRecord): string {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>⚡ [NEW ORDER #${orderId}] ₹${pricing.total.toLocaleString("en-IN")} — APOORVA Dispatch</title>
+  <title>⚡ [NEW ORDER #${orderId}] ₹${pricing.total.toLocaleString("en-IN")} — APOORVA SHELLS</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #0e0c0b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #ffffff;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding: 32px 14px; background-color: #0e0c0b;">
@@ -69,7 +69,7 @@ export function generateAdminAlertHtml(order: OrderRecord): string {
                 <tr>
                   <td>
                     <span style="display: inline-block; padding: 4px 10px; background-color: #2e1065; color: #e9d5ff; border: 1px solid #7e22ce; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border-radius: 20px;">
-                      🐚 APOORVA ATELIER &bull; DISPATCH DESK
+                      🐚 APOORVA SHELLS &bull; DISPATCH DESK
                     </span>
                     <h1 style="font-family: Georgia, serif; font-size: 23px; margin: 10px 0 0 0; color: #ffffff;">
                       ⚡ New Order Received: #${orderId}

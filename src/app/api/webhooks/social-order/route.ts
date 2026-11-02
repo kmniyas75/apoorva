@@ -32,7 +32,7 @@ export async function GET(req: Request) {
   return NextResponse.json({
     status: "active",
     webhook:
-      "APOORVA Omnichannel AI Sales Agent Webhook (WhatsApp, Instagram, Facebook & Website)",
+      "APOORVA SHELLS Omnichannel AI Sales Agent Webhook (WhatsApp, Instagram, Facebook & Website)",
     metaAppId: process.env.META_APP_ID || "1063008853460924",
     metaBusinessId: process.env.META_BUSINESS_ID || "1678860643969539",
     whatsappPhoneNumberId: metaWa.phoneNumberId,
@@ -108,7 +108,7 @@ export async function POST(req: Request) {
         msgObj?.text?.body ||
         msgObj?.interactive?.button_reply?.title ||
         msgObj?.button?.text ||
-        "Hi! Tell me about APOORVA beachwear sets.";
+        "Hi! Tell me about APOORVA SHELLS beachwear sets.";
     } else if (
       body?.field === "messages" &&
       body?.value?.messaging_product === "whatsapp"
@@ -123,7 +123,7 @@ export async function POST(req: Request) {
         msgObj?.from || contactObj?.wa_id || "+1 (631) 555-1181";
       metaMessageText =
         msgObj?.text?.body ||
-        "Hi! I want to check out the APOORVA Coconut Beachwear sets.";
+        "Hi! I want to check out the APOORVA SHELLS Coconut Beachwear sets.";
     } else if (body?.object === "instagram" && Array.isArray(body.entry)) {
       metaChannel = "instagram";
       const messaging = body.entry?.[0]?.messaging?.[0];

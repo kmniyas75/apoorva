@@ -89,7 +89,7 @@ export default function LegalPageShell({
           <div className="border-b border-black/10 pb-5 space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-amber-900 font-bold">
-                APOORVA COASTAL ATELIER • ALUVA, KERALA
+                APOORVA SHELLS • ALUVA, KERALA
               </span>
               <span className="text-[10px] font-mono text-black/50">
                 Last Updated: {lastUpdated}
@@ -115,7 +115,7 @@ export default function LegalPageShell({
                 <span>Registered Atelier</span>
               </div>
               <p className="text-[11px] text-black/75">
-                APOORVA Coastal Atelier
+                APOORVA SHELLS
                 <br />
                 Periyar River Road, Aluva
                 <br />
@@ -129,9 +129,9 @@ export default function LegalPageShell({
                 <span>Concierge &amp; Support</span>
               </div>
               <p className="text-[11px] text-black/75">
-                Email: concierge@apoorva.luxury
+                Email: orders@apoorvashells.com
                 <br />
-                Phone / WhatsApp: +91 98470 89421
+                Phone / WhatsApp: +91 73064 09010
                 <br />
                 Hours: Mon–Sat, 9:30 AM – 6:30 PM IST
               </p>
@@ -160,7 +160,7 @@ export default function LegalPageShell({
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-800" />
             <span>
-              © {new Date().getFullYear()} APOORVA™ Coastal Atelier, Aluva,
+              © {new Date().getFullYear()} APOORVA SHELLS™, Aluva,
               Kerala. All rights reserved.
             </span>
           </div>

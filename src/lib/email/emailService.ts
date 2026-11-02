@@ -45,7 +45,7 @@ export function getSenderEmail(customDisplayName?: string): string {
   const address = rawAddress.includes("onboarding@resend.dev")
     ? "orders@apoorvashells.com"
     : rawAddress;
-  const displayName = customDisplayName || "🐚 APOORVA Coastal Atelier";
+  const displayName = customDisplayName || "🐚 APOORVA SHELLS";
   return `${displayName} <${address}>`;
 }
 
@@ -78,7 +78,7 @@ export async function sendOrderConfirmationEmail(order: OrderRecord): Promise<{
   error?: string;
 }> {
   const recipient = order.customer.email;
-  const subject = `🌴 Order Confirmed #${order.orderId} — APOORVA Coastal Atelier`;
+  const subject = `🌴 Order Confirmed #${order.orderId} — APOORVA SHELLS`;
   const html = generateOrderConfirmationHtml(order);
 
   const resend = getResendClient();
@@ -101,7 +101,7 @@ export async function sendOrderConfirmationEmail(order: OrderRecord): Promise<{
 
   try {
     const data = await resend.emails.send({
-      from: getSenderEmail("🐚 APOORVA Coastal Atelier"),
+      from: getSenderEmail("🐚 APOORVA SHELLS"),
       replyTo: getAdminEmail(),
       to: recipient,
       subject,
@@ -173,7 +173,7 @@ export async function sendAdminOrderAlertEmail(order: OrderRecord): Promise<{
 
   try {
     const data = await resend.emails.send({
-      from: getSenderEmail("⚡ APOORVA Dispatch Desk"),
+      from: getSenderEmail("⚡ APOORVA SHELLS Dispatch"),
       replyTo: order.customer.email,
       to: recipient,
       subject,
@@ -226,7 +226,7 @@ export async function sendShippingDispatchEmail(params: {
 }> {
   const { order, trackingNumber = "BD-88492019IN", courierName = "Blue Dart Express (Air Cargo)", trackingUrl } = params;
   const recipient = order.customer.email;
-  const subject = `✈️ Your APOORVA Order #${order.orderId} Has Shipped — Waybill ${trackingNumber}`;
+  const subject = `✈️ Your APOORVA SHELLS Order #${order.orderId} Has Shipped — Waybill ${trackingNumber}`;
   const html = generateShippingDispatchHtml(order, trackingNumber, courierName, trackingUrl);
 
   const resend = getResendClient();
@@ -248,7 +248,7 @@ export async function sendShippingDispatchEmail(params: {
 
   try {
     const data = await resend.emails.send({
-      from: getSenderEmail("✈️ APOORVA Express Dispatch"),
+      from: getSenderEmail("✈️ APOORVA SHELLS Express"),
       replyTo: getAdminEmail(),
       to: recipient,
       subject,
@@ -300,7 +300,7 @@ export async function sendPaymentFailedEmail(params: {
 }> {
   const { order, failureReason = "Payment session was interrupted or timed out", retryCheckoutUrl } = params;
   const recipient = order.customer.email;
-  const subject = `⏳ Your Handcrafted APOORVA Piece Is Reserved (#${order.orderId})`;
+  const subject = `⏳ Your Handcrafted APOORVA SHELLS Piece Is Reserved (#${order.orderId})`;
   const html = generatePaymentFailedHtml(order, failureReason, retryCheckoutUrl);
 
   const resend = getResendClient();
@@ -322,7 +322,7 @@ export async function sendPaymentFailedEmail(params: {
 
   try {
     const data = await resend.emails.send({
-      from: getSenderEmail("⏳ APOORVA Private Concierge"),
+      from: getSenderEmail("⏳ APOORVA SHELLS Concierge"),
       replyTo: getAdminEmail(),
       to: recipient,
       subject,

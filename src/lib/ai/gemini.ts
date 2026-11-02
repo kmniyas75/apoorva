@@ -134,12 +134,12 @@ function buildConciergeFallback(
   // 1. Admin Copywriter mode
   if (sys.includes("creative director")) {
     if (q.includes("caption") || q.includes("instagram") || q.includes("reel")) {
-      return "✨ Hand-carved in Aluva, Kerala, worn on the world's finest shores — discover APOORVA's organic cotton-lined coconut shell & kinetic tender coir beachwear sets. Tap to claim yours with Free Express Air Delivery (`https://www.apoorvashells.com`). #ApoorvaShells #KeralaCraft #LuxuryResortwear";
+      return "✨ Hand-carved in Aluva, Kerala, worn on the world's finest shores — discover APOORVA SHELLS' organic cotton-lined coconut shell & kinetic tender coir beachwear sets. Tap to claim yours with Free Express Air Delivery (`https://www.apoorvashells.com`). #ApoorvaShells #KeralaCraft #LuxuryResortwear";
     }
     if (q.includes("set 2") || q.includes("jute")) {
-      return "Sculpted from satin-polished Kerala coconut shells and paired with a breathable cotton-lined fine jute A-line wrap skirt — **Set 02 (₹4,500)** blends artisanal coastal heritage with effortless resort tailoring.";
+      return "Sculpted from satin-polished Kerala coconut shells and paired with a breathable cotton-lined fine jute A-line wrap skirt — **Set 02 (₹4,500)** by **APOORVA SHELLS** blends artisanal coastal heritage with effortless resort tailoring.";
     }
-    return "Born in our Aluva, Kerala atelier, **APOORVA** transforms natural coconut shells, combed tender coir fringe, and fine-weave jute into biodegradable luxury beachwear — lined with 100% organic cotton felt for cloud-like resort comfort.";
+    return "Born in our Aluva, Kerala atelier, **APOORVA SHELLS** transforms natural coconut shells, combed tender coir fringe, and fine-weave jute into biodegradable luxury beachwear — lined with 100% organic cotton felt for cloud-like resort comfort.";
   }
 
   // 2. Sales Agent: Collecting Delivery Address stage
@@ -185,7 +185,7 @@ function buildConciergeFallback(
     q.includes("both")
   ) {
     return (
-      `🌴 Welcome to **APOORVA Atelier (Aluva, Kerala)**! Here are our handcrafted, cotton-lined biodegradable resortwear sets:\n\n` +
+      `🌴 Welcome to **APOORVA SHELLS (Aluva, Kerala)**! Here are our handcrafted, cotton-lined biodegradable resortwear sets:\n\n` +
       `1️⃣ **Set 01 — Coconut & Coir Fringe Beach Set: ₹4,200**\n` +
       `   • Satin-polished coconut shell halter bra + kinetic combed tender coir fringe skirt.\n` +
       `2️⃣ **Set 02 — Coconut & Jute Wrap Beach Set: ₹4,500**\n` +
@@ -198,7 +198,7 @@ function buildConciergeFallback(
 
   if (q.includes("size") || q.includes("cup") || q.includes("fit") || q.includes("measurement")) {
     return (
-      `👙 **APOORVA Sizing & Comfort Guide:**\n` +
+      `👙 **APOORVA SHELLS Sizing & Comfort Guide:**\n` +
       `Every coconut shell cup is lined inside with breathable 2mm organic cotton felt and comes in two anatomical cuts:\n` +
       `• **S/M — Style A (Shallow Oval Cap, 12–14 cm):** Sleek, contoured fit ideal for A/B/C cups (Waist 26"–34").\n` +
       `• **M/L — Style B (Deep Coverage, 16–18 cm):** Fuller support for C/D+ cups (Waist 30"–38").\n` +
@@ -229,7 +229,7 @@ function buildConciergeFallback(
 
   if (q.includes("ship") || q.includes("delivery") || q.includes("track") || q.includes("days") || q.includes("cod")) {
     return (
-      `🚚 **Shipping & Payment at APOORVA:**\n` +
+      `🚚 **Shipping & Payment at APOORVA SHELLS:**\n` +
       `• **Free Express Air Shipping:** Dispatched from our Aluva, Kerala atelier via Blue Dart / Delhivery Air (2–3 business days to Goa, Mumbai, Bengaluru, Delhi, Chennai, Kochi & across India).\n` +
       `• **1-Click Instant Checkout:** Pay securely via UPI (GPay, PhonePe, Paytm), Cards, or Netbanking.\n\n` +
       `Tell me which set you'd like (**Set 01 ₹4,200**, **Set 02 ₹4,500**, or **Both ₹7,395**) along with your **Delivery Address + 6-digit PIN code** to reserve yours now!`
@@ -247,7 +247,7 @@ function buildConciergeFallback(
   const isFollowUp = (history?.length || 0) > 0;
   if (isFollowUp) {
     return (
-      `🌴 We would love to handcraft your APOORVA piece at our Aluva, Kerala atelier!\n` +
+      `🌴 We would love to handcraft your **APOORVA SHELLS** piece at our Aluva, Kerala atelier!\n` +
       `• **Set 01: Coconut & Coir Fringe Beach Set** — ₹4,200\n` +
       `• **Set 02: Coconut & Jute Wrap Beach Set** — ₹4,500\n` +
       `• **2-Set Bundle (15% OFF)** — ₹7,395\n\n` +
@@ -256,7 +256,7 @@ function buildConciergeFallback(
   }
 
   return (
-    `Namaskaram from the **APOORVA Aluva, Kerala Atelier**! 🌴 We handcraft two signature biodegradable tropical beachwear sets:\n\n` +
+    `Namaskaram from **APOORVA SHELLS (Aluva, Kerala)**! 🌴 We handcraft two signature biodegradable tropical beachwear sets:\n\n` +
     `• **Set 01: Coconut & Coir Fringe Beach Set (₹4,200)** — Kinetic combed tender coir fringe skirt + cotton-lined coconut bra.\n` +
     `• **Set 02: Coconut & Jute Wrap Beach Set (₹4,500)** — Cotton-lined fine jute wrap skirt with coconut buckle & 3 shell buttons.\n` +
     `• **2-Set Bundle (₹7,395 — Save 15%)** + **Free Express Air Shipping**.\n\n` +

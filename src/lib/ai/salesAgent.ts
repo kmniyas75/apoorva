@@ -424,7 +424,7 @@ export async function processIncomingSalesChat(params: {
       .join(" + ");
 
     aiReplyText =
-      `🎉 Perfect, ${session.customerName}! I have reserved your APOORVA order from our Aluva, Kerala Atelier:\n\n` +
+      `🎉 Perfect, ${session.customerName}! I have reserved your **APOORVA SHELLS** order from our Aluva, Kerala Atelier:\n\n` +
       `🛍️ *Items:* ${itemSummary}\n` +
       `💰 *Total Payable:* ₹${createdOrder.pricing.total.toLocaleString("en-IN")} (Free Express Air Shipping)\n` +
       `📍 *Delivery Address:* ${session.collectedAddress.addressLine1}, ${session.collectedAddress.city} - ${session.collectedAddress.pincode}\n` +
@@ -450,9 +450,9 @@ export async function processIncomingSalesChat(params: {
                 ? `Set 02: Coconut & Jute Wrap Beach Set (₹${prod2.price.toLocaleString("en-IN")})`
                 : `Set 01: Coconut & Coir Fringe Beach Set (₹${prod1.price.toLocaleString("en-IN")})`
           }. Enthusiastically confirm their choice, briefly mention they can also upgrade to BOTH sets for ₹${bundlePrice.toLocaleString("en-IN")} (15% OFF) if they haven't already, and ask them to reply with their **Full Name, Full Delivery Address, and 6-digit PIN code** so you can immediately generate their 1-Click Razorpay Payment Link in this chat.`
-        : `CURRENT STAGE: PITCHING & CONVINCING. Warmly answer the customer's question, convince them why APOORVA's handcrafted biodegradable beachwear from Aluva, Kerala is extraordinary (lined with soft organic cotton felt, 100% ocean & resort pool safe, adjustable braided ties fitting XS-XL, Free 24-48h Air Express delivery), present the prices clearly:\n- Set 01: Coconut & Coir Fringe Beach Set — ₹${prod1.price.toLocaleString("en-IN")}\n- Set 02: Coconut & Jute Wrap Beach Set — ₹${prod2.price.toLocaleString("en-IN")}\n- Complete 2-Set Bundle (Save ${db.settings.bundleDiscountPercent}%) — ₹${bundlePrice.toLocaleString("en-IN")}\nEnd your reply by asking which set they would like to order and inviting them to share their Delivery Address + 6-digit PIN code for an instant Razorpay payment link!`;
+        : `CURRENT STAGE: PITCHING & CONVINCING. Warmly answer the customer's question, convince them why APOORVA SHELLS' handcrafted biodegradable beachwear from Aluva, Kerala is extraordinary (lined with soft organic cotton felt, 100% ocean & resort pool safe, adjustable braided ties fitting XS-XL, Free 24-48h Air Express delivery), present the prices clearly:\n- Set 01: Coconut & Coir Fringe Beach Set — ₹${prod1.price.toLocaleString("en-IN")}\n- Set 02: Coconut & Jute Wrap Beach Set — ₹${prod2.price.toLocaleString("en-IN")}\n- Complete 2-Set Bundle (Save ${db.settings.bundleDiscountPercent}%) — ₹${bundlePrice.toLocaleString("en-IN")}\nEnd your reply by asking which set they would like to order and inviting them to share their Delivery Address + 6-digit PIN code for an instant Razorpay payment link!`;
 
-    const systemInstruction = `You are the APOORVA Luxury AI Sales Agent across ${params.channel.toUpperCase()} for our handcrafted coastal beachwear house in Aluva, Kerala, India.
+    const systemInstruction = `You are the APOORVA SHELLS Luxury AI Sales Agent across ${params.channel.toUpperCase()} for our handcrafted coastal beachwear house in Aluva, Kerala, India.
 Your goal is to:
 1. Convince the customer with warm, persuasive coastal luxury storytelling.
 2. Help them pick Set 01 (₹${prod1.price}), Set 02 (₹${prod2.price}), or BOTH sets (₹${bundlePrice} with 15% Bundle Discount) and their cup size: S/M (Style A Cup), M/L (Style B Cup), or FREE SIZE (Adjustable Tie).

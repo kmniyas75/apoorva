@@ -4,8 +4,8 @@ import LegalPageShell from "@/components/LegalPageShell";
 export default function AboutPage() {
   return (
     <LegalPageShell
-      title="About APOORVA™ Coastal Atelier"
-      subtitle="Handcrafted Coconut Shell, Combed Coir Fringe & Fine Jute Beachwear from Aluva, Kerala."
+      title="About APOORVA SHELLS™"
+      subtitle="Handcrafted Coconut Shell, Combed Coir Fringe & Fine Jute Resortwear from Aluva, Kerala."
       activePath="/about"
     >
       <section className="space-y-3">
@@ -14,8 +14,8 @@ export default function AboutPage() {
         </h2>
         <p>
           Founded along the tranquil banks of the Periyar River in{" "}
-          <strong>Aluva, Ernakulam, Kerala</strong>, <strong>APOORVA™</strong>{" "}
-          is a contemporary coastal beachwear atelier dedicated to transforming
+          <strong>Aluva, Ernakulam, Kerala</strong>, <strong>APOORVA SHELLS™</strong>{" "}
+          is a contemporary coastal resortwear atelier dedicated to transforming
           Kerala&apos;s most iconic natural fibers—mature coconut shells,
           ultra-combed tender coir, and breathable fine-weave jute—into
           sculpted, skin-soft resort apparel.
@@ -27,7 +27,7 @@ export default function AboutPage() {
           2. Signature Two-Piece Craftsmanship
         </h2>
         <p>
-          Unlike novelty coconut garments, every APOORVA piece is engineered for
+          Unlike novelty coconut garments, every APOORVA SHELLS piece is engineered for
           real beach comfort, movement, and anatomical contouring:
         </p>
         <ul className="list-disc pl-5 space-y-1.5">

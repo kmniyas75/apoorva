@@ -135,17 +135,17 @@ export default function PrintableInvoiceModal({
                 <span className="font-bold uppercase text-[9px] text-black/50 block mb-1">
                   RETURN IF UNDELIVERED TO (SENDER):
                 </span>
-                <div className="font-bold text-black">APOORVA ATELIER STUDIO</div>
+                <div className="font-bold text-black">APOORVA SHELLS</div>
                 <div className="text-black/80 leading-relaxed mt-0.5">
                   Periyar River Road, Aluva<br />
                   Ernakulam, Kerala — PIN 683101<br />
-                  Helpline: +91 98470 89421
+                  Helpline: +91 73064 09010
                 </div>
               </div>
             </div>
 
             <div className="pt-3 flex items-center justify-between text-[10px] text-black/70">
-              <div>Weight: <strong>0.65 KG</strong> • Items: <strong>{items.length} PC (Coastal Beachwear)</strong></div>
+              <div>Weight: <strong>0.65 KG</strong> • Items: <strong>{items.length} PC (Coastal Resortwear)</strong></div>
               <div className="font-bold text-black uppercase">TAMPER-PROOF WAX SEAL ATTACHED</div>
             </div>
           </div>
@@ -158,10 +158,10 @@ export default function PrintableInvoiceModal({
             <div className="flex items-start justify-between border-b border-black/15 pb-6">
               <div>
                 <h2 className="font-serif text-2xl font-black tracking-widest uppercase text-black">
-                  APOORVA
+                  APOORVA SHELLS
                 </h2>
                 <div className="text-[10px] tracking-widest text-black/60 uppercase mt-0.5">
-                  Handcrafted Coastal Beachwear Atelier
+                  Handcrafted Coastal Resortwear Atelier
                 </div>
                 <div className="text-[11px] text-black/70 mt-2 leading-tight">
                   Periyar River Road, Aluva, Ernakulam, Kerala - 683101<br />

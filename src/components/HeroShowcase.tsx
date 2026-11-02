@@ -235,10 +235,10 @@ export default function HeroShowcase({
           className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex flex-col items-center justify-center pointer-events-none select-none overflow-hidden"
         >
           <span
-            style={{ fontSize: "clamp(3.5rem, 11vw, 9.5rem)", lineHeight: 0.85 }}
-            className="font-black tracking-[-0.05em] uppercase text-amber-950/[0.045]"
+            style={{ fontSize: "clamp(2.5rem, 8.5vw, 7.5rem)", lineHeight: 0.85 }}
+            className="font-black tracking-[-0.04em] uppercase text-amber-950/[0.045]"
           >
-            APOORVA
+            APOORVA SHELLS
           </span>
           <span className="font-mono text-[10px] sm:text-xs tracking-[0.55em] uppercase text-amber-950/15 mt-2">
             ALUVA • KERALA • 360° ATELIER
@@ -813,7 +813,7 @@ export default function HeroShowcase({
 
           <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-black/60 flex items-center gap-1 font-bold">
             <MapPin className="w-3.5 h-3.5 text-amber-800" />
-            <span>APOORVA™ ATELIER • ALUVA, ERNAKULAM, KERALA — 683101</span>
+            <span>APOORVA SHELLS™ • ALUVA, ERNAKULAM, KERALA — 683101</span>
           </span>
         </div>
 
@@ -874,7 +874,7 @@ export default function HeroShowcase({
           </nav>
 
           <span className="text-[10px] text-black/45">
-            © {new Date().getFullYear()} APOORVA Coastal Artisanal Collective
+            © {new Date().getFullYear()} APOORVA SHELLS
           </span>
         </div>
       </footer>
